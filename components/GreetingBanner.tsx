@@ -8,6 +8,7 @@ export default function GreetingBanner() {
       <p className="text-lg">
         Welcome to AroundCities 🎉
       </p>
+	  <p className="text-sm">Version 2</p>
     </div>
   );
 }
