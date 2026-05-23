@@ -63,137 +63,149 @@ export default function HomePage() {
   }
 
   return (
-    <main className="max-w-4xl mx-auto p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <h1 className="text-3xl sm:text-5xl font-bold">
-          AroundCities
-        </h1>
+    <main className="min-h-screen bg-black text-white">
+      <div className="max-w-5xl mx-auto p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
+            AroundCities
+          </h1>
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => setLanguage("en")}
-            className={`border px-4 py-2 rounded-xl transition ${
-              language === "en"
-                ? "bg-black text-white"
-                : "bg-white"
-            }`}
-          >
-            EN
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setLanguage("en")}
+              className={`border px-5 py-3 rounded-2xl transition ${
+                language === "en"
+                  ? "bg-white text-black border-white"
+                  : "border-zinc-700 text-white bg-zinc-900"
+              }`}
+            >
+              EN
+            </button>
 
-          <button
-            onClick={() => setLanguage("zh")}
-            className={`border px-4 py-2 rounded-xl transition ${
-              language === "zh"
-                ? "bg-black text-white"
-                : "bg-white"
-            }`}
-          >
-            中文
-          </button>
+            <button
+              onClick={() => setLanguage("zh")}
+              className={`border px-5 py-3 rounded-2xl transition ${
+                language === "zh"
+                  ? "bg-white text-black border-white"
+                  : "border-zinc-700 text-white bg-zinc-900"
+              }`}
+            >
+              中文
+            </button>
 
-          <button
-            onClick={() => setLanguage("bm")}
-            className={`border px-4 py-2 rounded-xl transition ${
-              language === "bm"
-                ? "bg-black text-white"
-                : "bg-white"
-            }`}
-          >
-            BM
-          </button>
+            <button
+              onClick={() => setLanguage("bm")}
+              className={`border px-5 py-3 rounded-2xl transition ${
+                language === "bm"
+                  ? "bg-white text-black border-white"
+                  : "border-zinc-700 text-white bg-zinc-900"
+              }`}
+            >
+              BM
+            </button>
+          </div>
         </div>
-      </div>
 
-      {loading ? (
-        <div className="text-gray-500">
-          Loading events...
-        </div>
-      ) : events.length === 0 ? (
-        <div className="text-gray-500">
-          No events happening right now.
-        </div>
-      ) : (
-        <div className="space-y-8">
-          {events.map((event: any) => {
-            const translation =
-              event.event_translations.find(
-                (t: any) =>
-                  t.language_code === language
-              ) ||
-              event.event_translations.find(
-                (t: any) =>
-                  t.language_code === "en"
-              );
+        {loading ? (
+          <div className="text-zinc-400">
+            Loading events...
+          </div>
+        ) : events.length === 0 ? (
+          <div className="text-zinc-400">
+            No events happening right now.
+          </div>
+        ) : (
+          <div className="space-y-10">
+            {events.map((event: any) => {
+              const translation =
+                event.event_translations.find(
+                  (t: any) =>
+                    t.language_code === language
+                ) ||
+                event.event_translations.find(
+                  (t: any) =>
+                    t.language_code === "en"
+                );
 
-            const activeSession =
-              event.event_sessions?.[0];
+              const activeSession =
+                event.event_sessions?.[0];
 
-            return (
-              <div
-                key={event.id}
-                className="border rounded-3xl overflow-hidden shadow-sm bg-white"
-              >
-                {event.image_url && (
-                  <img
-                    src={event.image_url}
-                    alt={translation?.title}
-                    className="w-full h-56 object-cover"
-                  />
-                )}
+              return (
+                <div
+                  key={event.id}
+                  className="bg-zinc-950 border border-zinc-800 rounded-[32px] overflow-hidden shadow-2xl"
+                >
+                  {event.image_url && (
+                    <img
+                      src={event.image_url}
+                      alt={translation?.title}
+                      className="w-full h-64 sm:h-80 object-cover"
+                    />
+                  )}
 
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="inline-block bg-gray-100 px-3 py-1 rounded-full text-sm text-gray-600">
-                      {event.category || "General"}
-                    </span>
+                  <div className="p-6 sm:p-8">
+                    <div className="flex items-center justify-between mb-5">
+                      <span className="inline-flex items-center px-4 py-2 rounded-full bg-zinc-800 text-zinc-300 text-sm">
+                        {event.category || "General"}
+                      </span>
 
-                    <span className="text-sm text-gray-400">
-                      {event.city_code?.toUpperCase()}
-                    </span>
-                  </div>
-
-                  <h2 className="text-2xl sm:text-3xl font-bold mb-4">
-                    {translation?.title ||
-                      "Untitled Event"}
-                  </h2>
-
-                  <p className="text-gray-700 whitespace-pre-line mb-6 leading-relaxed">
-                    {translation?.description ||
-                      "No description"}
-                  </p>
-
-                  <div className="text-sm text-gray-500 space-y-2">
-                    <div>
-                      📍{" "}
-                      {event.venue ||
-                        "Unknown venue"}
+                      <span className="text-sm text-zinc-500 tracking-wide">
+                        {event.city_code?.toUpperCase()}
+                      </span>
                     </div>
 
-                    {activeSession && (
-                      <>
-                        <div>
-                          🕒{" "}
-                          {formatDate(
-                            activeSession.start_time
-                          )}
-                        </div>
+                    <h2 className="text-3xl sm:text-5xl font-bold mb-6 leading-tight">
+                      {translation?.title ||
+                        "Untitled Event"}
+                    </h2>
 
-                        <div>
-                          Ends:{" "}
-                          {formatDate(
-                            activeSession.end_time
-                          )}
-                        </div>
-                      </>
-                    )}
+                    <p className="text-zinc-300 text-lg leading-relaxed whitespace-pre-line mb-8">
+                      {translation?.description ||
+                        "No description"}
+                    </p>
+
+                    <div className="space-y-3 text-zinc-400">
+                      <div className="flex items-start gap-3">
+                        <span>📍</span>
+
+                        <span>
+                          {event.venue ||
+                            "Unknown venue"}
+                        </span>
+                      </div>
+
+                      {activeSession && (
+                        <>
+                          <div className="flex items-start gap-3">
+                            <span>🕒</span>
+
+                            <span>
+                              {formatDate(
+                                activeSession.start_time
+                              )}
+                            </span>
+                          </div>
+
+                          <div className="flex items-start gap-3">
+                            <span>⌛</span>
+
+                            <span>
+                              Ends{" "}
+                              {formatDate(
+                                activeSession.end_time
+                              )}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
+              );
+            })}
+          </div>
+        )}
+      </div>
     </main>
   );
 }
