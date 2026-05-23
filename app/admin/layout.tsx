@@ -31,9 +31,9 @@ export default function AdminLayout({
 
   if (!authorized) {
     return (
-      <main className="min-h-screen flex items-center justify-center p-6">
-        <div className="border rounded-2xl p-8 w-full max-w-sm">
-          <h1 className="text-2xl font-bold mb-6">
+      <main className="min-h-screen bg-black text-white flex items-center justify-center p-6">
+        <div className="border border-zinc-800 bg-zinc-950 rounded-3xl p-8 w-full max-w-sm">
+          <h1 className="text-3xl font-bold mb-6">
             AroundCities Admin
           </h1>
 
@@ -42,12 +42,12 @@ export default function AdminLayout({
             placeholder="Admin Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border rounded-lg px-4 py-2 w-full mb-4"
+            className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full mb-4 text-white"
           />
 
           <button
             onClick={login}
-            className="bg-black text-white px-4 py-2 rounded-lg w-full"
+            className="bg-white text-black px-4 py-3 rounded-2xl w-full font-semibold"
           >
             Login
           </button>
@@ -56,5 +56,9 @@ export default function AdminLayout({
     );
   }
 
-  return <>{children}</>;
+  return (
+    <main className="min-h-screen bg-black text-white">
+      {children}
+    </main>
+  );
 }

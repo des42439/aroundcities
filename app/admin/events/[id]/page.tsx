@@ -116,7 +116,7 @@ export default function EditEventPage() {
 
   if (loading) {
     return (
-      <main className="p-6">
+      <main className="min-h-screen bg-black text-white p-6">
         Loading...
       </main>
     );
@@ -124,7 +124,7 @@ export default function EditEventPage() {
 
   if (!event) {
     return (
-      <main className="p-6">
+      <main className="min-h-screen bg-black text-white p-6">
         Event not found
       </main>
     );
@@ -132,123 +132,125 @@ export default function EditEventPage() {
 
   return (
     <main className="max-w-4xl mx-auto p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <h1 className="text-3xl sm:text-5xl font-bold">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+        <h1 className="text-4xl sm:text-6xl font-bold">
           Edit Event
         </h1>
 
         <Link
           href="/admin/events"
-          className="border px-5 py-3 rounded-2xl"
+          className="border border-zinc-700 bg-zinc-900 px-5 py-3 rounded-2xl"
         >
           ← Back
         </Link>
       </div>
 
-      <div className="space-y-6">
-        <div>
-          <label className="block mb-2 font-bold">
-            Category
-          </label>
+      <div className="space-y-8">
+        <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-6">
+          <div>
+            <label className="block mb-2 font-semibold text-zinc-300">
+              Category
+            </label>
 
-          <input
-            value={event.category || ""}
-            onChange={(e) =>
-              setEvent({
-                ...event,
-                category: e.target.value,
-              })
-            }
-            className="border rounded-2xl px-4 py-3 w-full"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 font-bold">
-            Venue
-          </label>
-
-          <input
-            value={event.venue || ""}
-            onChange={(e) =>
-              setEvent({
-                ...event,
-                venue: e.target.value,
-              })
-            }
-            className="border rounded-2xl px-4 py-3 w-full"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-2 font-bold">
-            Event Image
-          </label>
-
-          <input
-            type="file"
-            accept="image/*"
-            onChange={uploadImage}
-            className="mb-4"
-          />
-
-          {uploading && (
-            <div className="text-sm text-gray-500 mb-4">
-              Compressing and uploading image...
-            </div>
-          )}
-
-          {event.image_url && (
-            <img
-              src={event.image_url}
-              alt="Event"
-              className="w-full max-w-md rounded-2xl border"
+            <input
+              value={event.category || ""}
+              onChange={(e) =>
+                setEvent({
+                  ...event,
+                  category: e.target.value,
+                })
+              }
+              className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full text-white"
             />
-          )}
-        </div>
+          </div>
 
-        <div>
-          <label className="block mb-2 font-bold">
-            Status
-          </label>
+          <div>
+            <label className="block mb-2 font-semibold text-zinc-300">
+              Venue
+            </label>
 
-          <select
-            value={event.status}
-            onChange={(e) =>
-              setEvent({
-                ...event,
-                status: e.target.value,
-              })
-            }
-            className="border rounded-2xl px-4 py-3 w-full"
-          >
-            <option value="published">
-              Published
-            </option>
+            <input
+              value={event.venue || ""}
+              onChange={(e) =>
+                setEvent({
+                  ...event,
+                  venue: e.target.value,
+                })
+              }
+              className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full text-white"
+            />
+          </div>
 
-            <option value="draft">
-              Draft
-            </option>
+          <div>
+            <label className="block mb-2 font-semibold text-zinc-300">
+              Event Image
+            </label>
 
-            <option value="finished">
-              Finished
-            </option>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={uploadImage}
+              className="mb-4 text-zinc-400"
+            />
 
-            <option value="cancelled">
-              Cancelled
-            </option>
+            {uploading && (
+              <div className="text-sm text-zinc-500 mb-4">
+                Compressing and uploading image...
+              </div>
+            )}
 
-            <option value="deleted">
-              Deleted
-            </option>
-          </select>
+            {event.image_url && (
+              <img
+                src={event.image_url}
+                alt="Event"
+                className="w-full max-w-md rounded-3xl border border-zinc-700"
+              />
+            )}
+          </div>
+
+          <div>
+            <label className="block mb-2 font-semibold text-zinc-300">
+              Status
+            </label>
+
+            <select
+              value={event.status}
+              onChange={(e) =>
+                setEvent({
+                  ...event,
+                  status: e.target.value,
+                })
+              }
+              className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full text-white"
+            >
+              <option value="published">
+                Published
+              </option>
+
+              <option value="draft">
+                Draft
+              </option>
+
+              <option value="finished">
+                Finished
+              </option>
+
+              <option value="cancelled">
+                Cancelled
+              </option>
+
+              <option value="deleted">
+                Deleted
+              </option>
+            </select>
+          </div>
         </div>
 
         {event.event_translations.map(
           (translation: any, index: number) => (
             <div
               key={translation.id}
-              className="border rounded-3xl p-6 bg-white"
+              className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6"
             >
               <h2 className="text-2xl font-bold mb-6">
                 {translation.language_code.toUpperCase()}
@@ -272,7 +274,7 @@ export default function EditEventPage() {
                     });
                   }}
                   placeholder="Title"
-                  className="border rounded-2xl px-4 py-3 w-full"
+                  className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full text-white"
                 />
 
                 <textarea
@@ -294,7 +296,7 @@ export default function EditEventPage() {
                     });
                   }}
                   placeholder="Description"
-                  className="border rounded-2xl px-4 py-3 w-full h-40"
+                  className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full h-40 text-white"
                 />
               </div>
             </div>
@@ -303,7 +305,7 @@ export default function EditEventPage() {
 
         <button
           onClick={saveEvent}
-          className="bg-black text-white px-6 py-4 rounded-2xl"
+          className="bg-white text-black px-6 py-4 rounded-2xl font-semibold"
         >
           Save Changes
         </button>

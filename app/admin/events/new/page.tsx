@@ -51,6 +51,18 @@ export default function NewEventPage() {
       .from("event_translations")
       .insert(translations);
 
+    if (preview.sessions?.length > 0) {
+      const sessions =
+        preview.sessions.map((s: any) => ({
+          ...s,
+          event_id: eventData.id,
+        }));
+
+      await supabase
+        .from("event_sessions")
+        .insert(sessions);
+    }
+
     alert("Event created successfully");
 
     setJsonInput("");
@@ -61,14 +73,14 @@ export default function NewEventPage() {
 
   return (
     <main className="max-w-5xl mx-auto p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <h1 className="text-3xl sm:text-5xl font-bold">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
+        <h1 className="text-4xl sm:text-6xl font-bold">
           Create Event
         </h1>
 
         <Link
           href="/admin/events"
-          className="border px-5 py-3 rounded-2xl"
+          className="border border-zinc-700 bg-zinc-900 px-5 py-3 rounded-2xl"
         >
           ← Back
         </Link>
@@ -80,13 +92,13 @@ export default function NewEventPage() {
           setJsonInput(e.target.value)
         }
         placeholder="Paste AI-generated JSON here..."
-        className="border rounded-3xl p-6 w-full h-80 font-mono mb-6"
+        className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 w-full h-80 font-mono mb-6 text-zinc-200"
       />
 
       <div className="flex gap-4 mb-8">
         <button
           onClick={generatePreview}
-          className="bg-black text-white px-5 py-3 rounded-2xl"
+          className="bg-white text-black px-5 py-3 rounded-2xl font-semibold"
         >
           Preview
         </button>
@@ -95,7 +107,7 @@ export default function NewEventPage() {
           <button
             onClick={createEvent}
             disabled={loading}
-            className="bg-green-600 text-white px-5 py-3 rounded-2xl"
+            className="bg-green-500 text-black px-5 py-3 rounded-2xl font-semibold"
           >
             {loading
               ? "Creating..."
@@ -105,12 +117,12 @@ export default function NewEventPage() {
       </div>
 
       {preview && (
-        <div className="border rounded-3xl p-6 bg-white">
+        <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6">
           <h2 className="text-2xl font-bold mb-6">
             Preview
           </h2>
 
-          <pre className="whitespace-pre-wrap text-sm overflow-auto">
+          <pre className="whitespace-pre-wrap text-sm overflow-auto text-zinc-300">
             {JSON.stringify(preview, null, 2)}
           </pre>
         </div>
