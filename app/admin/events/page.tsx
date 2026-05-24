@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -18,16 +18,21 @@ export default function AdminEventsPage() {
   }, []);
 
   async function loadEvents() {
-    const { data } = await supabase
+    setLoading(true);
+
+    const { data, error } = await supabase
       .from("events")
       .select(`
         *,
-        event_translations (
-          language_code,
-          title
-        )
+        event_translations!event_translations_event_id_fkey(*),
+        event_sessions!event_sessions_event_id_fkey(*)
       `)
-      .order("created_at", { ascending: false });
+      .order("created_at", {
+        ascending: false,
+      });
+
+    console.log("EVENTS:", data);
+    console.log("EVENT ERROR:", error);
 
     if (data) {
       setEvents(data);
@@ -36,110 +41,312 @@ export default function AdminEventsPage() {
     setLoading(false);
   }
 
-  async function softDelete(id: string) {
-    const confirmed = confirm(
-      "Mark this event as deleted?"
-    );
-
-    if (!confirmed) return;
-
-    await supabase
-      .from("events")
-      .update({
-        status: "deleted",
-      })
-      .eq("id", id);
-
-    loadEvents();
-  }
-
   return (
-    <main className="max-w-6xl mx-auto p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
-        <h1 className="text-4xl sm:text-6xl font-bold">
-          Event Management
-        </h1>
-
-        <Link
-          href="/admin/events/new"
-          className="bg-white text-black px-5 py-3 rounded-2xl font-semibold"
+    <main
+      style={{
+        background: "#000",
+        minHeight: "100vh",
+        color: "#fff",
+        padding: "40px 24px 80px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1200px",
+          margin: "0 auto",
+        }}
+      >
+        {/* HEADER */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent:
+              "space-between",
+            alignItems: "center",
+            marginBottom: "40px",
+            flexWrap: "wrap",
+            gap: "20px",
+          }}
         >
-          + Create Event
-        </Link>
-      </div>
+          <h1
+            style={{
+              fontSize: "64px",
+              margin: 0,
+            }}
+          >
+            Admin Events
+          </h1>
 
-      {loading ? (
-        <div className="text-zinc-400">
-          Loading...
+          <Link
+            href="/admin/events/create"
+            style={{
+              background: "#fff",
+              color: "#000",
+              padding: "16px 24px",
+              borderRadius: "16px",
+              textDecoration: "none",
+              fontWeight: 700,
+            }}
+          >
+            + Create Event
+          </Link>
         </div>
-      ) : (
-        <div className="space-y-6">
+
+        {/* LOADING */}
+        {loading && (
+          <div
+            style={{
+              color: "#888",
+              fontSize: "24px",
+            }}
+          >
+            Loading events...
+          </div>
+        )}
+
+        {/* EMPTY */}
+        {!loading &&
+          events.length === 0 && (
+            <div
+              style={{
+                color: "#888",
+                fontSize: "24px",
+              }}
+            >
+              No events found.
+            </div>
+          )}
+
+        {/* EVENTS */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "28px",
+          }}
+        >
           {events.map((event) => {
-            const english =
-              event.event_translations.find(
+            const translation =
+              event.event_translations?.find(
                 (t: any) =>
-                  t.language_code === "en"
-              );
+                  t.language_code ===
+                  "en"
+              ) ||
+              event
+                .event_translations?.[0];
+
+            const nextSession =
+              event.event_sessions
+                ?.filter(
+                  (s: any) =>
+                    new Date(
+                      s.end_time
+                    ) > new Date()
+                )
+                ?.sort(
+                  (
+                    a: any,
+                    b: any
+                  ) =>
+                    new Date(
+                      a.start_time
+                    ).getTime() -
+                    new Date(
+                      b.start_time
+                    ).getTime()
+                )?.[0];
 
             return (
               <div
                 key={event.id}
-                className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6"
+                style={{
+                  border:
+                    "1px solid #222",
+                  borderRadius:
+                    "28px",
+                  overflow: "hidden",
+                  background:
+                    "#050505",
+                }}
               >
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6">
-                  <div className="flex-1">
-                    <h2 className="text-2xl font-bold mb-4">
-                      {english?.title ||
-                        "Untitled Event"}
-                    </h2>
+                {/* IMAGE */}
+                {event.image_url && (
+                  <img
+                    src={
+                      event.image_url
+                    }
+                    alt=""
+                    style={{
+                      width: "100%",
+                      height: "280px",
+                      objectFit:
+                        "cover",
+                    }}
+                  />
+                )}
 
-                    <div className="text-zinc-400 space-y-2">
-                      <div>
-                        <strong className="text-zinc-200">
-                          Status:
-                        </strong>{" "}
-                        {event.status}
-                      </div>
+                {/* CONTENT */}
+                <div
+                  style={{
+                    padding: "28px",
+                  }}
+                >
+                  {/* TOP */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent:
+                        "space-between",
+                      alignItems:
+                        "center",
+                      marginBottom:
+                        "20px",
+                      flexWrap:
+                        "wrap",
+                      gap: "12px",
+                    }}
+                  >
+                    <div
+                      style={{
+                        background:
+                          "#111",
+                        border:
+                          "1px solid #222",
+                        color: "#bbb",
+                        padding:
+                          "10px 18px",
+                        borderRadius:
+                          "999px",
+                      }}
+                    >
+                      {
+                        event.category
+                      }
+                    </div>
 
-                      <div>
-                        <strong className="text-zinc-200">
-                          City:
-                        </strong>{" "}
-                        {event.city_code}
-                      </div>
-
-                      <div>
-                        <strong className="text-zinc-200">
-                          Venue:
-                        </strong>{" "}
-                        {event.venue}
-                      </div>
+                    <div
+                      style={{
+                        color: "#666",
+                      }}
+                    >
+                      {event.status ||
+                        "published"}
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
+                  {/* TITLE */}
+                  <h2
+                    style={{
+                      fontSize:
+                        "42px",
+                      margin:
+                        "0 0 18px",
+                    }}
+                  >
+                    {translation?.title ||
+                      "Untitled Event"}
+                  </h2>
+
+                  {/* DESCRIPTION */}
+                  <p
+                    style={{
+                      color: "#bbb",
+                      lineHeight: 1.7,
+                      fontSize:
+                        "20px",
+                      marginBottom:
+                        "26px",
+                    }}
+                  >
+                    {
+                      translation?.description
+                    }
+                  </p>
+
+                  {/* VENUE */}
+                  <div
+                    style={{
+                      color: "#999",
+                      marginBottom:
+                        "14px",
+                    }}
+                  >
+                    📍 {event.venue}
+                  </div>
+
+                  {/* SESSION */}
+                  {nextSession && (
+                    <div
+                      style={{
+                        color:
+                          "#777",
+                        marginBottom:
+                          "26px",
+                      }}
+                    >
+                      🕒{" "}
+                      {new Date(
+                        nextSession.start_time
+                      ).toLocaleString()}
+                    </div>
+                  )}
+
+                  {/* ACTIONS */}
+                  <div
+                    style={{
+                      display:
+                        "flex",
+                      gap: "16px",
+                      flexWrap:
+                        "wrap",
+                    }}
+                  >
                     <Link
                       href={`/admin/events/${event.id}`}
-                      className="border border-zinc-700 bg-zinc-900 px-4 py-2 rounded-2xl"
+                      style={{
+                        background:
+                          "#fff",
+                        color:
+                          "#000",
+                        padding:
+                          "12px 20px",
+                        borderRadius:
+                          "14px",
+                        textDecoration:
+                          "none",
+                        fontWeight: 700,
+                      }}
                     >
-                      Edit
+                      Edit Event
                     </Link>
 
-                    <button
-                      onClick={() =>
-                        softDelete(event.id)
-                      }
-                      className="border border-red-700 text-red-400 px-4 py-2 rounded-2xl"
+                    <Link
+                      href={`/kch/event/${event.id}`}
+                      target="_blank"
+                      style={{
+                        background:
+                          "#111",
+                        border:
+                          "1px solid #333",
+                        color:
+                          "#fff",
+                        padding:
+                          "12px 20px",
+                        borderRadius:
+                          "14px",
+                        textDecoration:
+                          "none",
+                      }}
                     >
-                      Delete
-                    </button>
+                      View Public Page
+                    </Link>
                   </div>
                 </div>
               </div>
             );
           })}
         </div>
-      )}
+      </div>
     </main>
   );
 }

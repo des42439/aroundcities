@@ -1,0 +1,493 @@
+# AroundCities Project Summary (For New Chat Context)
+
+## Project Overview
+
+AroundCities is a local city-focused discovery platform starting with Kuching (KCH) as the first city.
+
+Current direction:
+
+* Focus on Kuching first
+* Expand to other cities later
+* Main goal is NOT just event listings
+* Long-term vision is a localized social discovery/news/community content platform
+
+The desired user experience is:
+
+* “What’s happening around Kuching right now?”
+* Similar feeling to browsing active Kuching Facebook groups/pages
+* Events + local happenings + food + infrastructure + culture + community updates + lifestyle content
+
+Examples of inspiration:
+
+* Kuching Talk
+* Sarawak Eye
+* Borneo Food Hunter
+* Local Kuching Facebook groups/pages
+
+User wants AroundCities to eventually become a centralized local-content hub without the noise of worldwide Facebook content.
+
+---
+
+# Current Tech Stack
+
+## Frontend / Web
+
+* Next.js App Router
+* TypeScript
+* React
+* Dark theme UI
+
+## Backend
+
+* Supabase
+
+  * PostgreSQL database
+  * Event storage
+  * Sessions
+  * Sources
+  * Translations
+
+## Hosting / Deployment
+
+* Vercel
+
+  * Production deployment
+  * Custom domain connected
+
+## Version Control
+
+* GitHub
+
+  * Git push triggers deployment
+
+## Domain / DNS
+
+* aroundcities.my
+* Exabytes (domain registrar)
+* Cloudflare
+
+  * DNS management
+  * SSL
+  * CDN
+  * Protection
+
+## Email
+
+* Gmail account created:
+
+  * [aroundcities.my@gmail.com](mailto:aroundcities.my@gmail.com)
+
+## Contact Routing
+
+* Cloudflare Email Routing
+* Created forwarding:
+
+  * [contactus@aroundcities.my](mailto:contactus@aroundcities.my)
+    → forwards to
+  * [aroundcities.my@gmail.com](mailto:aroundcities.my@gmail.com)
+
+---
+
+# Current Website Structure
+
+## Public URLs
+
+### Main Redirect
+
+```text
+https://www.aroundcities.my/
+```
+
+Currently redirects to:
+
+```text
+https://www.aroundcities.my/kch
+```
+
+Reason:
+
+* Only Kuching exists now
+* Future plan:
+
+  * root page becomes city selection page
+
+---
+
+## Kuching Main Page
+
+```text
+/app/kch/page.tsx
+```
+
+Current branding:
+
+* AroundKuching
+
+Features:
+
+* Event listing cards
+* Dark theme
+* Responsive mobile layout
+* Multilanguage switching buttons:
+
+  * EN
+  * 中文
+  * BM
+
+---
+
+## Event Detail Page
+
+```text
+/app/kch/event/[id]/page.tsx
+```
+
+Features:
+
+* Event image
+* Category
+* Venue
+* Description
+* Event sessions
+* Event sources
+* Source links
+* Verified source label
+* Dark theme responsive layout
+
+---
+
+# Admin System
+
+## Admin Event Listing
+
+```text
+/app/admin/events/page.tsx
+```
+
+Features:
+
+* View all events
+* Event cards
+* Edit button
+* View public page button
+
+---
+
+## Admin Event Detail/Edit
+
+```text
+/app/admin/events/[id]/page.tsx
+```
+
+Features:
+
+* Edit event basic info
+* Edit translations
+* Edit sessions
+* Edit sources
+* Add/remove sessions
+* Add/remove sources
+
+---
+
+# Database Structure
+
+## Tables
+
+### cities
+
+Stores city information
+
+---
+
+### events
+
+Main event records
+
+Important columns:
+
+* id
+* venue
+* category
+* image_url
+* source_url
+* start_time
+* end_time
+* featured
+* status
+* created_at
+* updated_at
+
+---
+
+### event_translations
+
+Multilanguage support
+
+Important columns:
+
+* id
+* event_id
+* language_code
+* title
+* description
+
+---
+
+### event_sessions
+
+Stores multiple event sessions/times
+
+Important columns:
+
+* id
+* event_id
+* title
+* start_time
+* end_time
+* status
+
+---
+
+### event_sources
+
+Stores event sources/references
+
+Important columns:
+
+* id
+* event_id
+* source_type
+* source_title
+* source_author
+* source_url
+* verified
+* status
+* created_at
+* updated_at
+
+---
+
+### event_source_assets
+
+Assets related to sources
+
+Important columns:
+
+* id
+* source_id
+* asset_type
+* asset_url
+* sort_order
+* status
+
+---
+
+# Important Database Issue Encountered
+
+Duplicate foreign keys were accidentally created after using another ChatGPT conversation.
+
+This caused Supabase embedded queries to fail with:
+
+```text
+Could not embed because more than one relationship was found
+```
+
+Fix:
+All embedded relationships must explicitly specify FK names.
+
+Correct query pattern:
+
+```ts
+.select(`
+  *,
+  event_translations!event_translations_event_id_fkey(*),
+  event_sessions!event_sessions_event_id_fkey(*),
+  event_sources!event_sources_event_id_fkey(*)
+`)
+```
+
+This is VERY IMPORTANT for future queries.
+
+---
+
+# Next.js Version Issue Encountered
+
+Using latest Next.js App Router.
+
+Problem:
+`params.id` caused errors because params became async.
+
+Fix pattern:
+
+```ts
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+}
+```
+
+Important for all `[id]` routes.
+
+---
+
+# UI / Theme Direction
+
+Originally:
+
+* Mixed light/dark theme
+
+Problem:
+
+* Different browsers/devices rendered badly
+* iPhone Safari
+* Edge
+* Dark mode inconsistencies
+
+Final decision:
+
+* Full dark theme everywhere
+
+Now:
+
+* Better consistency across:
+
+  * iPhone
+  * Chrome
+  * Edge
+
+---
+
+# Legal / Disclaimer Features Added
+
+## Disclaimer Page
+
+Features:
+
+* Multilanguage support
+* EN / 中文 / BM
+
+Purpose:
+
+* Clarify information accuracy limitations
+* User responsibility
+* Third-party content notice
+* Copyright/dispute contact path
+
+Important note:
+
+* Disclaimer does NOT fully protect from lawsuits
+* But helps demonstrate:
+
+  * good faith
+  * transparency
+  * platform intent
+
+---
+
+# Contact System
+
+Current public contact:
+
+```text
+contactus@aroundcities.my
+```
+
+Implemented using:
+
+* Cloudflare Email Routing
+* Gmail forwarding
+
+---
+
+# Project Vision Expansion
+
+Project direction evolved from:
+
+* “event listing website”
+
+into:
+
+* localized community discovery platform
+
+Future content categories may include:
+
+* events
+* food discoveries
+* community happenings
+* lion dance activities
+* cultural events
+* infrastructure updates
+* local photography
+* weather moments
+* sunset/rainbow sharing
+* tourism
+* local promotions
+* city news
+* local social content aggregation
+
+Desired experience:
+
+* “localized Facebook feed without worldwide noise”
+
+---
+
+# Future Planned Features
+
+## High Priority
+
+* Visit analytics
+* Daily / weekly / monthly / yearly views
+* User feedback system
+* Content correction reporting
+* Complaint submission
+
+## Medium Priority
+
+* City-based feed system
+* Content categories
+* Featured posts
+* Trending local topics
+* Local contributors
+
+## Long-Term Vision
+
+* Multiple cities
+* Community-generated content
+* Local discovery ecosystem
+
+---
+
+# Development Journey Notes
+
+Project was built extremely quickly:
+
+* major foundation completed in ~2 days
+
+Important emotional/project context:
+
+* This is a personal passion project
+* Very different feeling from user’s IT day job
+* User became highly motivated after:
+
+  * upgrading dual monitors
+  * researching more
+  * finally starting project execution
+
+User repeatedly mentioned:
+
+* This project feels like “their baby”
+* They worked on it voluntarily from morning until late night
+* Much more exciting than normal work
+
+This context is important because:
+
+* future recommendations should support:
+
+  * momentum
+  * fast iteration
+  * visible progress
+  * motivation preservation

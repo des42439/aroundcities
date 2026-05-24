@@ -9,18 +9,22 @@ const supabase = createClient(
 export default async function EventDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const { data: event } = await supabase
+  const { id } = await params;
+
+  const { data: event, error } = await supabase
     .from("events")
     .select(`
       *,
-      event_translations(*),
-      event_sessions(*),
-      event_sources(*)
+      event_translations!event_translations_event_id_fkey(*),
+      event_sessions!event_sessions_event_id_fkey(*),
+      event_sources!event_sources_event_id_fkey(*)
     `)
-    .eq("id", params.id)
+    .eq("id", id)
     .single();
+
+  console.log("EVENT ERROR:", error);
 
   if (!event) {
     return (
@@ -57,8 +61,9 @@ export default async function EventDetailPage({
           margin: "0 auto",
         }}
       >
+        {/* BACK */}
         <Link
-          href="/kch"
+          href="/admin/events"
           style={{
             color: "#fff",
             textDecoration: "none",
@@ -66,9 +71,10 @@ export default async function EventDetailPage({
             display: "inline-block",
           }}
         >
-          ← Back
+          ← Back to Admin Events
         </Link>
 
+        {/* CARD */}
         <div
           style={{
             border: "1px solid #222",
@@ -77,6 +83,7 @@ export default async function EventDetailPage({
             background: "#050505",
           }}
         >
+          {/* IMAGE */}
           {event.image_url && (
             <img
               src={event.image_url}
@@ -89,16 +96,21 @@ export default async function EventDetailPage({
             />
           )}
 
+          {/* CONTENT */}
           <div
             style={{
               padding: "32px",
             }}
           >
+            {/* TOP */}
             <div
               style={{
                 display: "flex",
-                justifyContent: "space-between",
+                justifyContent:
+                  "space-between",
                 marginBottom: "24px",
+                flexWrap: "wrap",
+                gap: "12px",
               }}
             >
               <span
@@ -107,6 +119,7 @@ export default async function EventDetailPage({
                   padding: "10px 18px",
                   borderRadius: "999px",
                   color: "#ccc",
+                  fontSize: "18px",
                 }}
               >
                 {event.category}
@@ -115,21 +128,25 @@ export default async function EventDetailPage({
               <span
                 style={{
                   color: "#888",
+                  fontSize: "18px",
                 }}
               >
-                KCH
+                {event.status || "published"}
               </span>
             </div>
 
+            {/* TITLE */}
             <h1
               style={{
                 fontSize: "52px",
                 marginBottom: "20px",
+                lineHeight: 1.1,
               }}
             >
               {en?.title}
             </h1>
 
+            {/* DESCRIPTION */}
             <p
               style={{
                 color: "#d0d0d0",
@@ -140,6 +157,7 @@ export default async function EventDetailPage({
               {en?.description}
             </p>
 
+            {/* VENUE */}
             <div
               style={{
                 marginTop: "36px",
@@ -151,64 +169,7 @@ export default async function EventDetailPage({
               📍 {event.venue}
             </div>
 
-            {/* Sessions */}
-            <div
-              style={{
-                marginTop: "48px",
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: "32px",
-                  marginBottom: "20px",
-                }}
-              >
-                Event Sessions
-              </h2>
-
-              {event.event_sessions?.length === 0 && (
-                <div style={{ color: "#777" }}>
-                  No sessions available.
-                </div>
-              )}
-
-              {event.event_sessions?.map((session: any) => (
-                <div
-                  key={session.id}
-                  style={{
-                    border: "1px solid #222",
-                    borderRadius: "18px",
-                    padding: "20px",
-                    marginBottom: "16px",
-                    background: "#111",
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: "22px",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    {session.title || "Session"}
-                  </div>
-
-                  <div style={{ color: "#aaa" }}>
-                    {new Date(
-                      session.start_time
-                    ).toLocaleString()}
-                  </div>
-
-                  <div style={{ color: "#aaa" }}>
-                    Ends:{" "}
-                    {new Date(
-                      session.end_time
-                    ).toLocaleString()}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Sources */}
+            {/* SESSIONS */}
             <div
               style={{
                 marginTop: "56px",
@@ -220,69 +181,216 @@ export default async function EventDetailPage({
                   marginBottom: "20px",
                 }}
               >
+                Event Sessions
+              </h2>
+
+              {event.event_sessions?.length ===
+                0 && (
+                <div
+                  style={{
+                    color: "#777",
+                  }}
+                >
+                  No sessions available.
+                </div>
+              )}
+
+              {event.event_sessions
+                ?.sort(
+                  (a: any, b: any) =>
+                    new Date(
+                      a.start_time
+                    ).getTime() -
+                    new Date(
+                      b.start_time
+                    ).getTime()
+                )
+                .map((session: any) => (
+                  <div
+                    key={session.id}
+                    style={{
+                      border:
+                        "1px solid #222",
+                      borderRadius:
+                        "18px",
+                      padding: "20px",
+                      marginBottom:
+                        "16px",
+                      background: "#111",
+                    }}
+                  >
+                    <div
+                      style={{
+                        fontSize: "22px",
+                        marginBottom:
+                          "10px",
+                      }}
+                    >
+                      {session.title ||
+                        "Session"}
+                    </div>
+
+                    <div
+                      style={{
+                        color: "#aaa",
+                        marginBottom:
+                          "6px",
+                      }}
+                    >
+                      Starts:{" "}
+                      {new Date(
+                        session.start_time
+                      ).toLocaleString()}
+                    </div>
+
+                    <div
+                      style={{
+                        color: "#aaa",
+                      }}
+                    >
+                      Ends:{" "}
+                      {new Date(
+                        session.end_time
+                      ).toLocaleString()}
+                    </div>
+                  </div>
+                ))}
+            </div>
+
+            {/* SOURCES */}
+            <div
+              style={{
+                marginTop: "64px",
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: "32px",
+                  marginBottom: "20px",
+                }}
+              >
                 Sources
               </h2>
 
-              {event.event_sources?.length === 0 && (
-                <div style={{ color: "#777" }}>
+              {event.event_sources?.length ===
+                0 && (
+                <div
+                  style={{
+                    color: "#777",
+                  }}
+                >
                   No sources available.
                 </div>
               )}
 
-              {event.event_sources?.map((source: any) => (
-                <div
-                  key={source.id}
-                  style={{
-                    border: "1px solid #222",
-                    borderRadius: "18px",
-                    padding: "20px",
-                    marginBottom: "16px",
-                    background: "#111",
-                  }}
-                >
+              {event.event_sources.map(
+                (source: any) => (
                   <div
+                    key={source.id}
                     style={{
-                      fontSize: "20px",
-                      marginBottom: "10px",
+                      border:
+                        "1px solid #222",
+                      borderRadius:
+                        "18px",
+                      padding: "20px",
+                      marginBottom:
+                        "16px",
+                      background: "#111",
                     }}
                   >
-                    {source.source_title}
-                  </div>
-
-                  <div
-                    style={{
-                      color: "#999",
-                      marginBottom: "10px",
-                    }}
-                  >
-                    {source.source_type}
-                  </div>
-
-                  {source.source_url && (
-                    <a
-                      href={source.source_url}
-                      target="_blank"
-                      style={{
-                        color: "#fff",
-                        textDecoration: "underline",
-                      }}
-                    >
-                      Open Source
-                    </a>
-                  )}
-
-                  {source.notes && (
+                    {/* TITLE */}
                     <div
                       style={{
-                        marginTop: "12px",
-                        color: "#aaa",
+                        fontSize: "20px",
+                        marginBottom:
+                          "10px",
                       }}
                     >
-                      {source.notes}
+                      {source.source_title}
                     </div>
-                  )}
-                </div>
-              ))}
+
+                    {/* TYPE */}
+                    <div
+                      style={{
+                        color: "#999",
+                        marginBottom:
+                          "12px",
+                      }}
+                    >
+                      {source.source_type}
+                    </div>
+
+                    {/* URL */}
+                    {source.source_url && (
+                      <a
+                        href={
+                          source.source_url
+                        }
+                        target="_blank"
+                        style={{
+                          color: "#fff",
+                          textDecoration:
+                            "underline",
+                        }}
+                      >
+                        Open Source
+                      </a>
+                    )}
+
+                    {/* VERIFIED */}
+                    {source.verified && (
+                      <div
+                        style={{
+                          marginTop:
+                            "12px",
+                          color: "#4ade80",
+                        }}
+                      >
+                        ✓ Verified Source
+                      </div>
+                    )}
+                  </div>
+                )
+              )}
+            </div>
+
+            {/* ACTIONS */}
+            <div
+              style={{
+                marginTop: "48px",
+                display: "flex",
+                gap: "16px",
+                flexWrap: "wrap",
+              }}
+            >
+              <Link
+                href={`/kch/event/${event.id}`}
+                target="_blank"
+                style={{
+                  background: "#fff",
+                  color: "#000",
+                  padding: "14px 22px",
+                  borderRadius: "14px",
+                  textDecoration: "none",
+                  fontWeight: 700,
+                }}
+              >
+                View Public Page
+              </Link>
+
+              <Link
+                href="/admin/events"
+                style={{
+                  background: "#111",
+                  border: "1px solid #333",
+                  color: "#fff",
+                  padding: "14px 22px",
+                  borderRadius: "14px",
+                  textDecoration: "none",
+                }}
+              >
+                Back to Events
+              </Link>
             </div>
           </div>
         </div>
