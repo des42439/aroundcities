@@ -132,6 +132,36 @@ export default function DraftEventDetailPage() {
     }
   }
 
+  async function handleDelete() {
+    const confirmed = confirm(
+      "Are you sure you want to delete this draft event?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setMessage("");
+
+      const res = await fetch(
+        `/api/admin/draft-events/${params.id}/delete`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setMessage(result.error || "Delete failed");
+        return;
+      }
+
+      router.push("/admin/draft-events");
+    } catch (err: any) {
+      setMessage(err.message);
+    }
+  }
+
   async function handleAddSource() {
     try {
       setMessage("");
@@ -528,6 +558,13 @@ export default function DraftEventDetailPage() {
               className="bg-blue-600 hover:bg-blue-700 px-5 py-3 rounded-xl font-medium disabled:opacity-50"
             >
               {saving ? "Saving..." : "Save Changes"}
+            </button>
+
+            <button
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 px-5 py-3 rounded-xl font-medium"
+            >
+              Delete Draft
             </button>
           </div>
 
