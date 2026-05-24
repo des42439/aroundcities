@@ -1,314 +1,291 @@
-"use client";
-
-import Link from "next/link";
-import imageCompression from "browser-image-compression";
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";
+import Link from "next/link";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function EditEventPage() {
-  const params = useParams();
-  const id = params.id as string;
-
-  const [event, setEvent] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-
-  useEffect(() => {
-    loadEvent();
-  }, []);
-
-  async function loadEvent() {
-    const { data } = await supabase
-      .from("events")
-      .select(`
-        *,
-        event_translations (
-          *
-        )
-      `)
-      .eq("id", id)
-      .single();
-
-    if (data) {
-      setEvent(data);
-    }
-
-    setLoading(false);
-  }
-
-  async function uploadImage(
-    e: React.ChangeEvent<HTMLInputElement>
-  ) {
-    try {
-      const file = e.target.files?.[0];
-
-      if (!file) return;
-
-      setUploading(true);
-
-      const compressedFile =
-        await imageCompression(file, {
-          maxSizeMB: 0.3,
-          maxWidthOrHeight: 1400,
-          useWebWorker: true,
-        });
-
-      const fileName = `${Date.now()}-${file.name}`;
-
-      const { error } = await supabase.storage
-        .from("event-images")
-        .upload(fileName, compressedFile);
-
-      if (error) {
-        alert(error.message);
-        setUploading(false);
-        return;
-      }
-
-      const { data } = supabase.storage
-        .from("event-images")
-        .getPublicUrl(fileName);
-
-      setEvent({
-        ...event,
-        image_url: data.publicUrl,
-      });
-
-      setUploading(false);
-    } catch (err) {
-      console.error(err);
-      alert("Image upload failed");
-      setUploading(false);
-    }
-  }
-
-  async function saveEvent() {
-    if (!event) return;
-
-    await supabase
-      .from("events")
-      .update({
-        category: event.category,
-        venue: event.venue,
-        status: event.status,
-        image_url: event.image_url,
-      })
-      .eq("id", id);
-
-    for (const translation of event.event_translations) {
-      await supabase
-        .from("event_translations")
-        .update({
-          title: translation.title,
-          description: translation.description,
-        })
-        .eq("id", translation.id);
-    }
-
-    alert("Event updated");
-  }
-
-  if (loading) {
-    return (
-      <main className="min-h-screen bg-black text-white p-6">
-        Loading...
-      </main>
-    );
-  }
+export default async function EventDetailPage({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const { data: event } = await supabase
+    .from("events")
+    .select(`
+      *,
+      event_translations(*),
+      event_sessions(*),
+      event_sources(*)
+    `)
+    .eq("id", params.id)
+    .single();
 
   if (!event) {
     return (
-      <main className="min-h-screen bg-black text-white p-6">
-        Event not found
+      <main
+        style={{
+          background: "#000",
+          color: "#fff",
+          minHeight: "100vh",
+          padding: "40px",
+        }}
+      >
+        Event not found.
       </main>
     );
   }
 
-  return (
-    <main className="max-w-4xl mx-auto p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-10">
-        <h1 className="text-4xl sm:text-6xl font-bold">
-          Edit Event
-        </h1>
+  const en =
+    event.event_translations?.find(
+      (t: any) => t.language_code === "en"
+    ) || event.event_translations?.[0];
 
+  return (
+    <main
+      style={{
+        background: "#000",
+        color: "#fff",
+        minHeight: "100vh",
+        padding: "24px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "900px",
+          margin: "0 auto",
+        }}
+      >
         <Link
-          href="/admin/events"
-          className="border border-zinc-700 bg-zinc-900 px-5 py-3 rounded-2xl"
+          href="/kch"
+          style={{
+            color: "#fff",
+            textDecoration: "none",
+            marginBottom: "24px",
+            display: "inline-block",
+          }}
         >
           ← Back
         </Link>
-      </div>
 
-      <div className="space-y-8">
-        <div className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6 space-y-6">
-          <div>
-            <label className="block mb-2 font-semibold text-zinc-300">
-              Category
-            </label>
-
-            <input
-              value={event.category || ""}
-              onChange={(e) =>
-                setEvent({
-                  ...event,
-                  category: e.target.value,
-                })
-              }
-              className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full text-white"
+        <div
+          style={{
+            border: "1px solid #222",
+            borderRadius: "28px",
+            overflow: "hidden",
+            background: "#050505",
+          }}
+        >
+          {event.image_url && (
+            <img
+              src={event.image_url}
+              alt=""
+              style={{
+                width: "100%",
+                maxHeight: "420px",
+                objectFit: "cover",
+              }}
             />
-          </div>
+          )}
 
-          <div>
-            <label className="block mb-2 font-semibold text-zinc-300">
-              Venue
-            </label>
-
-            <input
-              value={event.venue || ""}
-              onChange={(e) =>
-                setEvent({
-                  ...event,
-                  venue: e.target.value,
-                })
-              }
-              className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full text-white"
-            />
-          </div>
-
-          <div>
-            <label className="block mb-2 font-semibold text-zinc-300">
-              Event Image
-            </label>
-
-            <input
-              type="file"
-              accept="image/*"
-              onChange={uploadImage}
-              className="mb-4 text-zinc-400"
-            />
-
-            {uploading && (
-              <div className="text-sm text-zinc-500 mb-4">
-                Compressing and uploading image...
-              </div>
-            )}
-
-            {event.image_url && (
-              <img
-                src={event.image_url}
-                alt="Event"
-                className="w-full max-w-md rounded-3xl border border-zinc-700"
-              />
-            )}
-          </div>
-
-          <div>
-            <label className="block mb-2 font-semibold text-zinc-300">
-              Status
-            </label>
-
-            <select
-              value={event.status}
-              onChange={(e) =>
-                setEvent({
-                  ...event,
-                  status: e.target.value,
-                })
-              }
-              className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full text-white"
-            >
-              <option value="published">
-                Published
-              </option>
-
-              <option value="draft">
-                Draft
-              </option>
-
-              <option value="finished">
-                Finished
-              </option>
-
-              <option value="cancelled">
-                Cancelled
-              </option>
-
-              <option value="deleted">
-                Deleted
-              </option>
-            </select>
-          </div>
-        </div>
-
-        {event.event_translations.map(
-          (translation: any, index: number) => (
+          <div
+            style={{
+              padding: "32px",
+            }}
+          >
             <div
-              key={translation.id}
-              className="bg-zinc-950 border border-zinc-800 rounded-3xl p-6"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                marginBottom: "24px",
+              }}
             >
-              <h2 className="text-2xl font-bold mb-6">
-                {translation.language_code.toUpperCase()}
+              <span
+                style={{
+                  background: "#111",
+                  padding: "10px 18px",
+                  borderRadius: "999px",
+                  color: "#ccc",
+                }}
+              >
+                {event.category}
+              </span>
+
+              <span
+                style={{
+                  color: "#888",
+                }}
+              >
+                KCH
+              </span>
+            </div>
+
+            <h1
+              style={{
+                fontSize: "52px",
+                marginBottom: "20px",
+              }}
+            >
+              {en?.title}
+            </h1>
+
+            <p
+              style={{
+                color: "#d0d0d0",
+                fontSize: "22px",
+                lineHeight: 1.8,
+              }}
+            >
+              {en?.description}
+            </p>
+
+            <div
+              style={{
+                marginTop: "36px",
+                color: "#bbb",
+                fontSize: "20px",
+                lineHeight: 1.8,
+              }}
+            >
+              📍 {event.venue}
+            </div>
+
+            {/* Sessions */}
+            <div
+              style={{
+                marginTop: "48px",
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: "32px",
+                  marginBottom: "20px",
+                }}
+              >
+                Event Sessions
               </h2>
 
-              <div className="space-y-4">
-                <input
-                  value={translation.title}
-                  onChange={(e) => {
-                    const updated = [
-                      ...event.event_translations,
-                    ];
+              {event.event_sessions?.length === 0 && (
+                <div style={{ color: "#777" }}>
+                  No sessions available.
+                </div>
+              )}
 
-                    updated[index].title =
-                      e.target.value;
-
-                    setEvent({
-                      ...event,
-                      event_translations:
-                        updated,
-                    });
+              {event.event_sessions?.map((session: any) => (
+                <div
+                  key={session.id}
+                  style={{
+                    border: "1px solid #222",
+                    borderRadius: "18px",
+                    padding: "20px",
+                    marginBottom: "16px",
+                    background: "#111",
                   }}
-                  placeholder="Title"
-                  className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full text-white"
-                />
+                >
+                  <div
+                    style={{
+                      fontSize: "22px",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    {session.title || "Session"}
+                  </div>
 
-                <textarea
-                  value={
-                    translation.description || ""
-                  }
-                  onChange={(e) => {
-                    const updated = [
-                      ...event.event_translations,
-                    ];
+                  <div style={{ color: "#aaa" }}>
+                    {new Date(
+                      session.start_time
+                    ).toLocaleString()}
+                  </div>
 
-                    updated[index].description =
-                      e.target.value;
-
-                    setEvent({
-                      ...event,
-                      event_translations:
-                        updated,
-                    });
-                  }}
-                  placeholder="Description"
-                  className="bg-zinc-900 border border-zinc-700 rounded-2xl px-4 py-3 w-full h-40 text-white"
-                />
-              </div>
+                  <div style={{ color: "#aaa" }}>
+                    Ends:{" "}
+                    {new Date(
+                      session.end_time
+                    ).toLocaleString()}
+                  </div>
+                </div>
+              ))}
             </div>
-          )
-        )}
 
-        <button
-          onClick={saveEvent}
-          className="bg-white text-black px-6 py-4 rounded-2xl font-semibold"
-        >
-          Save Changes
-        </button>
+            {/* Sources */}
+            <div
+              style={{
+                marginTop: "56px",
+              }}
+            >
+              <h2
+                style={{
+                  fontSize: "32px",
+                  marginBottom: "20px",
+                }}
+              >
+                Sources
+              </h2>
+
+              {event.event_sources?.length === 0 && (
+                <div style={{ color: "#777" }}>
+                  No sources available.
+                </div>
+              )}
+
+              {event.event_sources?.map((source: any) => (
+                <div
+                  key={source.id}
+                  style={{
+                    border: "1px solid #222",
+                    borderRadius: "18px",
+                    padding: "20px",
+                    marginBottom: "16px",
+                    background: "#111",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "20px",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    {source.source_title}
+                  </div>
+
+                  <div
+                    style={{
+                      color: "#999",
+                      marginBottom: "10px",
+                    }}
+                  >
+                    {source.source_type}
+                  </div>
+
+                  {source.source_url && (
+                    <a
+                      href={source.source_url}
+                      target="_blank"
+                      style={{
+                        color: "#fff",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      Open Source
+                    </a>
+                  )}
+
+                  {source.notes && (
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        color: "#aaa",
+                      }}
+                    >
+                      {source.notes}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </main>
   );

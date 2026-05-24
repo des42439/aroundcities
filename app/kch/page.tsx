@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
@@ -8,9 +9,30 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function HomePage() {
-  const [language, setLanguage] = useState("en");
-  const [events, setEvents] = useState<any[]>([]);
+type EventType = {
+  id: string;
+  venue: string;
+  category: string;
+  image_url: string;
+  status: string;
+  featured: boolean;
+  event_translations: {
+    language_code: string;
+    title: string;
+    description: string;
+  }[];
+  event_sessions: {
+    id: number;
+    title: string;
+    start_time: string;
+    end_time: string;
+    status: string;
+  }[];
+};
+
+export default function KchPage() {
+  const [events, setEvents] = useState<EventType[]>([]);
+  const [language, setLanguage] = useState<"en" | "zh" | "bm">("en");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,210 +40,378 @@ export default function HomePage() {
   }, []);
 
   async function loadEvents() {
+    setLoading(true);
+
     const now = new Date().toISOString();
 
     const { data, error } = await supabase
       .from("events")
       .select(`
         *,
-        event_translations (
-          language_code,
-          title,
-          description
-        ),
-        event_sessions (
-          id,
-          title,
-          start_time,
-          end_time,
-          status
-        )
+        event_translations(*),
+        event_sessions(*)
       `)
       .eq("status", "published")
-      .lte("event_sessions.start_time", now)
-      .gte("event_sessions.end_time", now)
-      .order("start_time", { ascending: true });
+      .order("created_at", { ascending: false });
 
     if (!error && data) {
-      setEvents(data);
+      const filtered = data.filter((event: any) => {
+        const activeSessions =
+          event.event_sessions?.filter(
+            (session: any) =>
+              session.status === "active" &&
+              session.end_time > now
+          ) || [];
+
+        return activeSessions.length > 0;
+      });
+
+      setEvents(filtered);
     }
 
     setLoading(false);
   }
 
-  function formatDate(dateString: string) {
-    return new Date(dateString).toLocaleString(
-      undefined,
-      {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      }
+  function getTranslation(event: EventType) {
+    return (
+      event.event_translations.find(
+        (t) => t.language_code === language
+      ) ||
+      event.event_translations.find(
+        (t) => t.language_code === "en"
+      ) ||
+      event.event_translations[0]
     );
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="max-w-5xl mx-auto p-4 sm:p-6">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-          <h1 className="text-4xl sm:text-6xl font-bold tracking-tight">
+    <main
+      style={{
+        background: "#000",
+        minHeight: "100vh",
+        color: "#fff",
+        padding: "32px 20px 80px",
+      }}
+    >
+      <div
+        style={{
+          maxWidth: "1100px",
+          margin: "0 auto",
+        }}
+      >
+        {/* HEADER */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "20px",
+            marginBottom: "36px",
+          }}
+        >
+          <h1
+            style={{
+              fontSize: "72px",
+              fontWeight: 800,
+              margin: 0,
+              lineHeight: 1,
+            }}
+          >
             AroundKuching
           </h1>
 
-          <div className="flex gap-3">
-            <button
+          <div
+            style={{
+              display: "flex",
+              gap: "14px",
+            }}
+          >
+            <LanguageButton
+              active={language === "en"}
               onClick={() => setLanguage("en")}
-              className={`border px-5 py-3 rounded-2xl transition ${
-                language === "en"
-                  ? "bg-white text-black border-white"
-                  : "border-zinc-700 text-white bg-zinc-900"
-              }`}
             >
               EN
-            </button>
+            </LanguageButton>
 
-            <button
+            <LanguageButton
+              active={language === "zh"}
               onClick={() => setLanguage("zh")}
-              className={`border px-5 py-3 rounded-2xl transition ${
-                language === "zh"
-                  ? "bg-white text-black border-white"
-                  : "border-zinc-700 text-white bg-zinc-900"
-              }`}
             >
               中文
-            </button>
+            </LanguageButton>
 
-            <button
+            <LanguageButton
+              active={language === "bm"}
               onClick={() => setLanguage("bm")}
-              className={`border px-5 py-3 rounded-2xl transition ${
-                language === "bm"
-                  ? "bg-white text-black border-white"
-                  : "border-zinc-700 text-white bg-zinc-900"
-              }`}
             >
               BM
-            </button>
+            </LanguageButton>
           </div>
         </div>
 
-        {loading ? (
-          <div className="text-zinc-400">
+        {/* LOADING */}
+        {loading && (
+          <div
+            style={{
+              color: "#888",
+              fontSize: "22px",
+              marginTop: "80px",
+            }}
+          >
             Loading events...
           </div>
-        ) : events.length === 0 ? (
-          <div className="text-zinc-400">
-            No events happening right now.
+        )}
+
+        {/* NO EVENTS */}
+        {!loading && events.length === 0 && (
+          <div
+            style={{
+              color: "#888",
+              fontSize: "22px",
+              marginTop: "80px",
+            }}
+          >
+            No active events right now.
           </div>
-        ) : (
-          <div className="space-y-10">
-            {events.map((event: any) => {
-              const translation =
-                event.event_translations.find(
-                  (t: any) =>
-                    t.language_code === language
-                ) ||
-                event.event_translations.find(
-                  (t: any) =>
-                    t.language_code === "en"
-                );
+        )}
 
-              const activeSession =
-                event.event_sessions?.[0];
+        {/* EVENTS */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "36px",
+          }}
+        >
+          {events.map((event) => {
+            const translation = getTranslation(event);
 
-              return (
+            const nextSession =
+              event.event_sessions
+                ?.filter(
+                  (s) =>
+                    s.status === "active" &&
+                    new Date(s.end_time) > new Date()
+                )
+                .sort(
+                  (a, b) =>
+                    new Date(a.start_time).getTime() -
+                    new Date(b.start_time).getTime()
+                )[0] || null;
+
+            return (
+              <Link
+                key={event.id}
+                href={`/kch/event/${event.id}`}
+                style={{
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
+              >
                 <div
-                  key={event.id}
-                  className="bg-zinc-950 border border-zinc-800 rounded-[32px] overflow-hidden shadow-2xl"
+                  style={{
+                    border: "1px solid #222",
+                    borderRadius: "34px",
+                    overflow: "hidden",
+                    background: "#050505",
+                    transition: "0.2s",
+                    cursor: "pointer",
+                  }}
                 >
+                  {/* IMAGE */}
                   {event.image_url && (
                     <img
                       src={event.image_url}
-                      alt={translation?.title}
-                      className="w-full h-64 sm:h-80 object-cover"
+                      alt=""
+                      style={{
+                        width: "100%",
+                        height: "340px",
+                        objectFit: "cover",
+                      }}
                     />
                   )}
 
-                  <div className="p-6 sm:p-8">
-                    <div className="flex items-center justify-between mb-5">
-                      <span className="inline-flex items-center px-4 py-2 rounded-full bg-zinc-800 text-zinc-300 text-sm">
-                        {event.category || "General"}
-                      </span>
-
-                      <span className="text-sm text-zinc-500 tracking-wide">
-                        {event.city_code?.toUpperCase()}
-                      </span>
-                    </div>
-
-                    <h2 className="text-3xl sm:text-5xl font-bold mb-6 leading-tight">
-                      {translation?.title ||
-                        "Untitled Event"}
-                    </h2>
-
-                    <p className="text-zinc-300 text-lg leading-relaxed whitespace-pre-line mb-8">
-                      {translation?.description ||
-                        "No description"}
-                    </p>
-
-                    <div className="space-y-3 text-zinc-400">
-                      <div className="flex items-start gap-3">
-                        <span>📍</span>
-
-                        <span>
-                          {event.venue ||
-                            "Unknown venue"}
-                        </span>
+                  {/* CONTENT */}
+                  <div
+                    style={{
+                      padding: "32px",
+                    }}
+                  >
+                    {/* TOP */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginBottom: "26px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          background: "#111",
+                          color: "#ccc",
+                          padding: "12px 22px",
+                          borderRadius: "999px",
+                          fontSize: "22px",
+                        }}
+                      >
+                        {event.category}
                       </div>
 
-                      {activeSession && (
-                        <>
-                          <div className="flex items-start gap-3">
-                            <span>🕒</span>
-
-                            <span>
-                              {formatDate(
-                                activeSession.start_time
-                              )}
-                            </span>
-                          </div>
-
-                          <div className="flex items-start gap-3">
-                            <span>⌛</span>
-
-                            <span>
-                              Ends{" "}
-                              {formatDate(
-                                activeSession.end_time
-                              )}
-                            </span>
-                          </div>
-                        </>
-                      )}
+                      <div
+                        style={{
+                          color: "#888",
+                          fontSize: "26px",
+                        }}
+                      >
+                        KCH
+                      </div>
                     </div>
+
+                    {/* TITLE */}
+                    <h2
+                      style={{
+                        fontSize: "58px",
+                        margin: "0 0 28px",
+                        lineHeight: 1.1,
+                      }}
+                    >
+                      {translation?.title}
+                    </h2>
+
+                    {/* DESCRIPTION */}
+                    <p
+                      style={{
+                        color: "#d0d0d0",
+                        fontSize: "30px",
+                        lineHeight: 1.8,
+                        marginBottom: "36px",
+                      }}
+                    >
+                      {translation?.description}
+                    </p>
+
+                    {/* VENUE */}
+                    <div
+                      style={{
+                        color: "#bbb",
+                        fontSize: "28px",
+                        marginBottom: "18px",
+                      }}
+                    >
+                      📍 {event.venue}
+                    </div>
+
+                    {/* SESSION */}
+                    {nextSession && (
+                      <div
+                        style={{
+                          color: "#aaa",
+                          fontSize: "24px",
+                          lineHeight: 1.8,
+                        }}
+                      >
+                        <div>
+                          🕒{" "}
+                          {new Date(
+                            nextSession.start_time
+                          ).toLocaleString()}
+                        </div>
+
+                        <div>
+                          Ends:{" "}
+                          {new Date(
+                            nextSession.end_time
+                          ).toLocaleString()}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
-              );
-            })}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* FOOTER */}
+        <footer
+          style={{
+            marginTop: "80px",
+            borderTop: "1px solid #222",
+            paddingTop: "28px",
+            display: "flex",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "18px",
+          }}
+        >
+          <div
+            style={{
+              color: "#666",
+            }}
+          >
+            AroundKuching © 2026
           </div>
-        )}
-      <div className="mt-16 flex flex-wrap gap-6 text-sm text-zinc-500">
-  <a
-    href="/disclaimer"
-    className="hover:text-zinc-300 transition"
-  >
-    Disclaimer
-  </a>
 
-  <a
-    href="/contact"
-    className="hover:text-zinc-300 transition"
-  >
-    Contact
-  </a>
-</div>
+          <div
+            style={{
+              display: "flex",
+              gap: "20px",
+            }}
+          >
+            <Link
+              href="/disclaimer"
+              style={{
+                color: "#999",
+                textDecoration: "none",
+              }}
+            >
+              Disclaimer
+            </Link>
 
-</div>
-</main>
+            <a
+              href="mailto:contactus@aroundcities.my"
+              style={{
+                color: "#999",
+                textDecoration: "none",
+              }}
+            >
+              Contact Us
+            </a>
+          </div>
+        </footer>
+      </div>
+    </main>
+  );
+}
+
+function LanguageButton({
+  children,
+  active,
+  onClick,
+}: {
+  children: React.ReactNode;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        padding: "14px 26px",
+        borderRadius: "18px",
+        border: active
+          ? "1px solid #fff"
+          : "1px solid #333",
+        background: active ? "#fff" : "#111",
+        color: active ? "#000" : "#fff",
+        fontSize: "24px",
+        cursor: "pointer",
+        transition: "0.2s",
+      }}
+    >
+      {children}
+    </button>
   );
 }
