@@ -47,12 +47,14 @@ export default function KchPage() {
     const { data, error } = await supabase
       .from("events")
       .select(`
-        *,
-        event_translations(*),
-        event_sessions(*)
-      `)
-      //.eq("status", "published")
+			*,
+			event_translations!event_translations_event_id_fkey(*),
+			event_sessions(*)
+		`)
+      .eq("status", "published")
       .order("created_at", { ascending: false });
+	  console.log(error);
+console.log(data);
 
     if (!error && data) {
       const filtered = data.filter((event: any) => {
