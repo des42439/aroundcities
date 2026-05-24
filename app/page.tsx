@@ -205,7 +205,23 @@ export default function HomePage() {
             })}
           </div>
         )}
-      </div>
-    </main>
+      <div className="mt-16 flex flex-wrap gap-6 text-sm text-zinc-500">
+  <a
+    href="/disclaimer"
+    className="hover:text-zinc-300 transition"
+  >
+    Disclaimer
+  </a>
+
+  <a
+    href="/contact"
+    className="hover:text-zinc-300 transition"
+  >
+    Contact
+  </a>
+</div>
+
+</div>
+</main>
   );
 }
