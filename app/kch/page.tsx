@@ -51,7 +51,7 @@ export default function KchPage() {
         event_translations(*),
         event_sessions(*)
       `)
-      .eq("status", "published")
+      //.eq("status", "published")
       .order("created_at", { ascending: false });
 
     if (!error && data) {
