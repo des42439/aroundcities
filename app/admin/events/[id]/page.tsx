@@ -1,400 +1,263 @@
-import { createClient } from "@supabase/supabase-js";
-import Link from "next/link";
+"use client";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 
-export default async function EventDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
+export default function AdminEventDetailPage() {
+  const params = useParams();
+  const router = useRouter();
 
-  const { data: event, error } = await supabase
-    .from("events")
-    .select(`
-      *,
-      event_translations!event_translations_event_id_fkey(*),
-      event_sessions!event_sessions_event_id_fkey(*),
-      event_sources!event_sources_event_id_fkey(*)
-    `)
-    .eq("id", id)
-    .single();
+  const [event, setEvent] = useState<any>(null);
 
-  console.log("EVENT ERROR:", error);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  if (!event) {
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    fetchEvent();
+  }, []);
+
+  async function fetchEvent() {
+    try {
+      const res = await fetch(
+        `/api/admin/events/${params.id}`
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setMessage(result.error || "Failed to load event");
+        return;
+      }
+
+      setEvent(result.data);
+    } catch (err: any) {
+      setMessage(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleSave() {
+    try {
+      setSaving(true);
+      setMessage("");
+
+      const res = await fetch(
+        `/api/admin/events/${params.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(event),
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setMessage(result.error || "Failed to save");
+        return;
+      }
+
+      setMessage("Event updated successfully");
+
+      setEvent(result.data);
+    } catch (err: any) {
+      setMessage(err.message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete() {
+    const confirmed = confirm(
+      "Are you sure you want to delete this public event?"
+    );
+
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(
+        `/api/admin/events/${params.id}/delete`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      const result = await res.json();
+
+      if (!res.ok) {
+        setMessage(result.error || "Delete failed");
+        return;
+      }
+
+      router.push("/admin/events");
+    } catch (err: any) {
+      setMessage(err.message);
+    }
+  }
+
+  if (loading) {
     return (
-      <main
-        style={{
-          background: "#000",
-          color: "#fff",
-          minHeight: "100vh",
-          padding: "40px",
-        }}
-      >
-        Event not found.
-      </main>
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        Loading...
+      </div>
     );
   }
 
-  const en =
-    event.event_translations?.find(
-      (t: any) => t.language_code === "en"
-    ) || event.event_translations?.[0];
+  if (!event) {
+    return (
+      <div className="min-h-screen bg-black text-red-500 flex items-center justify-center">
+        Event not found
+      </div>
+    );
+  }
 
   return (
-    <main
-      style={{
-        background: "#000",
-        color: "#fff",
-        minHeight: "100vh",
-        padding: "24px",
-      }}
-    >
-      <div
-        style={{
-          maxWidth: "900px",
-          margin: "0 auto",
-        }}
-      >
-        {/* BACK */}
-        <Link
-          href="/admin/events"
-          style={{
-            color: "#fff",
-            textDecoration: "none",
-            marginBottom: "24px",
-            display: "inline-block",
-          }}
+    <div className="min-h-screen bg-black text-white p-6">
+      <div className="max-w-5xl mx-auto">
+        <button
+          onClick={() => router.back()}
+          className="mb-6 text-zinc-400 hover:text-white"
         >
-          ← Back to Admin Events
-        </Link>
+          ← Back
+        </button>
 
-        {/* CARD */}
-        <div
-          style={{
-            border: "1px solid #222",
-            borderRadius: "28px",
-            overflow: "hidden",
-            background: "#050505",
-          }}
-        >
-          {/* IMAGE */}
-          {event.image_url && (
-            <img
-              src={event.image_url}
-              alt=""
-              style={{
-                width: "100%",
-                maxHeight: "420px",
-                objectFit: "cover",
-              }}
-            />
-          )}
-
-          {/* CONTENT */}
-          <div
-            style={{
-              padding: "32px",
-            }}
-          >
-            {/* TOP */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent:
-                  "space-between",
-                marginBottom: "24px",
-                flexWrap: "wrap",
-                gap: "12px",
-              }}
-            >
-              <span
-                style={{
-                  background: "#111",
-                  padding: "10px 18px",
-                  borderRadius: "999px",
-                  color: "#ccc",
-                  fontSize: "18px",
-                }}
-              >
-                {event.category}
-              </span>
-
-              <span
-                style={{
-                  color: "#888",
-                  fontSize: "18px",
-                }}
-              >
-                {event.status || "published"}
-              </span>
-            </div>
-
-            {/* TITLE */}
-            <h1
-              style={{
-                fontSize: "52px",
-                marginBottom: "20px",
-                lineHeight: 1.1,
-              }}
-            >
-              {en?.title}
+        <div className="flex items-start justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold">
+              Public Event Editor
             </h1>
 
-            {/* DESCRIPTION */}
-            <p
-              style={{
-                color: "#d0d0d0",
-                fontSize: "22px",
-                lineHeight: 1.8,
-              }}
-            >
-              {en?.description}
+            <p className="text-zinc-400 mt-2">
+              Edit published event information
             </p>
+          </div>
 
-            {/* VENUE */}
-            <div
-              style={{
-                marginTop: "36px",
-                color: "#bbb",
-                fontSize: "20px",
-                lineHeight: 1.8,
-              }}
-            >
-              📍 {event.venue}
+          <a
+            href={`/events/${event.id}`}
+            target="_blank"
+            className="bg-zinc-800 hover:bg-zinc-700 px-5 py-3 rounded-xl font-medium"
+          >
+            View Public Page
+          </a>
+        </div>
+
+        <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 space-y-6">
+          <div>
+            <label className="block mb-2 text-sm text-zinc-400">
+              Title
+            </label>
+
+            <input
+              value={event.title || ""}
+              onChange={(e) =>
+                setEvent({
+                  ...event,
+                  title: e.target.value,
+                })
+              }
+              className="w-full bg-black border border-zinc-700 rounded-xl p-3"
+            />
+          </div>
+
+          <div>
+            <label className="block mb-2 text-sm text-zinc-400">
+              Description
+            </label>
+
+            <textarea
+              value={event.description || ""}
+              onChange={(e) =>
+                setEvent({
+                  ...event,
+                  description: e.target.value,
+                })
+              }
+              className="w-full h-40 bg-black border border-zinc-700 rounded-xl p-3"
+            />
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div>
+              <label className="block mb-2 text-sm text-zinc-400">
+                Category
+              </label>
+
+              <input
+                value={event.category || ""}
+                onChange={(e) =>
+                  setEvent({
+                    ...event,
+                    category: e.target.value,
+                  })
+                }
+                className="w-full bg-black border border-zinc-700 rounded-xl p-3"
+              />
             </div>
 
-            {/* SESSIONS */}
-            <div
-              style={{
-                marginTop: "56px",
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: "32px",
-                  marginBottom: "20px",
-                }}
-              >
-                Event Sessions
-              </h2>
+            <div>
+              <label className="block mb-2 text-sm text-zinc-400">
+                Venue
+              </label>
 
-              {event.event_sessions?.length ===
-                0 && (
-                <div
-                  style={{
-                    color: "#777",
-                  }}
-                >
-                  No sessions available.
-                </div>
-              )}
-
-              {event.event_sessions
-                ?.sort(
-                  (a: any, b: any) =>
-                    new Date(
-                      a.start_time
-                    ).getTime() -
-                    new Date(
-                      b.start_time
-                    ).getTime()
-                )
-                .map((session: any) => (
-                  <div
-                    key={session.id}
-                    style={{
-                      border:
-                        "1px solid #222",
-                      borderRadius:
-                        "18px",
-                      padding: "20px",
-                      marginBottom:
-                        "16px",
-                      background: "#111",
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: "22px",
-                        marginBottom:
-                          "10px",
-                      }}
-                    >
-                      {session.title ||
-                        "Session"}
-                    </div>
-
-                    <div
-                      style={{
-                        color: "#aaa",
-                        marginBottom:
-                          "6px",
-                      }}
-                    >
-                      Starts:{" "}
-                      {new Date(
-                        session.start_time
-                      ).toLocaleString()}
-                    </div>
-
-                    <div
-                      style={{
-                        color: "#aaa",
-                      }}
-                    >
-                      Ends:{" "}
-                      {new Date(
-                        session.end_time
-                      ).toLocaleString()}
-                    </div>
-                  </div>
-                ))}
+              <input
+                value={event.venue || ""}
+                onChange={(e) =>
+                  setEvent({
+                    ...event,
+                    venue: e.target.value,
+                  })
+                }
+                className="w-full bg-black border border-zinc-700 rounded-xl p-3"
+              />
             </div>
 
-            {/* SOURCES */}
-            <div
-              style={{
-                marginTop: "64px",
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: "32px",
-                  marginBottom: "20px",
-                }}
-              >
-                Sources
-              </h2>
+            <div>
+              <label className="block mb-2 text-sm text-zinc-400">
+                Organizer
+              </label>
 
-              {event.event_sources?.length ===
-                0 && (
-                <div
-                  style={{
-                    color: "#777",
-                  }}
-                >
-                  No sources available.
-                </div>
-              )}
-
-              {event.event_sources.map(
-                (source: any) => (
-                  <div
-                    key={source.id}
-                    style={{
-                      border:
-                        "1px solid #222",
-                      borderRadius:
-                        "18px",
-                      padding: "20px",
-                      marginBottom:
-                        "16px",
-                      background: "#111",
-                    }}
-                  >
-                    {/* TITLE */}
-                    <div
-                      style={{
-                        fontSize: "20px",
-                        marginBottom:
-                          "10px",
-                      }}
-                    >
-                      {source.source_title}
-                    </div>
-
-                    {/* TYPE */}
-                    <div
-                      style={{
-                        color: "#999",
-                        marginBottom:
-                          "12px",
-                      }}
-                    >
-                      {source.source_type}
-                    </div>
-
-                    {/* URL */}
-                    {source.source_url && (
-                      <a
-                        href={
-                          source.source_url
-                        }
-                        target="_blank"
-                        style={{
-                          color: "#fff",
-                          textDecoration:
-                            "underline",
-                        }}
-                      >
-                        Open Source
-                      </a>
-                    )}
-
-                    {/* VERIFIED */}
-                    {source.verified && (
-                      <div
-                        style={{
-                          marginTop:
-                            "12px",
-                          color: "#4ade80",
-                        }}
-                      >
-                        ✓ Verified Source
-                      </div>
-                    )}
-                  </div>
-                )
-              )}
-            </div>
-
-            {/* ACTIONS */}
-            <div
-              style={{
-                marginTop: "48px",
-                display: "flex",
-                gap: "16px",
-                flexWrap: "wrap",
-              }}
-            >
-              <Link
-                href={`/kch/event/${event.id}`}
-                target="_blank"
-                style={{
-                  background: "#fff",
-                  color: "#000",
-                  padding: "14px 22px",
-                  borderRadius: "14px",
-                  textDecoration: "none",
-                  fontWeight: 700,
-                }}
-              >
-                View Public Page
-              </Link>
-
-              <Link
-                href="/admin/events"
-                style={{
-                  background: "#111",
-                  border: "1px solid #333",
-                  color: "#fff",
-                  padding: "14px 22px",
-                  borderRadius: "14px",
-                  textDecoration: "none",
-                }}
-              >
-                Back to Events
-              </Link>
+              <input
+                value={event.organizer || ""}
+                onChange={(e) =>
+                  setEvent({
+                    ...event,
+                    organizer: e.target.value,
+                  })
+                }
+                className="w-full bg-black border border-zinc-700 rounded-xl p-3"
+              />
             </div>
           </div>
+
+          <div className="flex gap-4">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="bg-blue-600 hover:bg-blue-700 px-5 py-3 rounded-xl font-medium disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+
+            <button
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 px-5 py-3 rounded-xl font-medium"
+            >
+              Delete Event
+            </button>
+          </div>
+
+          {message && (
+            <div className="bg-zinc-800 border border-zinc-700 rounded-xl p-4">
+              {message}
+            </div>
+          )}
         </div>
       </div>
-    </main>
+    </div>
   );
 }
