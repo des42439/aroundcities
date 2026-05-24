@@ -36,7 +36,7 @@ export default function ContactPage() {
               </div>
 
               <div className="text-lg font-semibold break-all">
-                hello@aroundcities.my
+                contactus@aroundcities.my
               </div>
             </div>
           </section>
