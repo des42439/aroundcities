@@ -8,7 +8,7 @@ set ZIPNAME=%TS%_backup.zip
 if exist "%ZIPNAME%" del "%ZIPNAME%"
 
 powershell -Command ^
-"Compress-Archive -Path 'app','components','lib','types','public','.env.local','package.json','table_design.sql','tsconfig.json' -DestinationPath '%ZIPNAME%'"
+"Compress-Archive -Path 'app','components','lib','types','public','.env.local','package.json','table_design.sql','tsconfig.json','project_context.md' -DestinationPath '%ZIPNAME%'"
 
 echo Created %ZIPNAME%
 pause

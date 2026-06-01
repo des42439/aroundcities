@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import imageCompression from "browser-image-compression";
 import exifr from "exifr";
 
@@ -9,15 +8,20 @@ import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/lib/supabase";
 
 export default function NewPhotoPage() {
-  const router = useRouter();
+  const [uploading, setUploading] =
+    useState(false);
 
-  const [uploading, setUploading] = useState(false);
+  const [file, setFile] =
+    useState<File | null>(null);
 
-  const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] =
+    useState("");
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [location, setLocation] = useState("");
+  const [description, setDescription] =
+    useState("");
+
+  const [location, setLocation] =
+    useState("");
 
   const [latitude, setLatitude] =
     useState<number | null>(null);
@@ -68,9 +72,13 @@ export default function NewPhotoPage() {
       const uploadResult =
         await supabase.storage
           .from("event-images")
-          .upload(filePath, compressedFile, {
-            upsert: false,
-          });
+          .upload(
+            filePath,
+            compressedFile,
+            {
+              upsert: false,
+            }
+          );
 
       if (uploadResult.error) {
         throw uploadResult.error;
@@ -115,10 +123,12 @@ export default function NewPhotoPage() {
         throw error;
       }
 
-      alert("Photo uploaded.");
+      alert(
+        "Photo uploaded successfully."
+      );
 
-      router.push("/admin/photos");
-      router.refresh();
+      window.location.href =
+        "/admin/photos?saved=1";
     } catch (error) {
       console.error(error);
 
@@ -144,7 +154,9 @@ export default function NewPhotoPage() {
 
     try {
       const exif =
-        await exifr.parse(selectedFile);
+        await exifr.parse(
+          selectedFile
+        );
 
       console.log("EXIF DATA");
       console.log(exif);
@@ -158,8 +170,8 @@ export default function NewPhotoPage() {
           new Date(dateTaken);
 
         setCapturedDate(
-		  date.toISOString()
-		);
+          date.toISOString()
+        );
       }
 
       if (
@@ -196,6 +208,7 @@ export default function NewPhotoPage() {
       >
         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4 md:p-6">
           <div className="space-y-6">
+
             <div>
               <label className="mb-2 block font-medium">
                 Photo
@@ -205,7 +218,9 @@ export default function NewPhotoPage() {
                 type="file"
                 accept="image/*"
                 className="w-full"
-                onChange={handleFileChange}
+                onChange={
+                  handleFileChange
+                }
               />
             </div>
 
@@ -262,11 +277,13 @@ export default function NewPhotoPage() {
                 longitude && (
                   <div className="mt-2 rounded-lg border border-neutral-800 bg-neutral-950 p-3 text-sm text-neutral-400">
                     <div>
-                      Latitude: {latitude}
+                      Latitude:{" "}
+                      {latitude}
                     </div>
 
                     <div>
-                      Longitude: {longitude}
+                      Longitude:{" "}
+                      {longitude}
                     </div>
                   </div>
                 )}
@@ -278,21 +295,23 @@ export default function NewPhotoPage() {
               </label>
 
               <input
-				  type="datetime-local"
-				  value={
-					capturedDate
-					  ? new Date(capturedDate)
-						  .toISOString()
-						  .slice(0, 16)
-					  : ""
-				  }
-				  onChange={(e) =>
-					setCapturedDate(
-					  new Date(
-						e.target.value
-					  ).toISOString()
-					)
-				  }
+                type="datetime-local"
+                value={
+                  capturedDate
+                    ? new Date(
+                        capturedDate
+                      )
+                        .toISOString()
+                        .slice(0, 16)
+                    : ""
+                }
+                onChange={(e) =>
+                  setCapturedDate(
+                    new Date(
+                      e.target.value
+                    ).toISOString()
+                  )
+                }
                 className="w-full rounded-lg border border-neutral-700 bg-neutral-950 p-3"
               />
             </div>
@@ -336,6 +355,7 @@ export default function NewPhotoPage() {
                 </option>
               </select>
             </div>
+
           </div>
         </div>
 

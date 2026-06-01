@@ -1,15 +1,45 @@
 import Link from "next/link";
+
 import AdminLayout from "@/components/AdminLayout";
 import { getPhotos } from "@/lib/photos";
 import { formatDate } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
-export default async function PhotosPage() {
+type Props = {
+  searchParams: Promise<{
+    saved?: string;
+    deleted?: string;
+  }>;
+};
+
+export default async function PhotosPage({
+  searchParams,
+}: Props) {
   const photos = await getPhotos();
+
+  const params = await searchParams;
+
+  const saved =
+    params.saved === "1";
+
+  const deleted =
+    params.deleted === "1";
 
   return (
     <AdminLayout title="Photo Management">
+      {saved && (
+        <div className="mb-6 rounded-lg border border-green-800 bg-green-950 p-4 text-green-300">
+          Photo saved successfully.
+        </div>
+      )}
+
+      {deleted && (
+        <div className="mb-6 rounded-lg border border-red-800 bg-red-950 p-4 text-red-300">
+          Photo deleted successfully.
+        </div>
+      )}
+
       <div className="mb-6 flex items-center justify-between">
         <div>
           <p className="text-neutral-400">
@@ -17,12 +47,21 @@ export default async function PhotosPage() {
           </p>
         </div>
 
-        <Link
-          href="/admin/photos/new"
-          className="rounded-lg bg-blue-600 px-4 py-2 font-medium hover:bg-blue-500"
-        >
-          Upload Photo
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href="/admin/photos/batch"
+            className="rounded-lg bg-green-600 px-4 py-2 font-medium hover:bg-green-500"
+          >
+            Batch Upload
+          </Link>
+
+          <Link
+            href="/admin/photos/new"
+            className="rounded-lg bg-blue-600 px-4 py-2 font-medium hover:bg-blue-500"
+          >
+            Upload Photo
+          </Link>
+        </div>
       </div>
 
       <div className="space-y-4">
@@ -40,7 +79,10 @@ export default async function PhotosPage() {
                 <div className="aspect-video bg-neutral-800">
                   <img
                     src={photo.photo_url}
-                    alt={photo.title ?? "Photo"}
+                    alt={
+                      photo.title ??
+                      "Photo"
+                    }
                     className="h-full w-full object-cover"
                   />
                 </div>
@@ -49,7 +91,8 @@ export default async function PhotosPage() {
                   <div className="mb-3 flex items-center gap-2">
                     <span
                       className={`rounded-full px-2 py-1 text-xs ${
-                        photo.status === "active"
+                        photo.status ===
+                        "active"
                           ? "bg-green-900 text-green-300"
                           : "bg-neutral-800 text-neutral-300"
                       }`}
@@ -62,14 +105,41 @@ export default async function PhotosPage() {
                     </span>
                   </div>
 
-                  <h2 className="text-xl font-semibold">
-                    {photo.title ||
-                      "Untitled Photo"}
-                  </h2>
+                  <div className="flex items-center justify-between gap-4">
+                    <h2 className="text-xl font-semibold">
+                      {photo.title ||
+                        "Untitled Photo"}
+                    </h2>
+
+                    <div className="flex gap-2">
+                      <Link
+                        href={`/admin/photos/${photo.photo_id}`}
+                        className="rounded-lg border border-blue-700 px-3 py-1 text-sm text-blue-400 hover:bg-blue-950"
+                      >
+                        Edit
+                      </Link>
+
+                      {photo.latitude !==
+                        null &&
+                        photo.longitude !==
+                          null && (
+                          <a
+                            href={`https://www.google.com/maps?q=${photo.latitude},${photo.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="rounded-lg border border-green-700 px-3 py-1 text-sm text-green-400 hover:bg-green-950"
+                          >
+                            Map
+                          </a>
+                        )}
+                    </div>
+                  </div>
 
                   {photo.description && (
                     <p className="mt-2 text-neutral-400">
-                      {photo.description}
+                      {
+                        photo.description
+                      }
                     </p>
                   )}
 
