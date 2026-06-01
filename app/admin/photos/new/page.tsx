@@ -132,17 +132,16 @@ export default function NewPhotoPage() {
                 Photo
               </label>
 
-              <input
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={(e) =>
-                  setFile(
-                    e.target.files?.[0] ??
-                      null
-                  )
-                }
-              />
+				<input
+				  type="file"
+				  accept="image/*"
+				  onChange={(e) =>
+					setFile(
+					  e.target.files?.[0] ??
+						null
+					)
+				  }
+				/>
             </div>
 
             <div>
