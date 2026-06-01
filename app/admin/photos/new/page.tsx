@@ -166,6 +166,17 @@ export default function NewPhotoPage() {
                       await exifr.parse(
                         selectedFile
                       );
+					const exif = await exifr.parse(selectedFile);
+
+					console.log("EXIF", exif);
+
+					alert(
+					  JSON.stringify(
+						exif,
+						null,
+						2
+					  ).substring(0, 2000)
+					);
 
                     const dateTaken =
                       exif?.DateTimeOriginal ||
