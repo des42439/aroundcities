@@ -11,6 +11,9 @@ export default function BatchUploadPage() {
   const [files, setFiles] =
     useState<File[]>([]);
 
+  const [photographer, setPhotographer] =
+    useState("");
+
   const [uploading, setUploading] =
     useState(false);
 
@@ -20,6 +23,13 @@ export default function BatchUploadPage() {
   async function handleUpload() {
     if (files.length === 0) {
       alert("Please select photos.");
+      return;
+    }
+
+    if (!photographer.trim()) {
+      alert(
+        "Please enter photographer name."
+      );
       return;
     }
 
@@ -150,7 +160,7 @@ export default function BatchUploadPage() {
                 capturedDate,
 
               captured_by:
-                "Batch Upload",
+                photographer.trim(),
             });
 
         if (error) {
@@ -168,10 +178,6 @@ export default function BatchUploadPage() {
         );
       }
 
-      alert(
-        `${files.length} photos uploaded successfully.`
-      );
-
       window.location.href =
         "/admin/photos?saved=1";
     } catch (error) {
@@ -188,8 +194,24 @@ export default function BatchUploadPage() {
   return (
     <AdminLayout title="Batch Upload Photos">
       <div className="space-y-6">
-
         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+          <div className="mb-6">
+            <label className="mb-2 block text-sm font-medium">
+              Photographer
+            </label>
+
+            <input
+              type="text"
+              value={photographer}
+              onChange={(e) =>
+                setPhotographer(
+                  e.target.value
+                )
+              }
+              placeholder="e.g. Desmond Tan"
+              className="w-full rounded-lg border border-neutral-700 bg-neutral-800 px-4 py-3"
+            />
+          </div>
 
           <input
             type="file"
@@ -212,8 +234,7 @@ export default function BatchUploadPage() {
 
           {uploading && (
             <div className="mt-4">
-              Upload Progress:
-              {" "}
+              Upload Progress:{" "}
               {progress}%
             </div>
           )}
@@ -233,7 +254,6 @@ export default function BatchUploadPage() {
                 : `Upload ${files.length} Photos`}
             </button>
           </div>
-
         </div>
 
         {files.length > 0 && (
@@ -254,7 +274,6 @@ export default function BatchUploadPage() {
             </div>
           </div>
         )}
-
       </div>
     </AdminLayout>
   );
