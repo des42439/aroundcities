@@ -25,11 +25,14 @@ export default function NewPhotoPage() {
   const [longitude, setLongitude] =
     useState<number | null>(null);
 
-  const [capturedDate, setCapturedDate] = useState("");
-  const [capturedBy, setCapturedBy] = useState("Admin");
-  const [status, setStatus] = useState("active");
+  const [capturedDate, setCapturedDate] =
+    useState("");
 
-  const [exifInfo, setExifInfo] = useState("");
+  const [capturedBy, setCapturedBy] =
+    useState("Admin");
+
+  const [status, setStatus] =
+    useState("active");
 
   async function handleSubmit(
     e: React.FormEvent<HTMLFormElement>
@@ -52,8 +55,9 @@ export default function NewPhotoPage() {
         });
 
       const extension =
-        compressedFile.name.split(".").pop() ||
-        "jpg";
+        compressedFile.name
+          .split(".")
+          .pop() || "jpg";
 
       const fileName =
         Date.now() + "." + extension;
@@ -72,37 +76,40 @@ export default function NewPhotoPage() {
         throw uploadResult.error;
       }
 
-      const { data } = supabase.storage
-        .from("event-images")
-        .getPublicUrl(filePath);
+      const { data } =
+        supabase.storage
+          .from("event-images")
+          .getPublicUrl(filePath);
 
-      const photoUrl = data.publicUrl;
+      const photoUrl =
+        data.publicUrl;
 
-      const { error } = await supabase
-        .from("photos")
-        .insert({
-          status,
-          photo_type: "photo",
-          photo_url: photoUrl,
+      const { error } =
+        await supabase
+          .from("photos")
+          .insert({
+            status,
+            photo_type: "photo",
+            photo_url: photoUrl,
 
-          title:
-            title.trim() || null,
+            title:
+              title.trim() || null,
 
-          description:
-            description.trim() || null,
+            description:
+              description.trim() || null,
 
-          location:
-            location.trim() || null,
+            location:
+              location.trim() || null,
 
-          latitude,
-          longitude,
+            latitude,
+            longitude,
 
-          captured_date:
-            capturedDate || null,
+            captured_date:
+              capturedDate || null,
 
-          captured_by:
-            capturedBy.trim() || null,
-        });
+            captured_by:
+              capturedBy.trim() || null,
+          });
 
       if (error) {
         throw error;
@@ -139,10 +146,6 @@ export default function NewPhotoPage() {
       const exif =
         await exifr.parse(selectedFile);
 
-      setExifInfo(
-        JSON.stringify(exif, null, 2)
-      );
-
       console.log("EXIF DATA");
       console.log(exif);
 
@@ -151,10 +154,13 @@ export default function NewPhotoPage() {
         exif?.CreateDate;
 
       if (dateTaken) {
-        const date = new Date(dateTaken);
+        const date =
+          new Date(dateTaken);
 
         setCapturedDate(
-          date.toISOString().split("T")[0]
+          date
+            .toISOString()
+            .split("T")[0]
         );
       }
 
@@ -162,13 +168,12 @@ export default function NewPhotoPage() {
         exif?.latitude &&
         exif?.longitude
       ) {
-        setLatitude(exif.latitude);
-        setLongitude(exif.longitude);
+        setLatitude(
+          exif.latitude
+        );
 
-        setLocation(
-          exif.latitude +
-            ", " +
-            exif.longitude
+        setLongitude(
+          exif.longitude
         );
       }
 
@@ -182,10 +187,6 @@ export default function NewPhotoPage() {
       }
     } catch (error) {
       console.error(error);
-
-      setExifInfo(
-        "EXIF ERROR:\n" + String(error)
-      );
     }
   }
 
@@ -210,18 +211,6 @@ export default function NewPhotoPage() {
               />
             </div>
 
-            {exifInfo && (
-              <div className="rounded-lg border border-neutral-700 bg-neutral-950 p-3">
-                <div className="mb-2 font-medium">
-                  EXIF Debug
-                </div>
-
-                <pre className="max-h-96 overflow-auto whitespace-pre-wrap text-xs">
-                  {exifInfo}
-                </pre>
-              </div>
-            )}
-
             <div>
               <label className="mb-2 block font-medium">
                 Title
@@ -230,7 +219,9 @@ export default function NewPhotoPage() {
               <input
                 value={title}
                 onChange={(e) =>
-                  setTitle(e.target.value)
+                  setTitle(
+                    e.target.value
+                  )
                 }
                 className="w-full rounded-lg border border-neutral-700 bg-neutral-950 p-3"
               />
@@ -255,22 +246,32 @@ export default function NewPhotoPage() {
 
             <div>
               <label className="mb-2 block font-medium">
-                Location
+                Location Name
               </label>
 
               <input
                 value={location}
                 onChange={(e) =>
-                  setLocation(e.target.value)
+                  setLocation(
+                    e.target.value
+                  )
                 }
+                placeholder="Example: Kuching City Mall"
                 className="w-full rounded-lg border border-neutral-700 bg-neutral-950 p-3"
               />
 
-              {latitude && longitude && (
-                <div className="mt-2 text-sm text-neutral-400">
-                  GPS: {latitude}, {longitude}
-                </div>
-              )}
+              {latitude &&
+                longitude && (
+                  <div className="mt-2 rounded-lg border border-neutral-800 bg-neutral-950 p-3 text-sm text-neutral-400">
+                    <div>
+                      Latitude: {latitude}
+                    </div>
+
+                    <div>
+                      Longitude: {longitude}
+                    </div>
+                  </div>
+                )}
             </div>
 
             <div>
@@ -314,7 +315,9 @@ export default function NewPhotoPage() {
               <select
                 value={status}
                 onChange={(e) =>
-                  setStatus(e.target.value)
+                  setStatus(
+                    e.target.value
+                  )
                 }
                 className="w-full rounded-lg border border-neutral-700 bg-neutral-950 p-3"
               >
