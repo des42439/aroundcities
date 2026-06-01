@@ -159,17 +159,26 @@ Photo </label>
                   await exifr.parse(
                     selectedFile
                   );
+				  console.log("EXIF DATA");
+				console.log(exif);
 
-                alert(
-                  JSON.stringify(
-                    exif,
-                    null,
-                    2
-                  ).substring(
-                    0,
-                    3000
-                  )
-                );
+				if (exif?.latitude && exif?.longitude) {
+				  setLocation(
+					`${exif.latitude}, ${exif.longitude}`
+				  );
+				}
+
+				alert(
+				  `DateTimeOriginal: ${exif?.DateTimeOriginal}
+
+				Latitude: ${exif?.latitude}
+
+				Longitude: ${exif?.longitude}
+
+				Make: ${exif?.Make}
+
+				Model: ${exif?.Model}`
+				);
 
                 const dateTaken =
                   exif?.DateTimeOriginal ||
