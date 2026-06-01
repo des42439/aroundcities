@@ -1,0 +1,69 @@
+AroundCities 
+
+* Table: cards (major table for all the items shown in the web)
+    * Id: auto generated 
+    * Type: event/photo/registration/food
+    * Status: active/inactive/obsolete
+	* Priority: 0-100 (smaller is higher priority)
+    * Parent Id: if it's a child event, put the parent card id here 
+* Table: events (event related card will have records in here)
+    * Event id: auto generated 
+    * Card id: reference to cards
+    * Title 
+    * Description 
+    * location 
+    * Start date (date only)
+    * End date (date only)
+    * Organiser 
+    * Source link : url
+    * Source screenshot url: store the screenshot as proof its posted 
+	* Source remarks: free text
+* Table: event_schedules 
+    * Event schedule id: auto generated 
+    * Event id: reference to events table
+	* Event Date: the actual day of the event (means one event could have multipl records here)
+    * Start time (time only) 
+    * End time (time only) 
+* Table: event_programs 
+    * Event program id: auto generated 
+    * Event schedule id: reference to event schedules table
+	* Title ( Singing competition at KCH food fest, happens only at 10 June. starting from 7pm until 10pm, where KCH food fest starts from 5PM until 11PM )
+	* Description 
+    * Start time (time only) 
+    * End time (time only) 
+    * Organiser 
+	* Photo url: if there are any poster related only to that single program, can use it here
+    * Source link : some events are promoted seperately for each program, can put it here.
+    * Source type: fb/newspaper
+    * Source screenshot url: store the screenshot as proof its posted 
+* Table: photos (can be use by any card type, for example, event photos, registration photos etc)
+    * Photo id: auto generated 
+    * Card id: reference to cards
+    * Photo URL 
+    * Title
+    * Description: optional 
+    * Location 
+    * Captured date
+    * Captured by
+* Table: positive_messages
+    * Greeting Id:auto generated
+    * Card id: reference to cards 
+    * Description 
+* Table: positive_messages
+    * Greeting Id:auto generated
+    * Card id: reference to cards 
+    * Description 
+* Table: translates
+    * Card id: reference to cards
+    * Language: ch/bm
+    * Field name
+    * Translated text
+* Table: card visit stat
+    * Card id: reference to cards
+    * stat_date
+    * stat_hour
+    * view_count
+    * click_count
+
+Note: All table should auto includes created date, created by, updated date, updated by
+

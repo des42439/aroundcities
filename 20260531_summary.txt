@@ -1,0 +1,573 @@
+Welcome back. 😄
+
+Honestly, I think the biggest thing that happened during your vacation wasn't a technical decision. It was that **AroundCities' identity became much clearer.**
+
+A week ago we were mostly discussing:
+
+* event extraction
+* Facebook scraping
+* automation
+* database structure
+
+During the vacation, the discussion evolved into:
+
+* user retention
+* homepage experience
+* content freshness
+* trust
+* photography
+* local community
+
+Those are product decisions, and they're much more important.
+
+---
+
+# 1. AroundCities Is No Longer Just An Event Site
+
+The biggest shift.
+
+Originally:
+
+```txt
+AroundCities = Event Listing Website
+```
+
+Now:
+
+```txt
+AroundCities = A Living Digital Layer Of Kuching
+```
+
+Potential content:
+
+* Events
+* Food
+* Atmosphere photos
+* Event photos
+* Positive messages
+* Future local creators
+
+The goal became:
+
+> Make Kuching feel alive.
+
+---
+
+# 2. Homepage Should Be Card-Based
+
+This was probably the most important architecture decision.
+
+Instead of:
+
+```txt
+Events
+Photos
+Greetings
+Food
+```
+
+all being separate systems,
+
+everything becomes:
+
+```txt
+Cards
+```
+
+Homepage displays cards.
+
+Cards can represent:
+
+```txt
+event
+photo
+food
+registration
+positive_message
+```
+
+This greatly simplifies homepage rendering.
+
+---
+
+# 3. Current Database Direction
+
+Current proposed schema:
+
+## cards
+
+```txt
+id
+type
+status
+parent_id
+photo_url
+```
+
+Future standard fields:
+
+```txt
+created_at
+created_by
+updated_at
+updated_by
+```
+
+---
+
+## events
+
+```txt
+event_id
+card_id
+title
+description
+location
+start_date
+end_date
+start_time
+end_time
+organiser
+source_link
+source_type
+source_screenshot_url
+```
+
+---
+
+## photos
+
+```txt
+photo_id
+card_id
+photo_url
+title
+description
+album
+location
+captured_date
+captured_by
+```
+
+---
+
+## positive_messages
+
+```txt
+message_id
+card_id
+description
+```
+
+---
+
+## translations
+
+```txt
+card_id
+language
+field_name
+translated_text
+```
+
+---
+
+## card_stats
+
+(Currently called card visit stat)
+
+```txt
+card_id
+visit_date
+visit_hour
+visit_count
+```
+
+Potential future:
+
+```txt
+card_id
+stat_date
+stat_hour
+view_count
+click_count
+```
+
+---
+
+# 4. User Visit Tracking
+
+Important conclusion:
+
+Don't build:
+
+```txt
+user_visits
+```
+
+yet.
+
+Instead:
+
+### Use Vercel Analytics
+
+For:
+
+* visitors
+* page views
+* peak traffic times
+* devices
+* countries
+
+---
+
+### Use card_stats
+
+For:
+
+* card popularity
+* hourly trends
+* content performance
+
+Example:
+
+```txt
+Food Festival
+
+7pm  = 80 views
+8pm  = 200 views
+9pm  = 140 views
+```
+
+---
+
+# 5. Homepage Freshness Strategy
+
+Problem:
+
+Users revisit homepage.
+
+You don't want them to always see:
+
+```txt
+Greeting
+Summary
+Same content
+```
+
+Solution discussed:
+
+Use localStorage.
+
+Example:
+
+```json
+{
+  "card_123": "2026-05-31T09:00"
+}
+```
+
+Then:
+
+* Seen recently → lower priority
+* Unseen → higher priority
+
+No database required.
+
+---
+
+# 6. Atmosphere Photos vs Event Photos
+
+This was a major product discussion.
+
+## Atmosphere Photos
+
+Purpose:
+
+* city mood
+* scenery
+* identity
+
+Examples:
+
+* waterfront sunset
+* rainy street
+* skyline
+
+These are evergreen.
+
+---
+
+## Event Photos
+
+Purpose:
+
+* live city activity
+* freshness
+* "happening now"
+
+Examples:
+
+* parade crowd
+* food festival
+* concert
+
+These are tied to events.
+
+---
+
+Eventually:
+
+```txt
+Event
+ ├─ Event Photo
+ ├─ Event Photo
+ ├─ Event Photo
+```
+
+using:
+
+```txt
+parent_id
+```
+
+---
+
+# 7. Community Photographer Vision
+
+Interesting future direction.
+
+Initially:
+
+```txt
+You are the photographer.
+```
+
+Later:
+
+Invite amateur photographers.
+
+Workflow:
+
+```txt
+Photographer submits photo
+You review
+You feature selected photos
+```
+
+Not open uploads.
+
+Curated submissions.
+
+---
+
+Photo card includes:
+
+```txt
+Photo by John Tan
+Instagram
+Contact Link
+```
+
+Potentially creating opportunities for:
+
+* wedding photography
+* freelance work
+* exposure
+
+---
+
+# 8. Food Discovery
+
+We agreed:
+
+Not now.
+
+But future:
+
+```txt
+cards.type = food
+```
+
+fits perfectly into current architecture.
+
+---
+
+Important observation:
+
+Food content gives:
+
+* daily relevance
+* repeat visits
+* lunch-time traffic
+
+Much more than events.
+
+---
+
+# 9. Mobile App Strategy
+
+Important conclusion:
+
+Don't build native apps now.
+
+---
+
+Current path:
+
+```txt
+Responsive Website
+    ↓
+PWA
+    ↓
+Wrapped App
+```
+
+---
+
+Why?
+
+You correctly pointed out:
+
+> Users trust App Store more than manual PWA installation.
+
+This is true.
+
+Long term:
+
+```txt
+Web
++
+Capacitor wrapper
+```
+
+is probably enough.
+
+No separate Swift/Kotlin development.
+
+---
+
+# 10. Offline Usage
+
+Your reason for wanting apps:
+
+```txt
+Offline access
+```
+
+Discussion conclusion:
+
+PWA caching may already solve most of this.
+
+Example:
+
+```txt
+Latest feed cached
+Latest events cached
+Latest photos cached
+```
+
+User loses internet:
+
+```txt
+Still browse recent content
+```
+
+---
+
+# 11. Event Schedule Discovery
+
+This was probably the biggest database insight.
+
+Problem:
+
+```txt
+Food Fair
+
+Friday   5pm-10pm
+Saturday 12pm-10pm
+Sunday   12pm-10pm
+```
+
+Current event table struggles.
+
+---
+
+Possible future design:
+
+## events
+
+```txt
+title
+description
+location
+organiser
+```
+
+---
+
+## event_schedules
+
+```txt
+event_id
+event_date
+start_time
+end_time
+```
+
+Avoids duplicating:
+
+* title
+* description
+* organiser
+* location
+
+---
+
+This is still an open design decision.
+
+---
+
+# 12. Content Policy Discovery
+
+The TVS Gawai poster exposed another important realization.
+
+Not everything from Facebook should become an event.
+
+You need editorial judgment.
+
+Question:
+
+> Would a Kuching resident appreciate seeing this?
+
+If yes:
+
+Feature it.
+
+If not:
+
+Ignore it.
+
+This is probably going to become more important than database design.
+
+---
+
+# Biggest Takeaway
+
+The strongest idea that emerged during your vacation was:
+
+> AroundCities should not feel like an event database.
+
+It should feel like:
+
+> A local person paying attention to what is happening in Kuching and sharing it through cards.
+
+Everything we discussed—photos, event moments, greetings, food, homepage behavior, community photographers—supports that vision.
+
+If I were sitting at your workstation today, I would start with only three things:
+
+1. Finalize the card-centric database structure.
+2. Build the homepage card feed.
+3. Build event creation and photo creation workflows.
+
+Everything else can evolve from there.

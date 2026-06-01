@@ -1,42 +1,54 @@
-type Event = {
-  id: string;
-  title: string;
-  venue: string;
-  start_time: string;
-  image_url?: string;
+import Link from "next/link";
+import { Event } from "@/types/database";
+
+type Props = {
+  event: Event;
+  href?: string;
 };
 
 export default function EventCard({
   event,
-}: {
-  event: Event;
-}) {
-  return (
-    <div className="border rounded-2xl overflow-hidden shadow-sm bg-white">
+  href,
+}: Props) {
+  const content = (
+    <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5 transition hover:border-neutral-700">
+      <div className="mb-3 flex items-center justify-between">
+        <span
+          className={`rounded-full px-2 py-1 text-xs font-medium ${
+            event.status === "active"
+              ? "bg-green-900 text-green-300"
+              : "bg-neutral-800 text-neutral-400"
+          }`}
+        >
+          {event.status}
+        </span>
+      </div>
 
-      {event.image_url && (
-        <img
-          src={event.image_url}
-          alt={event.title}
-          className="w-full h-56 object-cover"
-        />
+      <h3 className="mb-2 text-lg font-semibold">
+        {event.title}
+      </h3>
+
+      {event.location && (
+        <p className="mb-2 text-sm text-neutral-400">
+          📍 {event.location}
+        </p>
       )}
 
-      <div className="p-5">
-
-        <h2 className="text-2xl font-bold mb-2">
-          {event.title}
-        </h2>
-
-        <p className="text-gray-600 mb-2">
-          {event.venue}
+      {event.description && (
+        <p className="line-clamp-3 text-sm text-neutral-300">
+          {event.description}
         </p>
-
-        <p className="text-sm text-gray-500">
-          {new Date(event.start_time).toLocaleString()}
-        </p>
-
-      </div>
+      )}
     </div>
+  );
+
+  if (!href) {
+    return content;
+  }
+
+  return (
+    <Link href={href}>
+      {content}
+    </Link>
   );
 }

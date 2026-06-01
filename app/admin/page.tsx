@@ -1,66 +1,46 @@
 import Link from "next/link";
+import AdminLayout from "@/components/AdminLayout";
 
-export default function AdminDashboardPage() {
+export default function AdminPage() {
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-10">
-          <h1 className="text-4xl font-bold">
-            AroundCities Admin
-          </h1>
+    <AdminLayout title="Admin">
+      <div className="grid gap-6 md:grid-cols-3">
+        <Link
+          href="/admin/import-events"
+          className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 hover:border-neutral-700"
+        >
+          <h2 className="mb-2 text-xl font-semibold">
+            Import Events
+          </h2>
 
-          <p className="text-zinc-400 mt-3">
-            Event operations and moderation dashboard
+          <p className="text-neutral-400">
+            Import event JSON into the database.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/content"
+          className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 hover:border-neutral-700"
+        >
+          <h2 className="mb-2 text-xl font-semibold">
+            Manage Content
+          </h2>
+
+          <p className="text-neutral-400">
+            View and manage events.
+          </p>
+        </Link>
+
+        <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+          <h2 className="mb-2 text-xl font-semibold">
+            Coming Soon
+          </h2>
+
+          <p className="text-neutral-400">
+            Photos, Holidays and Positive Messages.
           </p>
         </div>
-
-        <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-          <Link
-            href="/admin/draft-events"
-            className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 hover:border-zinc-600 transition"
-          >
-            <div className="text-4xl mb-4">📝</div>
-
-            <h2 className="text-2xl font-semibold">
-              Draft Events
-            </h2>
-
-            <p className="text-zinc-400 mt-3">
-              Review AI-detected event candidates
-            </p>
-          </Link>
-
-          <Link
-            href="/admin/draft-events/import"
-            className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 hover:border-zinc-600 transition"
-          >
-            <div className="text-4xl mb-4">📥</div>
-
-            <h2 className="text-2xl font-semibold">
-              Import JSON
-            </h2>
-
-            <p className="text-zinc-400 mt-3">
-              Batch import AI-generated draft events
-            </p>
-          </Link>
-
-          <Link
-            href="/admin/events"
-            className="bg-zinc-900 border border-zinc-800 rounded-3xl p-6 hover:border-zinc-600 transition"
-          >
-            <div className="text-4xl mb-4">🎉</div>
-
-            <h2 className="text-2xl font-semibold">
-              Public Events
-            </h2>
-
-            <p className="text-zinc-400 mt-3">
-              Manage published public events
-            </p>
-          </Link>
-        </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 }

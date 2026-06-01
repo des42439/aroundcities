@@ -1,0 +1,30 @@
+admin page
+	- Import Events by JSON (asking chatgpt to generate list of events based on newspaper ad or facebook events i screenshot), all event created by import will be default to inactive status. 
+	- Add Photo Cards (a standalone photo upload page, easier to design and develop, one upload, one photo card ) 
+	- Manage Existing Cards (contains two tabs, one is event, one is photo, this is the place we can edit all the existing data
+
+user page 
+	- if never chosen, show a very small card that let user choose English, Chinese or BM, if user already chosen (exists in sessions/cookies) then dont show this. 
+	- Greetings Message
+		+ check current time, if is morning, said good morning or good afternoon, etc. ==> currently we dont have anything that can query from our db for this, should we hardcoded it? because it needs to be translated by user preference. 
+		+ check holiday, if it's a festival holiday, say happy holiday or happy gawai, etc
+		+ grab one positive message, so it could be like:
+			* Good morning and selamat hari gawai! Today is a wonderful day, hope you are doing well. 
+		+ show a randomly selected kuching photos 
+	- Event Summary for today 
+		+ query today events, show something like:
+			* Kuching Today (31 May 2026):
+			*  - KCH Food Festival 2026
+			*    + Program 1: Lion dance (6-8pm) ==> if user open the page after 8pm, dont show this)
+			*    + Program 2: Singing Competitio (8-10pm)
+			*  - KCH Maraton - Open for registration 
+	- Event photos from today 
+	- Event card (randomly selected if more than one today)
+		+ show one of the event photo taken from today (if any), else show to event promo photo.
+	- Registration card ( randomly selected if more than one today)
+	- Random selected scenary photo of Kuching
+	- Event card (randomly selected if more than one today)
+	- Registration card ( randomly selected if more than one today)
+	- Random selected scenary photo of Kuching
+	- Upcoming Event card 
+	
