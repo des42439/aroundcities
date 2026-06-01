@@ -3,6 +3,8 @@ import AdminLayout from "@/components/AdminLayout";
 import { getPhotos } from "@/lib/photos";
 import { formatDate } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 export default async function PhotosPage() {
   const photos = await getPhotos();
 

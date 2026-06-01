@@ -4,6 +4,8 @@ import GreetingBanner from "@/components/GreetingBanner";
 import { getActiveEvents } from "@/lib/events";
 import { getHomepageData } from "@/lib/homepage";
 
+export const dynamic = "force-dynamic";
+
 export default async function KuchingPage() {
   const [
     homepage,
