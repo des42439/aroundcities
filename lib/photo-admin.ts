@@ -4,8 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { supabase } from "./supabase";
 
-export async function updatePhoto(
-  formData: FormData
+async function savePhoto(
+  formData: FormData,
+  forceStatus?: string
 ) {
   const photo_id =
     formData.get("photo_id")?.toString() ?? "";
@@ -26,15 +27,16 @@ export async function updatePhoto(
     formData.get("longitude")?.toString() || null;
 
   const captured_date =
-    formData.get("captured_date")?.toString() ||
+    formData.get("captured_date")?.toString() ??
     null;
 
   const captured_by =
-    formData.get("captured_by")?.toString() ??
-    "";
+    formData.get("captured_by")?.toString() ?? "";
 
   const status =
-    formData.get("status")?.toString() ?? "";
+    forceStatus ??
+    formData.get("status")?.toString() ??
+    "";
 
   const photo_type =
     formData.get("photo_type")?.toString() ?? "";
@@ -63,6 +65,23 @@ export async function updatePhoto(
 
   revalidatePath("/admin/photos");
   revalidatePath(`/photo/${photo_id}`);
+}
+
+export async function updatePhoto(
+  formData: FormData
+) {
+  await savePhoto(formData);
+
+  redirect("/admin/photos?saved=1");
+}
+
+export async function publishPhoto(
+  formData: FormData
+) {
+  await savePhoto(
+    formData,
+    "active"
+  );
 
   redirect("/admin/photos?saved=1");
 }
