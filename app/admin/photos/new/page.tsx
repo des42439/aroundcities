@@ -29,6 +29,9 @@ useState("active");
 const [file, setFile] =
 useState<File | null>(null);
 
+const [exifInfo, setExifInfo] =
+useState("");
+
 async function handleSubmit(
 e: React.FormEvent
 ) {
@@ -92,20 +95,15 @@ try {
         status,
         photo_type: "photo",
         photo_url: photoUrl,
-
         title:
           title.trim() || null,
-
         description:
           description.trim() ||
           null,
-
         location:
           location.trim() || null,
-
         captured_date:
           capturedDate || null,
-
         captured_by:
           capturedBy.trim() ||
           null,
@@ -135,10 +133,14 @@ try {
 return ( <AdminLayout title="Upload Photo"> <form
      onSubmit={handleSubmit}
      className="w-full space-y-6"
-   > <div className="w-full rounded-2xl border border-neutral-800 bg-neutral-900 p-4 md:p-6"> <div className="space-y-6"> <div> <label className="mb-2 block font-medium">
-Photo </label>
+   > <div className="w-full rounded-2xl border border-neutral-800 bg-neutral-900 p-4 md:p-6"> <div className="space-y-6">
 
 ```
+        <div>
+          <label className="mb-2 block font-medium">
+            Photo
+          </label>
+
           <input
             type="file"
             accept="image/*"
@@ -159,26 +161,30 @@ Photo </label>
                   await exifr.parse(
                     selectedFile
                   );
-				  console.log("EXIF DATA");
-				console.log(exif);
 
-				if (exif?.latitude && exif?.longitude) {
-				  setLocation(
-					`${exif.latitude}, ${exif.longitude}`
-				  );
-				}
+                setExifInfo(
+                  JSON.stringify(
+                    exif,
+                    null,
+                    2
+                  )
+                );
 
-				alert(
-				  `DateTimeOriginal: ${exif?.DateTimeOriginal}
+                console.log(
+                  "EXIF DATA"
+                );
+                console.log(
+                  exif
+                );
 
-				Latitude: ${exif?.latitude}
-
-				Longitude: ${exif?.longitude}
-
-				Make: ${exif?.Make}
-
-				Model: ${exif?.Model}`
-				);
+                if (
+                  exif?.latitude &&
+                  exif?.longitude
+                ) {
+                  setLocation(
+                    `${exif.latitude}, ${exif.longitude}`
+                  );
+                }
 
                 const dateTaken =
                   exif?.DateTimeOriginal ||
@@ -203,10 +209,23 @@ Photo </label>
                     formattedDate
                   );
                 }
+
+                if (
+                  !title &&
+                  selectedFile.name
+                ) {
+                  setTitle(
+                    selectedFile.name
+                      .replace(
+                        /\.[^/.]+$/,
+                        ""
+                      )
+                  );
+                }
               } catch (
                 error
               ) {
-                alert(
+                setExifInfo(
                   "EXIF ERROR:\n\n" +
                     String(
                       error
@@ -221,6 +240,18 @@ Photo </label>
             }}
           />
         </div>
+
+        {exifInfo && (
+          <div className="rounded-lg border border-neutral-700 bg-neutral-950 p-3">
+            <div className="mb-2 font-medium">
+              EXIF Debug
+            </div>
+
+            <pre className="max-h-96 overflow-auto whitespace-pre-wrap text-xs">
+              {exifInfo}
+            </pre>
+          </div>
+        )}
 
         <div>
           <label className="mb-2 block font-medium">
@@ -333,6 +364,7 @@ Photo </label>
             </option>
           </select>
         </div>
+
       </div>
     </div>
 
