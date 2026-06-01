@@ -26,7 +26,11 @@ export async function getHomepageData() {
     positiveMessage,
     featuredEvent,
     photo,
-    latestPhotos: latestPhotos.slice(0, 6),
+
+    // Return ALL photos.
+    // Randomization and display limits are handled in app/kch/page.tsx
+    latestPhotos,
+
     greeting: getTimeGreeting(),
   };
 }

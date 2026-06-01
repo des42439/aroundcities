@@ -158,10 +158,8 @@ export default function NewPhotoPage() {
           new Date(dateTaken);
 
         setCapturedDate(
-          date
-            .toISOString()
-            .split("T")[0]
-        );
+		  date.toISOString()
+		);
       }
 
       if (
@@ -280,13 +278,21 @@ export default function NewPhotoPage() {
               </label>
 
               <input
-                type="date"
-                value={capturedDate}
-                onChange={(e) =>
-                  setCapturedDate(
-                    e.target.value
-                  )
-                }
+				  type="datetime-local"
+				  value={
+					capturedDate
+					  ? new Date(capturedDate)
+						  .toISOString()
+						  .slice(0, 16)
+					  : ""
+				  }
+				  onChange={(e) =>
+					setCapturedDate(
+					  new Date(
+						e.target.value
+					  ).toISOString()
+					)
+				  }
                 className="w-full rounded-lg border border-neutral-700 bg-neutral-950 p-3"
               />
             </div>

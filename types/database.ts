@@ -107,6 +107,8 @@ export interface Photo {
   title: string | null;
   description: string | null;
 
+  latitude: number | null;
+  longitude: number | null;
   location: string | null;
 
   captured_date: string | null;

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import CityPageLayout from "@/components/CityPageLayout";
 import EventCard from "@/components/EventCard";
 import GreetingBanner from "@/components/GreetingBanner";
@@ -20,7 +21,6 @@ export default async function KuchingPage() {
     homepage.holiday?.greeting_message_3 ??
     null;
 
-  // Randomize photos every page load
   const shuffledPhotos = homepage.latestPhotos?.length
     ? [...homepage.latestPhotos]
         .sort(() => Math.random() - 0.5)
@@ -40,6 +40,15 @@ export default async function KuchingPage() {
             positiveMessage={
               homepage.positiveMessage?.description
             }
+            heroPhotoUrl={
+              homepage.photo?.photo_url
+            }
+            heroPhotoTitle={
+              homepage.photo?.title
+            }
+            heroPhotoDescription={
+              homepage.photo?.description
+            }
           />
 
           <section>
@@ -50,32 +59,38 @@ export default async function KuchingPage() {
             {shuffledPhotos.length ? (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {shuffledPhotos.map((photo) => (
-                  <div
+                  <Link
                     key={photo.photo_id}
-                    className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900"
+                    href={`/photo/${photo.photo_id}`}
+                    className="block overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900 transition hover:border-neutral-600 hover:shadow-lg"
                   >
-                    <div className="aspect-[4/3] bg-neutral-800">
-                      <img
-                        src={photo.photo_url}
-                        alt={photo.title ?? "Kuching"}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
+                    <div className="bg-black">
+					  <img
+						src={photo.photo_url}
+						alt={photo.title ?? "Kuching"}
+						className="w-full object-contain"
+						loading="lazy"
+					  />
+					</div>
 
                     <div className="p-4">
                       <h3 className="font-semibold">
                         {photo.title ?? "Untitled"}
                       </h3>
 
-                      {(photo.location ||
-                        photo.description) && (
-                        <p className="mt-2 text-sm text-neutral-400">
-                          {photo.location ??
-                            photo.description}
+                      {photo.description && (
+                        <p className="mt-2 text-sm text-neutral-300">
+                          {photo.description}
                         </p>
                       )}
+
+                      {photo.location && (
+                        <div className="mt-3 text-sm text-neutral-400">
+                          📍 {photo.location}
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (

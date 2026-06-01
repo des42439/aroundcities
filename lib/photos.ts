@@ -90,3 +90,35 @@ export async function getRandomAtmospherePhoto(): Promise<Photo | null> {
 
   return data[randomIndex] as Photo;
 }
+
+export async function getPhotoNavigation(
+  photoId: string
+): Promise<{
+  previousPhoto: Photo | null;
+  nextPhoto: Photo | null;
+}> {
+  const photos = await getActivePhotos();
+
+  const index = photos.findIndex(
+    (photo) => photo.photo_id === photoId
+  );
+
+  if (index === -1) {
+    return {
+      previousPhoto: null,
+      nextPhoto: null,
+    };
+  }
+
+  return {
+    previousPhoto:
+      index > 0
+        ? photos[index - 1]
+        : null,
+
+    nextPhoto:
+      index < photos.length - 1
+        ? photos[index + 1]
+        : null,
+  };
+}
