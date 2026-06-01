@@ -19,6 +19,12 @@ export default function NewPhotoPage() {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
 
+  const [latitude, setLatitude] =
+    useState<number | null>(null);
+
+  const [longitude, setLongitude] =
+    useState<number | null>(null);
+
   const [capturedDate, setCapturedDate] = useState("");
   const [capturedBy, setCapturedBy] = useState("Admin");
   const [status, setStatus] = useState("active");
@@ -49,9 +55,11 @@ export default function NewPhotoPage() {
         compressedFile.name.split(".").pop() ||
         "jpg";
 
-      const fileName = `${Date.now()}.${extension}`;
+      const fileName =
+        Date.now() + "." + extension;
 
-      const filePath = `photos/${fileName}`;
+      const filePath =
+        "photos/" + fileName;
 
       const uploadResult =
         await supabase.storage
@@ -76,12 +84,22 @@ export default function NewPhotoPage() {
           status,
           photo_type: "photo",
           photo_url: photoUrl,
-          title: title.trim() || null,
+
+          title:
+            title.trim() || null,
+
           description:
             description.trim() || null,
-          location: location.trim() || null,
+
+          location:
+            location.trim() || null,
+
+          latitude,
+          longitude,
+
           captured_date:
             capturedDate || null,
+
           captured_by:
             capturedBy.trim() || null,
         });
@@ -144,8 +162,13 @@ export default function NewPhotoPage() {
         exif?.latitude &&
         exif?.longitude
       ) {
+        setLatitude(exif.latitude);
+        setLongitude(exif.longitude);
+
         setLocation(
-          `${exif.latitude}, ${exif.longitude}`
+          exif.latitude +
+            ", " +
+            exif.longitude
         );
       }
 
@@ -242,6 +265,12 @@ export default function NewPhotoPage() {
                 }
                 className="w-full rounded-lg border border-neutral-700 bg-neutral-950 p-3"
               />
+
+              {latitude && longitude && (
+                <div className="mt-2 text-sm text-neutral-400">
+                  GPS: {latitude}, {longitude}
+                </div>
+              )}
             </div>
 
             <div>
