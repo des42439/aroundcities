@@ -21,8 +21,13 @@ export default async function KuchingPage() {
     homepage.holiday?.greeting_message_3 ??
     null;
 
+  const heroPhotoId = homepage.photo?.photo_id;
+
   const shuffledPhotos = homepage.latestPhotos?.length
-    ? [...homepage.latestPhotos]
+    ? homepage.latestPhotos
+        .filter(
+          (photo) => photo.photo_id !== heroPhotoId
+        )
         .sort(() => Math.random() - 0.5)
         .slice(0, MAX_PHOTOS)
     : [];
