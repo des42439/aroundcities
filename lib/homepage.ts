@@ -1,7 +1,10 @@
 import { Event, PositiveMessage } from "@/types/database";
 import { supabase } from "./supabase";
 import { getTodayHoliday } from "./holidays";
-import { getRandomAtmospherePhoto } from "./photos";
+import {
+  getRandomAtmospherePhoto,
+  getPhotos,
+} from "./photos";
 
 export async function getHomepageData() {
   const [
@@ -9,11 +12,13 @@ export async function getHomepageData() {
     positiveMessage,
     featuredEvent,
     photo,
+    latestPhotos,
   ] = await Promise.all([
     getTodayHoliday(),
     getRandomPositiveMessage(),
     getFeaturedEvent(),
     getRandomAtmospherePhoto(),
+    getPhotos(),
   ]);
 
   return {
@@ -21,6 +26,7 @@ export async function getHomepageData() {
     positiveMessage,
     featuredEvent,
     photo,
+    latestPhotos: latestPhotos.slice(0, 6),
     greeting: getTimeGreeting(),
   };
 }

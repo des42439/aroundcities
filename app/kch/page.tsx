@@ -26,7 +26,7 @@ export default async function KuchingPage() {
       cityCode="kch"
       cityName="Kuching"
     >
-      <div className="mx-auto max-w-7xl px-6 py-8">
+      <div className="mx-auto max-w-7xl px-4 py-8 md:px-6">
         <div className="space-y-8">
           <GreetingBanner
             greeting={homepage.greeting}
@@ -36,33 +36,54 @@ export default async function KuchingPage() {
             }
           />
 
-          {homepage.photo && (
-            <section className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
-              <div className="aspect-[16/9] bg-neutral-800">
-                <img
-                  src={homepage.photo.photo_url}
-                  alt={
-                    homepage.photo.title ??
-                    "Kuching"
-                  }
-                  className="h-full w-full object-cover"
-                />
-              </div>
+          <section>
+            <h2 className="mb-4 text-2xl font-bold">
+              Latest Photos
+            </h2>
 
-              <div className="p-5">
-                <h2 className="text-xl font-semibold">
-                  {homepage.photo.title ??
-                    "Kuching Today"}
-                </h2>
+            {homepage.latestPhotos?.length ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {homepage.latestPhotos.map(
+                  (photo) => (
+                    <div
+                      key={photo.photo_id}
+                      className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900"
+                    >
+                      <div className="aspect-[4/3] bg-neutral-800">
+                        <img
+                          src={photo.photo_url}
+                          alt={
+                            photo.title ??
+                            "Kuching"
+                          }
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
 
-                {homepage.photo.description && (
-                  <p className="mt-2 text-neutral-400">
-                    {homepage.photo.description}
-                  </p>
+                      <div className="p-4">
+                        <h3 className="font-semibold">
+                          {photo.title ??
+                            "Untitled"}
+                        </h3>
+
+                        {(photo.location ||
+                          photo.description) && (
+                          <p className="mt-2 text-sm text-neutral-400">
+                            {photo.location ??
+                              photo.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )
                 )}
               </div>
-            </section>
-          )}
+            ) : (
+              <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+                No photos found.
+              </div>
+            )}
+          </section>
 
           {homepage.featuredEvent && (
             <section>
