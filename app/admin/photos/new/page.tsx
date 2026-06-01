@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import imageCompression from "browser-image-compression";
+import exifr from "exifr";
 import AdminLayout from "@/components/AdminLayout";
 import { supabase } from "@/lib/supabase";
 
@@ -15,7 +16,7 @@ export default function NewPhotoPage() {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [capturedDate, setCapturedDate] = useState("");
-  const [capturedBy, setCapturedBy] = useState("");
+  const [capturedBy, setCapturedBy] = useState("Admin");
 
   const [status, setStatus] = useState("active");
 
@@ -135,12 +136,46 @@ export default function NewPhotoPage() {
 				<input
 				  type="file"
 				  accept="image/*"
-				  onChange={(e) =>
-					setFile(
-					  e.target.files?.[0] ??
-						null
-					)
-				  }
+				  onChange={async (e) => {
+					const selectedFile =
+					  e.target.files?.[0] ?? null;
+
+					setFile(selectedFile);
+
+					if (!selectedFile) {
+					  return;
+					}
+
+					try {
+					  const exif =
+						await exifr.parse(
+						  selectedFile
+						);
+
+					  const dateTaken =
+						exif?.DateTimeOriginal ||
+						exif?.CreateDate;
+
+					  if (dateTaken) {
+						const date =
+						  new Date(dateTaken);
+
+						const formattedDate =
+						  date
+							.toISOString()
+							.split("T")[0];
+
+						setCapturedDate(
+						  formattedDate
+						);
+					  }
+					} catch (error) {
+					  console.error(
+						"EXIF read failed:",
+						error
+					  );
+					}
+				  }}
 				/>
             </div>
 
