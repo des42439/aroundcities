@@ -3,7 +3,7 @@ import { supabase } from "./supabase";
 import { getTodayHoliday } from "./holidays";
 import {
   getRandomAtmospherePhoto,
-  getPhotos,
+  getActivePhotos,
 } from "./photos";
 
 export async function getHomepageData() {
@@ -18,7 +18,7 @@ export async function getHomepageData() {
     getRandomPositiveMessage(),
     getFeaturedEvent(),
     getRandomAtmospherePhoto(),
-    getPhotos(),
+    getActivePhotos(),
   ]);
 
   return {
@@ -27,8 +27,7 @@ export async function getHomepageData() {
     featuredEvent,
     photo,
 
-    // Return ALL photos.
-    // Randomization and display limits are handled in app/kch/page.tsx
+    // Active photos only
     latestPhotos,
 
     greeting: getTimeGreeting(),
