@@ -1,5 +1,7 @@
 import Link from "next/link";
 import CityPageLayout from "@/components/CityPageLayout";
+import ShareButton from "@/components/ShareButton";
+
 import {
   getPhoto,
   getPhotoNavigation,
@@ -18,7 +20,10 @@ export default async function PhotoPage({
 
   const photo = await getPhoto(photoId);
 
-  if (!photo) {
+  if (
+    !photo ||
+    photo.status !== "active"
+  ) {
     return (
       <CityPageLayout
         cityCode="kch"
@@ -49,7 +54,9 @@ export default async function PhotoPage({
   const {
     previousPhoto,
     nextPhoto,
-  } = await getPhotoNavigation(photoId);
+  } = await getPhotoNavigation(
+    photoId
+  );
 
   return (
     <CityPageLayout
@@ -60,18 +67,23 @@ export default async function PhotoPage({
         <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
           <img
             src={photo.photo_url}
-            alt={photo.title ?? "Photo"}
+            alt={
+              photo.title ?? "Photo"
+            }
             className="w-full"
           />
 
           <div className="space-y-4 p-6">
             <h1 className="text-3xl font-bold">
-              {photo.title ?? "Untitled"}
+              {photo.title ??
+                "Untitled"}
             </h1>
 
             {photo.description && (
               <p className="text-neutral-300">
-                {photo.description}
+                {
+                  photo.description
+                }
               </p>
             )}
 
@@ -83,21 +95,30 @@ export default async function PhotoPage({
 
             {photo.captured_date && (
               <div className="text-neutral-400">
-                📅 {photo.captured_date}
+                📅{" "}
+                {
+                  photo.captured_date
+                }
               </div>
             )}
 
             {photo.captured_by && (
               <div className="text-neutral-400">
-                👤 {photo.captured_by}
+                👤{" "}
+                {
+                  photo.captured_by
+                }
               </div>
             )}
 
             {photo.latitude &&
               photo.longitude && (
                 <div className="text-sm text-neutral-500">
-                  GPS: {photo.latitude},{" "}
-                  {photo.longitude}
+                  GPS:{" "}
+                  {photo.latitude},{" "}
+                  {
+                    photo.longitude
+                  }
                 </div>
               )}
 
@@ -109,18 +130,27 @@ export default async function PhotoPage({
                       href={`/photo/${previousPhoto.photo_id}`}
                       className="inline-block rounded-lg border border-neutral-700 px-4 py-2 hover:bg-neutral-800"
                     >
-                      ← Previous Photo
+                      ← Previous
+                      Photo
                     </Link>
                   )}
                 </div>
 
-                <div>
+                <div className="flex items-center gap-3">
                   <Link
                     href="/kch"
                     className="inline-block rounded-lg bg-blue-600 px-4 py-2"
                   >
-                    Back to Kuching
+                    Back to
+                    Kuching
                   </Link>
+
+                  <ShareButton
+                    title={
+                      photo.title ??
+                      "AroundCities Photo"
+                    }
+                  />
                 </div>
 
                 <div className="text-right">
