@@ -102,7 +102,7 @@ export default function FeedForm({
             <div className="grid gap-2 md:grid-cols-2">
               {places.length === 0 ? (
                 <p className="text-sm text-neutral-500">
-                  Create places before assigning them.
+                  Add a place below before assigning it.
                 </p>
               ) : (
                 places.map((place) => (

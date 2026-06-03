@@ -154,6 +154,31 @@ export async function createPlaceAction(
   redirect("/admin/places");
 }
 
+export async function createPlaceForFeedAction(
+  feedId: string,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  const name = requiredString(formData, "name");
+  const slug =
+    nullableString(formData.get("slug")) ??
+    slugify(name);
+
+  await createPlace({
+    name,
+    slug,
+    description: nullableString(
+      formData.get("description")
+    ),
+    latitude: null,
+    longitude: null,
+  });
+
+  revalidatePath(`/admin/feeds/${feedId}`);
+  redirect(`/admin/feeds/${feedId}`);
+}
+
 export async function updatePlaceAction(
   placeId: string,
   formData: FormData

@@ -2,6 +2,7 @@ import Link from "next/link";
 import AdminShell from "@/components/AdminShell";
 import DeleteFeedForm from "@/components/DeleteFeedForm";
 import FeedForm from "@/components/FeedForm";
+import InlinePlaceCreateForm from "@/components/InlinePlaceCreateForm";
 import PhotoManager from "@/components/PhotoManager";
 import { updateFeedAction } from "@/lib/admin-actions";
 import { requireAdmin } from "@/lib/admin-auth";
@@ -58,6 +59,8 @@ export default async function EditFeedPage({
           places={places}
           action={action}
         />
+
+        <InlinePlaceCreateForm feedId={feed.feed_id} />
 
         <PhotoManager
           feedId={feed.feed_id}

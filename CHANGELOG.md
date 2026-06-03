@@ -29,6 +29,7 @@ All notable changes to AroundCities should be documented here.
 - Moved slug, tags, source URL, place assignment, and publishing into feed post-processing.
 - Added delete feed support on the feed edit page with confirmation.
 - Added admin form loading/progress states for save, publish, upload, photo update, and delete actions.
+- Added inline place creation from the feed editor.
 - Added `AGENTS.md` as the agent working guide for product direction, engineering preferences, current architecture, and documentation maintenance.
 - Added `PROJECT_SUMMARY.md` with the current V2 direction, Phase 1 scope, planned routes, admin direction, and architecture source.
 - Added `CHANGELOG.md` to track future project changes.
@@ -43,6 +44,7 @@ All notable changes to AroundCities should be documented here.
 - Updated metadata and sitemap to remove old photo/event assumptions.
 - Removed unused V1 photo upload dependencies and external Google font loading so the foundation builds cleanly without network access.
 - Updated the sitemap to include `/kch`.
+- Removed Places from the main admin navigation and dashboard while keeping place routes available directly as maintenance routes.
 
 ### Notes
 

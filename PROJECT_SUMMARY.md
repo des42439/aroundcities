@@ -43,9 +43,9 @@ Admin should be optimized for a single curator.
 
 Minimum workflow:
 
-- Create or edit places
 - Create or edit feeds
 - Attach photos to feeds
+- Assign or create places while editing feeds/photos
 - Mark one photo as featured
 - Save draft or publish
 
@@ -84,6 +84,8 @@ The V2 Phase 1 foundation now includes:
 - Password-protected admin routes for feed, place, and photo management.
 - Photo-first feed creation: title, content, multiple photos, save draft.
 - Post-processing feed edit flow for slug, tags, source URL, places, featured photo, and publishing.
+- Places are no longer promoted as a main admin navigation item. `/admin/places` remains available directly as a maintenance route.
+- Inline place creation from the feed editor so missing places can be added without leaving the draft.
 - Multiple feed places are supported in code through the proposed `feed_places` join table migration while keeping `feeds.place_id` as an optional primary place.
 - Feed edit includes a separated delete action with confirmation. Deleting a feed relies on the schema cascade to remove attached photo records and does not delete places.
 - Admin save, publish, upload, photo update, and delete forms show visible loading text/progress and disable duplicate submissions while pending.
@@ -120,3 +122,5 @@ This intentionally avoids Supabase Auth and role management for Phase 1.
 ## Location Policy
 
 Places are assigned by the curator. AroundCities does not perform GPS-to-place automation, reverse geocoding, or map-based auto assignment in Phase 1.
+
+Places remain a core entity for public place pages and feed/photo assignment, but they are not a primary daily admin workflow.

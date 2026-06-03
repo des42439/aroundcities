@@ -299,11 +299,12 @@ Suggested minimal routes:
 - `/admin/feeds`
 - `/admin/feeds/new`
 - `/admin/feeds/[feedId]`
-- `/admin/places`
-- `/admin/places/new`
-- `/admin/places/[placeId]`
+- `/admin/places` maintenance route
+- `/admin/places/new` maintenance route
+- `/admin/places/[placeId]` maintenance route
 
 Photo management can live inside the feed editor during Phase 1.
+Place management routes should remain available directly for maintenance, but Places should not appear as a main admin navigation item.
 
 ### Curator Workflow
 
@@ -311,10 +312,11 @@ Photo management can live inside the feed editor during Phase 1.
 2. Post-process the draft later.
 3. Optionally assign primary place and multiple feed places.
 4. Optionally assign photo-level places.
-5. Optionally edit slug, tags, source URL, and published time.
-6. Choose a featured photo.
-7. Publish when ready.
-8. Delete the feed only from the separated delete area when it is no longer needed.
+5. Create a missing place inline from the feed editor when needed.
+6. Optionally edit slug, tags, source URL, and published time.
+7. Choose a featured photo.
+8. Publish when ready.
+9. Delete the feed only from the separated delete area when it is no longer needed.
 
 ### Admin Principles
 
@@ -322,6 +324,9 @@ Photo management can live inside the feed editor during Phase 1.
 - Keep forms short.
 - Auto-generate slug from title, but allow manual editing.
 - Default photo place to the selected feed place.
+- Do not promote Places as a daily admin section. The normal admin workflow should be feed-first and photo-first.
+- Place creation should happen inline or nearby while editing a feed or photo.
+- Keep `/admin/places` available as a maintenance route for cleanup and corrections.
 - Do not ask for feed type during creation.
 - New feeds should be drafts by default.
 - Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
@@ -415,11 +420,13 @@ Status: implemented.
 - Add slug generation/editing during post-processing.
 - Add optional source URL entry.
 - Add place list/create/edit.
+- Keep place list/create/edit as maintenance routes, not main admin navigation.
+- Add inline place creation from the feed editor.
 - Add photo attachment inside feed edit with optional photo-level place override.
 - Add a separated delete feed action with confirmation.
 - Add loading/progress feedback for admin form submissions.
 
-Status: implemented with simple `ADMIN_PASSWORD` protection. Updated to photo-first draft creation, post-processing workflow, delete feed support, and form loading states.
+Status: implemented with simple `ADMIN_PASSWORD` protection. Updated to photo-first draft creation, post-processing workflow, maintenance-only place routes, inline place creation, delete feed support, and form loading states.
 
 Note: multiple feed-level places are implemented in code through `feed_places`, with migration SQL created but not executed by Codex for this task.
 

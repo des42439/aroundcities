@@ -69,9 +69,9 @@ Admin should be optimized for a single curator.
 
 Prefer a simple workflow:
 
-- Create or edit a place
 - Create a draft feed from title, content, and photos
 - Post-process slug, tags, source, places, and publishing later
+- Create missing places inline while editing feeds/photos
 - Attach or edit photos inside the feed editor
 
 Do not build complex management systems.
@@ -123,6 +123,9 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Public routes for `/`, `/kch`, `/feed/[slug]`, and `/place/[slug]`.
 - Minimal admin UI protected by `ADMIN_PASSWORD`.
 - Photo-first draft creation for feeds.
+- Places are no longer promoted as a main admin navigation item.
+- `/admin/places` remains available as a direct maintenance route.
+- Inline place creation is available from the feed editor.
 - Multiple feed places supported in code through the proposed `feed_places` migration.
 - Feed delete support from the edit page with confirmation.
 - Admin form loading states for save, publish, upload, photo update, and delete actions.
@@ -137,6 +140,8 @@ Feed creation should be photo-first and draft-first:
 - Hide feed type, slug, tags, source URL, place, status, and published time during creation.
 - Use the edit page for post-processing.
 - Keep place assignment human-controlled only.
+- Keep Places out of the main admin workflow; treat place routes as maintenance tools.
+- Create missing places inline or nearby while editing a feed/photo.
 - Do not add GPS-to-place automation or reverse geocoding.
 - Keep `feed_type` hidden/defaulted unless the user explicitly reintroduces it as a curator-facing field.
 - Treat `feeds.place_id` as the optional primary place and `feed_places` as the multiple-place path once its migration is applied.

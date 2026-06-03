@@ -19,18 +19,6 @@ export default async function AdminPage() {
             Write, draft, publish, and attach photos.
           </p>
         </Link>
-
-        <Link
-          href="/admin/places"
-          className="rounded-lg border border-neutral-900 p-5 hover:border-neutral-700"
-        >
-          <h2 className="text-xl font-semibold">
-            Places
-          </h2>
-          <p className="mt-2 text-sm text-neutral-500">
-            Manage the locations used by feeds and photos.
-          </p>
-        </Link>
       </div>
     </AdminShell>
   );
