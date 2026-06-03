@@ -1,158 +1,211 @@
-export type Status =
-  | "active"
-  | "inactive"
-  | "obsoleted";
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[];
 
-export interface Event {
-  event_id: string;
-  status: Status;
+export type FeedStatus =
+  | "draft"
+  | "published"
+  | "archived";
 
-  title: string;
+export type FeedType =
+  | "photo_walk"
+  | "food_visit"
+  | "event_observation"
+  | "local_discovery";
+
+export interface Place {
+  place_id: string;
+  name: string;
+  slug: string;
   description: string | null;
-
-  location: string | null;
-
-  start_date: string | null;
-  end_date: string | null;
-
-  organiser: string | null;
-
-  source_link: string | null;
-  source_remarks: string | null;
-
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
-  created_by: string | null;
-
   updated_at: string;
-  updated_by: string | null;
 }
 
-export interface EventRegistration {
-  event_registration_id: string;
-
-  event_id: string;
-
-  status: Status;
-
-  start_date: string | null;
-  end_date: string | null;
-
-  registration_url: string | null;
-
-  created_at: string;
-  created_by: string | null;
-
-  updated_at: string;
-  updated_by: string | null;
-}
-
-export interface EventSchedule {
-  event_schedule_id: string;
-
-  event_id: string;
-
-  status: Status;
-
-  event_date: string;
-
-  start_time: string | null;
-  end_time: string | null;
-
-  created_at: string;
-  created_by: string | null;
-
-  updated_at: string;
-  updated_by: string | null;
-}
-
-export interface EventProgram {
-  event_program_id: string;
-
-  event_schedule_id: string;
-
-  status: Status;
-
+export interface Feed {
+  feed_id: string;
+  feed_type: FeedType;
+  slug: string;
   title: string;
-
-  description: string | null;
-
-  start_time: string | null;
-  end_time: string | null;
-
-  organiser: string | null;
-
-  photo_url: string | null;
-
-  source_link: string | null;
-  source_type: string | null;
-
+  content: string | null;
+  place_id: string | null;
+  source_url: string | null;
+  tags: string[];
+  published_at: string | null;
+  status: FeedStatus;
   created_at: string;
-  created_by: string | null;
-
   updated_at: string;
-  updated_by: string | null;
 }
 
 export interface Photo {
   photo_id: string;
-
-  event_id: string | null;
-
-  status: Status;
-
-  photo_type: "photo" | "screenshot";
-
-  photo_url: string;
-
+  feed_id: string;
+  place_id: string | null;
   title: string | null;
   description: string | null;
-
-  latitude: number | null;
-  longitude: number | null;
-  location: string | null;
-
-  captured_date: string | null;
-  captured_by: string | null;
-
+  photo_url: string;
+  location_name: string | null;
+  captured_at: string | null;
+  featured: boolean;
   created_at: string;
-  created_by: string | null;
-
   updated_at: string;
-  updated_by: string | null;
 }
 
-export interface Holiday {
-  holiday_id: string;
-
-  status: Status;
-
-  holiday_date: string;
-
-  name: string;
-
-  description: string | null;
-
-  greeting_message_1: string | null;
-  greeting_message_2: string | null;
-  greeting_message_3: string | null;
-
-  created_at: string;
-  created_by: string | null;
-
-  updated_at: string;
-  updated_by: string | null;
+export interface FeedWithPlaceAndPhotos extends Feed {
+  place: Place | null;
+  photos: Photo[];
 }
 
-export interface PositiveMessage {
-  positive_message_id: string;
+export interface PlaceWithFeeds extends Place {
+  feeds: FeedWithPlaceAndPhotos[];
+}
 
-  status: Status;
+export type NewFeed = Omit<
+  Feed,
+  "feed_id" | "created_at" | "updated_at"
+>;
 
-  description: string;
+export type FeedUpdate = Partial<
+  Omit<Feed, "feed_id" | "created_at" | "updated_at">
+>;
 
-  created_at: string;
-  created_by: string | null;
+export type NewPlace = Omit<
+  Place,
+  "place_id" | "created_at" | "updated_at"
+>;
 
-  updated_at: string;
-  updated_by: string | null;
+export type PlaceUpdate = Partial<
+  Omit<Place, "place_id" | "created_at" | "updated_at">
+>;
+
+export type NewPhoto = Omit<
+  Photo,
+  "photo_id" | "created_at" | "updated_at"
+>;
+
+export type PhotoUpdate = Partial<
+  Omit<Photo, "photo_id" | "created_at" | "updated_at">
+>;
+
+export interface Database {
+  public: {
+    Tables: {
+      places: {
+        Row: Place;
+        Insert: {
+          place_id?: string;
+          name: string;
+          slug: string;
+          description?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          place_id?: string;
+          name?: string;
+          slug?: string;
+          description?: string | null;
+          latitude?: number | null;
+          longitude?: number | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      feeds: {
+        Row: Feed;
+        Insert: {
+          feed_id?: string;
+          feed_type: FeedType;
+          slug: string;
+          title: string;
+          content?: string | null;
+          place_id?: string | null;
+          source_url?: string | null;
+          tags?: string[];
+          published_at?: string | null;
+          status?: FeedStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          feed_id?: string;
+          feed_type?: FeedType;
+          slug?: string;
+          title?: string;
+          content?: string | null;
+          place_id?: string | null;
+          source_url?: string | null;
+          tags?: string[];
+          published_at?: string | null;
+          status?: FeedStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feeds_place_id_fkey";
+            columns: ["place_id"];
+            referencedRelation: "places";
+            referencedColumns: ["place_id"];
+          },
+        ];
+      };
+      photos: {
+        Row: Photo;
+        Insert: {
+          photo_id?: string;
+          feed_id: string;
+          place_id?: string | null;
+          title?: string | null;
+          description?: string | null;
+          photo_url: string;
+          location_name?: string | null;
+          captured_at?: string | null;
+          featured?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          photo_id?: string;
+          feed_id?: string;
+          place_id?: string | null;
+          title?: string | null;
+          description?: string | null;
+          photo_url?: string;
+          location_name?: string | null;
+          captured_at?: string | null;
+          featured?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "photos_feed_id_fkey";
+            columns: ["feed_id"];
+            referencedRelation: "feeds";
+            referencedColumns: ["feed_id"];
+          },
+          {
+            foreignKeyName: "photos_place_id_fkey";
+            columns: ["place_id"];
+            referencedRelation: "places";
+            referencedColumns: ["place_id"];
+          },
+        ];
+      };
+    };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
 }

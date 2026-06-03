@@ -1,67 +1,16 @@
 import { supabase } from "./supabase";
 import { Photo } from "@/types/database";
 
-export async function getPhotos(): Promise<Photo[]> {
-  const { data, error } = await supabase
-    .from("photos")
-    .select("*")
-    .order("captured_date", {
-      ascending: false,
-      nullsFirst: false,
-    });
-
-  if (error) {
-    console.error(error);
-    return [];
-  }
-
-  return (data ?? []) as Photo[];
-}
-
-export async function getActivePhotos(): Promise<Photo[]> {
-  const { data, error } = await supabase
-    .from("photos")
-    .select("*")
-    .eq("status", "active")
-    .order("captured_date", {
-      ascending: false,
-      nullsFirst: false,
-    });
-
-  if (error) {
-    console.error(error);
-    return [];
-  }
-
-  return (data ?? []) as Photo[];
-}
-
-export async function getPhoto(
-  photoId: string
-): Promise<Photo | null> {
-  const { data, error } = await supabase
-    .from("photos")
-    .select("*")
-    .eq("photo_id", photoId)
-    .single();
-
-  if (error) {
-    console.error(error);
-    return null;
-  }
-
-  return data as Photo;
-}
-
-export async function getEventPhotos(
-  eventId: string
+export async function getPhotosByFeedId(
+  feedId: string
 ): Promise<Photo[]> {
   const { data, error } = await supabase
     .from("photos")
     .select("*")
-    .eq("event_id", eventId)
-    .order("captured_date", {
-      ascending: false,
+    .eq("feed_id", feedId)
+    .order("featured", { ascending: false })
+    .order("captured_at", {
+      ascending: true,
       nullsFirst: false,
     });
 
@@ -70,55 +19,5 @@ export async function getEventPhotos(
     return [];
   }
 
-  return (data ?? []) as Photo[];
-}
-
-export async function getRandomAtmospherePhoto(): Promise<Photo | null> {
-  const { data, error } = await supabase
-    .from("photos")
-    .select("*")
-    .eq("status", "active")
-    .eq("photo_type", "photo");
-
-  if (error || !data?.length) {
-    return null;
-  }
-
-  const randomIndex = Math.floor(
-    Math.random() * data.length
-  );
-
-  return data[randomIndex] as Photo;
-}
-
-export async function getPhotoNavigation(
-  photoId: string
-): Promise<{
-  previousPhoto: Photo | null;
-  nextPhoto: Photo | null;
-}> {
-  const photos = await getActivePhotos();
-
-  const index = photos.findIndex(
-    (photo) => photo.photo_id === photoId
-  );
-
-  if (index === -1) {
-    return {
-      previousPhoto: null,
-      nextPhoto: null,
-    };
-  }
-
-  return {
-    previousPhoto:
-      index > 0
-        ? photos[index - 1]
-        : null,
-
-    nextPhoto:
-      index < photos.length - 1
-        ? photos[index + 1]
-        : null,
-  };
+  return data ?? [];
 }

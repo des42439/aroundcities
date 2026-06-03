@@ -1,10 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
 import "./globals.css";
-
-const geist = Geist({
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.aroundcities.my"),
@@ -15,25 +10,24 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Discover photos, places, events and city life around Kuching, Sarawak.",
+    "An independent local media feed about what is happening around Kuching.",
 
   keywords: [
     "Kuching",
     "Sarawak",
     "Malaysia",
     "AroundCities",
-    "Kuching photos",
-    "Kuching attractions",
+    "Kuching local media",
+    "Kuching feed",
     "Carpenter Street",
     "Kuching Waterfront",
-    "Travel",
-    "Photography",
+    "Local discovery",
   ],
 
   openGraph: {
     title: "AroundCities",
     description:
-      "Discover photos, places, events and city life around Kuching, Sarawak.",
+      "An independent local media feed about what is happening around Kuching.",
     url: "https://www.aroundcities.my",
     siteName: "AroundCities",
     locale: "en_MY",
@@ -44,7 +38,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "AroundCities",
     description:
-      "Discover photos, places, events and city life around Kuching, Sarawak.",
+      "An independent local media feed about what is happening around Kuching.",
   },
 
   robots: {
@@ -60,9 +54,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geist.className} min-h-screen bg-neutral-950 text-neutral-100`}
-      >
+      <body className="min-h-screen bg-neutral-950 text-neutral-100">
         {children}
       </body>
     </html>

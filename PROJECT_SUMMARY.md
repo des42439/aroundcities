@@ -1,0 +1,98 @@
+# AroundCities Project Summary
+
+Last updated: 3 June 2026
+
+## Current Direction
+
+AroundCities V2 is a greenfield rebuild.
+
+The previous version has been archived and backed up. The old Photo/Event-first architecture should not be preserved, extended, or kept backward compatible unless the user explicitly changes direction.
+
+## Product Vision
+
+AroundCities is an independent local media platform focused on Kuching.
+
+The primary question it answers is:
+
+> What is happening around Kuching?
+
+AroundCities is curator-driven. It is not an event portal, tourism website, business directory, or social network.
+
+## Phase 1 Foundation
+
+Phase 1 should introduce only the minimum foundation:
+
+- Feed
+- Photo
+- Place
+
+No comments, likes, followers, messaging, ratings, reviews, or social-network assumptions.
+
+## Public Routes
+
+- `/` redirects to `/kch`
+- `/kch` shows the latest feed
+- `/feed/[slug]` shows feed detail
+- `/place/[slug]` shows place detail
+
+These public routes are implemented for Phase 1.
+
+## Planned Admin Direction
+
+Admin should be optimized for a single curator.
+
+Minimum workflow:
+
+- Create or edit places
+- Create or edit feeds
+- Attach photos to feeds
+- Mark one photo as featured
+- Save draft or publish
+
+Admin must be protected before public launch.
+
+## Architecture Source
+
+The V2 foundation plan is documented in:
+
+- `V2_ARCHITECTURE.md`
+
+That document currently contains:
+
+- Product definition
+- Core entity definitions
+- Database schema proposal
+- Route proposal
+- Admin workflow proposal
+- Public UI proposal
+- Implementation roadmap
+
+## Implemented Foundation
+
+The V2 Phase 1 foundation now includes:
+
+- Project reset removing old V1 public/admin routes, V1 components, and V1 Photo/Event helpers.
+- Database migration for `places`, `feeds`, and `photos`.
+- Feed fields: `feed_type`, `slug`, `title`, `content`, nullable `place_id`, nullable `source_url`, `tags`, `published_at`, `status`, timestamps.
+- Photo fields: `feed_id`, nullable `place_id`, title, description, URL, location name, captured timestamp, featured flag, timestamps.
+- Place fields: name, slug, description, optional coordinates, timestamps.
+- TypeScript database types for the V2 schema.
+- Simple data helpers for feeds, places, and photos.
+- Public routes for `/`, `/kch`, `/feed/[slug]`, and `/place/[slug]`.
+- Shared public shell and feed card components.
+- Formatting helpers for feed type labels, dates, content previews, and featured photo selection.
+
+Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.
+
+## Current Repo Note
+
+The repository may still contain archive files, notes, and backup artifacts, but the active app/lib/types foundation has been reset away from the old Photo/Event-first implementation.
+
+## Not Implemented Yet
+
+- Admin UI
+- Authentication
+- Search
+- Maps
+- Tags UI
+- Multiple cities
