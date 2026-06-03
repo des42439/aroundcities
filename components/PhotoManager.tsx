@@ -1,11 +1,13 @@
 import {
   Field,
   inputClassName,
-  primaryButtonClassName,
   selectClassName,
-  secondaryButtonClassName,
   textareaClassName,
 } from "./AdminForm";
+import {
+  AdminFormProgress,
+  AdminSubmitButton,
+} from "./AdminSubmitButton";
 import {
   updateFeedPhotoAction,
   uploadFeedPhotosAction,
@@ -42,6 +44,8 @@ export default function PhotoManager({
         action={uploadAction}
         className="space-y-5 rounded-lg border border-neutral-900 p-4"
       >
+        <AdminFormProgress />
+
         <Field label="Upload photos">
           <input
             name="photos"
@@ -110,12 +114,9 @@ export default function PhotoManager({
           Mark first uploaded photo as featured
         </label>
 
-        <button
-          type="submit"
-          className={primaryButtonClassName}
-        >
+        <AdminSubmitButton pendingLabel="Uploading...">
           Upload photos
-        </button>
+        </AdminSubmitButton>
       </form>
 
       <div className="space-y-4">
@@ -137,6 +138,8 @@ export default function PhotoManager({
                 action={action}
                 className="grid gap-4 rounded-lg border border-neutral-900 p-4 md:grid-cols-[180px_1fr]"
               >
+                <AdminFormProgress className="md:col-span-2" />
+
                 <img
                   src={photo.photo_url}
                   alt={photo.title ?? "Feed photo"}
@@ -209,12 +212,12 @@ export default function PhotoManager({
                     Featured photo
                   </label>
 
-                  <button
-                    type="submit"
-                    className={secondaryButtonClassName}
+                  <AdminSubmitButton
+                    variant="secondary"
+                    pendingLabel="Saving..."
                   >
                     Save photo
-                  </button>
+                  </AdminSubmitButton>
                 </div>
               </form>
             );

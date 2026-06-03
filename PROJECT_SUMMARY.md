@@ -85,6 +85,8 @@ The V2 Phase 1 foundation now includes:
 - Photo-first feed creation: title, content, multiple photos, save draft.
 - Post-processing feed edit flow for slug, tags, source URL, places, featured photo, and publishing.
 - Multiple feed places are supported in code through the proposed `feed_places` join table migration while keeping `feeds.place_id` as an optional primary place.
+- Feed edit includes a separated delete action with confirmation. Deleting a feed relies on the schema cascade to remove attached photo records and does not delete places.
+- Admin save, publish, upload, photo update, and delete forms show visible loading text/progress and disable duplicate submissions while pending.
 
 Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.
 

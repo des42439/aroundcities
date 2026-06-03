@@ -27,6 +27,8 @@ All notable changes to AroundCities should be documented here.
 - Added `feed_places` migration SQL and helper code for multiple human-assigned places per feed.
 - Hid feed type from feed creation and kept it internally defaulted.
 - Moved slug, tags, source URL, place assignment, and publishing into feed post-processing.
+- Added delete feed support on the feed edit page with confirmation.
+- Added admin form loading/progress states for save, publish, upload, photo update, and delete actions.
 - Added `AGENTS.md` as the agent working guide for product direction, engineering preferences, current architecture, and documentation maintenance.
 - Added `PROJECT_SUMMARY.md` with the current V2 direction, Phase 1 scope, planned routes, admin direction, and architecture source.
 - Added `CHANGELOG.md` to track future project changes.

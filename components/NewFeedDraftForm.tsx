@@ -1,9 +1,12 @@
 import {
   Field,
   inputClassName,
-  primaryButtonClassName,
   textareaClassName,
 } from "./AdminForm";
+import {
+  AdminFormProgress,
+  AdminSubmitButton,
+} from "./AdminSubmitButton";
 import { createDraftFeedWithPhotosAction } from "@/lib/admin-actions";
 
 export default function NewFeedDraftForm() {
@@ -12,6 +15,8 @@ export default function NewFeedDraftForm() {
       action={createDraftFeedWithPhotosAction}
       className="space-y-6"
     >
+      <AdminFormProgress />
+
       <Field label="Title">
         <input
           name="title"
@@ -37,12 +42,9 @@ export default function NewFeedDraftForm() {
         />
       </Field>
 
-      <button
-        type="submit"
-        className={primaryButtonClassName}
-      >
+      <AdminSubmitButton pendingLabel="Saving...">
         Save draft
-      </button>
+      </AdminSubmitButton>
     </form>
   );
 }

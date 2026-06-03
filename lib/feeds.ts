@@ -127,3 +127,16 @@ export async function updateFeed(
 
   return data;
 }
+
+export async function deleteFeed(
+  feedId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from("feeds")
+    .delete()
+    .eq("feed_id", feedId);
+
+  if (error) {
+    console.error(error);
+  }
+}

@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "./admin-auth";
-import { createFeed, updateFeed } from "./feeds";
+import {
+  createFeed,
+  deleteFeed,
+  updateFeed,
+} from "./feeds";
 import { replaceFeedPlaces } from "./feed-places";
 import { createPlace, updatePlace } from "./places";
 import {
@@ -295,6 +299,16 @@ export async function updateFeedAction(
   revalidatePath(`/admin/feeds/${feedId}`);
   revalidatePath("/kch");
   redirect(`/admin/feeds/${feedId}`);
+}
+
+export async function deleteFeedAction(feedId: string) {
+  await requireAdmin();
+
+  await deleteFeed(feedId);
+
+  revalidatePath("/admin/feeds");
+  revalidatePath("/kch");
+  redirect("/admin/feeds");
 }
 
 export async function uploadFeedPhotosAction(

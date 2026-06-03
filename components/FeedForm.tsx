@@ -2,11 +2,13 @@ import AutoSlugFields from "./AutoSlugFields";
 import {
   Field,
   inputClassName,
-  primaryButtonClassName,
   selectClassName,
-  secondaryButtonClassName,
   textareaClassName,
 } from "./AdminForm";
+import {
+  AdminFormProgress,
+  AdminSubmitButton,
+} from "./AdminSubmitButton";
 import { toDateTimeInputValue } from "@/lib/format";
 import {
   FeedPlaceWithPlace,
@@ -33,6 +35,8 @@ export default function FeedForm({
 
   return (
     <form action={action} className="space-y-6">
+      <AdminFormProgress />
+
       <input
         type="hidden"
         name="feed_type"
@@ -142,23 +146,22 @@ export default function FeedForm({
       </details>
 
       <div className="flex flex-wrap gap-3">
-        <button
-          type="submit"
+        <AdminSubmitButton
           name="status"
           value="draft"
-          className={secondaryButtonClassName}
+          variant="secondary"
+          pendingLabel="Saving..."
         >
           Save draft
-        </button>
+        </AdminSubmitButton>
 
-        <button
-          type="submit"
+        <AdminSubmitButton
           name="status"
           value="published"
-          className={primaryButtonClassName}
+          pendingLabel="Publishing..."
         >
           Publish
-        </button>
+        </AdminSubmitButton>
       </div>
     </form>
   );

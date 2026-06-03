@@ -1,5 +1,6 @@
 import Link from "next/link";
 import AdminShell from "@/components/AdminShell";
+import DeleteFeedForm from "@/components/DeleteFeedForm";
 import FeedForm from "@/components/FeedForm";
 import PhotoManager from "@/components/PhotoManager";
 import { updateFeedAction } from "@/lib/admin-actions";
@@ -63,6 +64,8 @@ export default async function EditFeedPage({
           photos={photos}
           places={places}
         />
+
+        <DeleteFeedForm feedId={feed.feed_id} />
       </div>
     </AdminShell>
   );

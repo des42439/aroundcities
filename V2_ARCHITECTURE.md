@@ -314,6 +314,7 @@ Photo management can live inside the feed editor during Phase 1.
 5. Optionally edit slug, tags, source URL, and published time.
 6. Choose a featured photo.
 7. Publish when ready.
+8. Delete the feed only from the separated delete area when it is no longer needed.
 
 ### Admin Principles
 
@@ -325,6 +326,8 @@ Photo management can live inside the feed editor during Phase 1.
 - New feeds should be drafts by default.
 - Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
 - Photo metadata such as captured dates or GPS, if available later, may be displayed only as curator reference. It should not automatically assign places.
+- Save, publish, upload, photo update, and delete actions should show visible pending states and prevent duplicate submissions.
+- Feed deletion must require confirmation, redirect back to `/admin/feeds`, and must not delete unrelated places.
 - Avoid separate complex modules for events, registrations, or programs.
 - Avoid dashboard analytics in Phase 1.
 - Protect all admin routes before public launch.
@@ -413,8 +416,10 @@ Status: implemented.
 - Add optional source URL entry.
 - Add place list/create/edit.
 - Add photo attachment inside feed edit with optional photo-level place override.
+- Add a separated delete feed action with confirmation.
+- Add loading/progress feedback for admin form submissions.
 
-Status: implemented with simple `ADMIN_PASSWORD` protection. Updated to photo-first draft creation and post-processing workflow.
+Status: implemented with simple `ADMIN_PASSWORD` protection. Updated to photo-first draft creation, post-processing workflow, delete feed support, and form loading states.
 
 Note: multiple feed-level places are implemented in code through `feed_places`, with migration SQL created but not executed by Codex for this task.
 
