@@ -9,6 +9,15 @@ export default function CityPageLayout({
   cityName,
   children,
 }: Props) {
+  const currentDateTime = new Intl.DateTimeFormat(
+    "en-MY",
+    {
+      dateStyle: "medium",
+      timeStyle: "short",
+      timeZone: "Asia/Kuching",
+    }
+  ).format(new Date());
+
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100">
       <header className="border-b border-neutral-800">
@@ -19,8 +28,14 @@ export default function CityPageLayout({
                 AroundCities
               </div>
 
-              <div className="text-2xl font-bold">
-                {cityName}
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <div className="text-2xl font-bold">
+                  {cityName}
+                </div>
+
+                <div className="text-sm text-neutral-500">
+                  {currentDateTime}
+                </div>
               </div>
             </div>
 
