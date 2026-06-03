@@ -82,8 +82,15 @@ The V2 Phase 1 foundation now includes:
 - Shared public shell and feed card components.
 - Formatting helpers for feed type labels, dates, content previews, and featured photo selection.
 - Password-protected admin routes for feed, place, and photo management.
+- Photo-first feed creation: title, content, multiple photos, save draft.
+- Post-processing feed edit flow for slug, tags, source URL, places, featured photo, and publishing.
+- Multiple feed places are supported in code through the proposed `feed_places` join table migration while keeping `feeds.place_id` as an optional primary place.
 
 Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.
+
+`feed_type` is kept internally with a `local_discovery` default for compatibility, but it is hidden from the creation workflow. Future classification should lean on flexible tags/categories instead.
+
+The `feed_places` migration SQL has been created but not run by Codex. Until that migration is applied to Supabase, multiple feed-level place assignment will remain a prepared schema/code path rather than active production data.
 
 ## Current Repo Note
 
@@ -107,3 +114,7 @@ Admin routes are protected by a simple Phase 1 password flow:
 - Middleware redirects unauthenticated `/admin/*` requests to `/admin/login`.
 
 This intentionally avoids Supabase Auth and role management for Phase 1.
+
+## Location Policy
+
+Places are assigned by the curator. AroundCities does not perform GPS-to-place automation, reverse geocoding, or map-based auto assignment in Phase 1.

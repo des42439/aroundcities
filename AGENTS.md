@@ -70,9 +70,9 @@ Admin should be optimized for a single curator.
 Prefer a simple workflow:
 
 - Create or edit a place
-- Create a feed
-- Attach photos to the feed
-- Publish or draft the feed
+- Create a draft feed from title, content, and photos
+- Post-process slug, tags, source, places, and publishing later
+- Attach or edit photos inside the feed editor
 
 Do not build complex management systems.
 
@@ -122,5 +122,19 @@ V2 Phase 1 Steps 1-5 are implemented:
 - TypeScript types and simple data helpers.
 - Public routes for `/`, `/kch`, `/feed/[slug]`, and `/place/[slug]`.
 - Minimal admin UI protected by `ADMIN_PASSWORD`.
+- Photo-first draft creation for feeds.
+- Multiple feed places supported in code through the proposed `feed_places` migration.
 
 Supabase Auth, search, maps, tags UI, and multiple cities are not implemented yet.
+
+## Admin Workflow Guidance
+
+Feed creation should be photo-first and draft-first:
+
+- Ask only for title, content/description, and photos during creation.
+- Hide feed type, slug, tags, source URL, place, status, and published time during creation.
+- Use the edit page for post-processing.
+- Keep place assignment human-controlled only.
+- Do not add GPS-to-place automation or reverse geocoding.
+- Keep `feed_type` hidden/defaulted unless the user explicitly reintroduces it as a curator-facing field.
+- Treat `feeds.place_id` as the optional primary place and `feed_places` as the multiple-place path once its migration is applied.

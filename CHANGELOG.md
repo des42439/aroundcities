@@ -23,6 +23,10 @@ All notable changes to AroundCities should be documented here.
 - Added place list/create/edit admin pages.
 - Added photo upload and attached-photo editing inside the feed editor.
 - Added featured-photo handling that clears other featured photos in the same feed.
+- Added photo-first feed creation that saves a draft with title, content, and multiple uploaded photos.
+- Added `feed_places` migration SQL and helper code for multiple human-assigned places per feed.
+- Hid feed type from feed creation and kept it internally defaulted.
+- Moved slug, tags, source URL, place assignment, and publishing into feed post-processing.
 - Added `AGENTS.md` as the agent working guide for product direction, engineering preferences, current architecture, and documentation maintenance.
 - Added `PROJECT_SUMMARY.md` with the current V2 direction, Phase 1 scope, planned routes, admin direction, and architecture source.
 - Added `CHANGELOG.md` to track future project changes.
@@ -41,3 +45,5 @@ All notable changes to AroundCities should be documented here.
 ### Notes
 
 - Supabase Auth, search, maps, tags UI, and multiple cities are not implemented yet.
+- Place assignment remains human-controlled only; no GPS automation, reverse geocoding, or map-based location assignment was added.
+- The `feed_places` migration was created for review and was not run by Codex.

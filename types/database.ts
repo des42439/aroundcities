@@ -57,9 +57,20 @@ export interface Photo {
   updated_at: string;
 }
 
+export interface FeedPlace {
+  feed_id: string;
+  place_id: string;
+  created_at: string;
+}
+
+export interface FeedPlaceWithPlace extends FeedPlace {
+  place: Place;
+}
+
 export interface FeedWithPlaceAndPhotos extends Feed {
   place: Place | null;
   photos: Photo[];
+  feed_places?: FeedPlaceWithPlace[];
 }
 
 export interface PlaceWithFeeds extends Place {
@@ -196,6 +207,33 @@ export interface Database {
           },
           {
             foreignKeyName: "photos_place_id_fkey";
+            columns: ["place_id"];
+            referencedRelation: "places";
+            referencedColumns: ["place_id"];
+          },
+        ];
+      };
+      feed_places: {
+        Row: FeedPlace;
+        Insert: {
+          feed_id: string;
+          place_id: string;
+          created_at?: string;
+        };
+        Update: {
+          feed_id?: string;
+          place_id?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feed_places_feed_id_fkey";
+            columns: ["feed_id"];
+            referencedRelation: "feeds";
+            referencedColumns: ["feed_id"];
+          },
+          {
+            foreignKeyName: "feed_places_place_id_fkey";
             columns: ["place_id"];
             referencedRelation: "places";
             referencedColumns: ["place_id"];

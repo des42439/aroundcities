@@ -53,7 +53,7 @@ Examples:
 Fields:
 
 - `feed_id`
-- `feed_type`
+- `feed_type` internal default
 - `slug`
 - `title`
 - `content`
@@ -67,14 +67,13 @@ Fields:
 
 Notes:
 
-- `feed_type` should describe the kind of post without creating separate entities.
-- Suggested Phase 1 values: `photo_walk`, `food_visit`, `event_observation`, `local_discovery`.
+- `feed_type` is kept internally for now with a default value. It should not be shown during creation because tags/categories are a better long-term classification direction.
 - `slug` should be unique and used for public feed URLs.
 - `source_url` is optional and should be used only when a feed references an external source.
 - `tags` is a simple `text[]` field for Phase 1. It avoids extra tag tables while still allowing lightweight categorization.
 - `status` should support draft and published states at minimum.
 - `published_at` controls public chronological ordering.
-- `place_id` is nullable so not every feed needs a place.
+- `place_id` is nullable so not every feed needs a place. In the current implementation it remains the optional primary place for compatibility and simple public displays.
 
 ### Photo
 
@@ -190,6 +189,13 @@ create table public.photos (
   updated_at timestamptz not null default now()
 );
 
+create table public.feed_places (
+  feed_id uuid not null references public.feeds(feed_id) on delete cascade,
+  place_id uuid not null references public.places(place_id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (feed_id, place_id)
+);
+
 create index feeds_status_published_at_idx
   on public.feeds (status, published_at desc);
 
@@ -211,6 +217,9 @@ create index photos_feed_id_idx
 create index photos_place_id_idx
   on public.photos (place_id);
 
+create index feed_places_place_id_idx
+  on public.feed_places (place_id);
+
 create index places_slug_idx
   on public.places (slug);
 ```
@@ -218,13 +227,15 @@ create index places_slug_idx
 ### Schema Rules
 
 - Keep Feed as the primary content entity.
-- Use `feed_type` for simple content classification instead of creating separate event, food, or visit tables.
+- Keep `feed_type` hidden/defaulted for now. Prefer flexible tags/categories for future content classification instead of forcing a single feed type during creation.
 - Use `slug` for public feed URLs.
 - Use `source_url` only for optional external references.
 - Use `tags text[]` for simple Phase 1 tags without introducing tag entities or tag UI.
 - Keep Photo attached directly to Feed.
 - Keep Place optional on Feed.
 - Keep Place optional on Photo.
+- Use `feed_places` for multiple human-assigned feed-level places.
+- Keep `feeds.place_id` temporarily as an optional primary place for route compatibility and simple displays.
 - Do not add event-specific tables in Phase 1.
 - Do not add user, account, comment, rating, or social tables in Phase 1.
 
@@ -270,7 +281,8 @@ Place detail.
 Purpose:
 
 - Shows place name, description, optional map coordinates as plain text or a simple link, and related published feeds.
-- Related feeds should include feeds where `feeds.place_id` matches the place.
+- Related feeds currently include feeds where `feeds.place_id` matches the place.
+- After the `feed_places` migration is run, related feeds should also include feeds linked through `feed_places`.
 - Later, the page can also include feeds that have photos linked to the place through `photos.place_id`.
 
 Do not build an advanced map view in Phase 1.
@@ -295,17 +307,13 @@ Photo management can live inside the feed editor during Phase 1.
 
 ### Curator Workflow
 
-1. Create or select a Place.
-2. Create a Feed.
-3. Choose a feed type.
-4. Write title and content.
-5. Generate or edit the feed slug.
-6. Add optional source URL if the feed references an external source.
-7. Attach one or more Photos.
-8. Optionally override photo place if a photo belongs to a more specific location than the feed.
-9. Mark one Photo as featured.
-10. Save as draft or publish.
-11. Edit later if needed.
+1. Create a draft Feed with title, content, and one or more Photos.
+2. Post-process the draft later.
+3. Optionally assign primary place and multiple feed places.
+4. Optionally assign photo-level places.
+5. Optionally edit slug, tags, source URL, and published time.
+6. Choose a featured photo.
+7. Publish when ready.
 
 ### Admin Principles
 
@@ -313,6 +321,10 @@ Photo management can live inside the feed editor during Phase 1.
 - Keep forms short.
 - Auto-generate slug from title, but allow manual editing.
 - Default photo place to the selected feed place.
+- Do not ask for feed type during creation.
+- New feeds should be drafts by default.
+- Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
+- Photo metadata such as captured dates or GPS, if available later, may be displayed only as curator reference. It should not automatically assign places.
 - Avoid separate complex modules for events, registrations, or programs.
 - Avoid dashboard analytics in Phase 1.
 - Protect all admin routes before public launch.
@@ -395,13 +407,16 @@ Status: implemented.
 
 - Protect `/admin`.
 - Add feed list/create/edit.
-- Add feed type selection.
-- Add slug generation/editing.
+- Make new feed creation photo-first: title, content, photos, draft.
+- Hide feed type from creation and default it internally.
+- Add slug generation/editing during post-processing.
 - Add optional source URL entry.
 - Add place list/create/edit.
 - Add photo attachment inside feed edit with optional photo-level place override.
 
-Status: implemented with simple `ADMIN_PASSWORD` protection.
+Status: implemented with simple `ADMIN_PASSWORD` protection. Updated to photo-first draft creation and post-processing workflow.
+
+Note: multiple feed-level places are implemented in code through `feed_places`, with migration SQL created but not executed by Codex for this task.
 
 ### Step 6: Seed Initial Content
 

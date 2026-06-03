@@ -70,5 +70,13 @@ export async function setAdminSessionCookie() {
 export async function clearAdminSessionCookie() {
   const cookieStore = await cookies();
 
-  cookieStore.delete(ADMIN_SESSION_COOKIE);
+  cookieStore.set({
+    name: ADMIN_SESSION_COOKIE,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/admin",
+    maxAge: 0,
+  });
 }

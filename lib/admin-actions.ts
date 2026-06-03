@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "./admin-auth";
 import { createFeed, updateFeed } from "./feeds";
+import { replaceFeedPlaces } from "./feed-places";
 import { createPlace, updatePlace } from "./places";
 import {
   clearFeaturedPhotos,
@@ -92,6 +93,13 @@ function parseFeedType(
   }
 
   return "local_discovery";
+}
+
+function selectedPlaceIds(formData: FormData) {
+  return formData
+    .getAll("feed_place_ids")
+    .map((value) => value.toString())
+    .filter(Boolean);
 }
 
 function normalizePublishedAt(
@@ -212,6 +220,41 @@ export async function createFeedAction(
   redirect("/admin/feeds");
 }
 
+export async function createDraftFeedWithPhotosAction(
+  formData: FormData
+) {
+  await requireAdmin();
+
+  const title = requiredString(formData, "title");
+  const slug =
+    nullableString(formData.get("slug")) ??
+    slugify(title);
+
+  const feed = await createFeed({
+    feed_type: "local_discovery",
+    slug,
+    title,
+    content: nullableString(formData.get("content")),
+    place_id: null,
+    source_url: null,
+    tags: [],
+    published_at: null,
+    status: "draft",
+  });
+
+  if (!feed) {
+    redirect("/admin/feeds");
+  }
+
+  await uploadPhotosForFeed(feed.feed_id, formData, {
+    featureFirst: true,
+    useNewPhotoMetadata: false,
+  });
+
+  revalidatePath("/admin/feeds");
+  redirect(`/admin/feeds/${feed.feed_id}`);
+}
+
 export async function updateFeedAction(
   feedId: string,
   formData: FormData
@@ -227,9 +270,7 @@ export async function updateFeedAction(
     slugify(title);
 
   await updateFeed(feedId, {
-    feed_type: parseFeedType(
-      formData.get("feed_type")
-    ),
+    feed_type: parseFeedType(formData.get("feed_type")),
     slug,
     title,
     content: nullableString(formData.get("content")),
@@ -245,6 +286,11 @@ export async function updateFeedAction(
     status,
   });
 
+  await replaceFeedPlaces(
+    feedId,
+    selectedPlaceIds(formData)
+  );
+
   revalidatePath("/admin/feeds");
   revalidatePath(`/admin/feeds/${feedId}`);
   revalidatePath("/kch");
@@ -257,6 +303,25 @@ export async function uploadFeedPhotosAction(
 ) {
   await requireAdmin();
 
+  await uploadPhotosForFeed(feedId, formData, {
+    featureFirst:
+      formData.get("feature_first_photo") === "on",
+    useNewPhotoMetadata: true,
+  });
+
+  revalidatePath(`/admin/feeds/${feedId}`);
+  revalidatePath("/kch");
+  redirect(`/admin/feeds/${feedId}`);
+}
+
+async function uploadPhotosForFeed(
+  feedId: string,
+  formData: FormData,
+  options: {
+    featureFirst: boolean;
+    useNewPhotoMetadata: boolean;
+  }
+) {
   const files = formData
     .getAll("photos")
     .filter(
@@ -264,10 +329,7 @@ export async function uploadFeedPhotosAction(
         item instanceof File && item.size > 0
     );
 
-  const featureFirst =
-    formData.get("feature_first_photo") === "on";
-
-  if (featureFirst && files.length > 0) {
+  if (options.featureFirst && files.length > 0) {
     await clearFeaturedPhotos(feedId);
   }
 
@@ -298,29 +360,31 @@ export async function uploadFeedPhotosAction(
 
     await createPhoto({
       feed_id: feedId,
-      place_id: nullableString(
-        formData.get("new_photo_place_id")
-      ),
-      title: nullableString(
-        formData.get("new_photo_title")
-      ),
-      description: nullableString(
-        formData.get("new_photo_description")
-      ),
+      place_id: options.useNewPhotoMetadata
+        ? nullableString(formData.get("new_photo_place_id"))
+        : null,
+      title: options.useNewPhotoMetadata
+        ? nullableString(formData.get("new_photo_title"))
+        : null,
+      description: options.useNewPhotoMetadata
+        ? nullableString(
+            formData.get("new_photo_description")
+          )
+        : null,
       photo_url: data.publicUrl,
-      location_name: nullableString(
-        formData.get("new_photo_location_name")
-      ),
-      captured_at: parseDateTime(
-        formData.get("new_photo_captured_at")
-      ),
-      featured: featureFirst && index === 0,
+      location_name: options.useNewPhotoMetadata
+        ? nullableString(
+            formData.get("new_photo_location_name")
+          )
+        : null,
+      captured_at: options.useNewPhotoMetadata
+        ? parseDateTime(
+            formData.get("new_photo_captured_at")
+          )
+        : null,
+      featured: options.featureFirst && index === 0,
     });
   }
-
-  revalidatePath(`/admin/feeds/${feedId}`);
-  revalidatePath("/kch");
-  redirect(`/admin/feeds/${feedId}`);
 }
 
 export async function updateFeedPhotoAction(
