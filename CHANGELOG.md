@@ -17,6 +17,12 @@ All notable changes to AroundCities should be documented here.
 - Added public `/place/[slug]` place detail page.
 - Added shared public shell and feed card components.
 - Added public formatting helpers for dates, feed type labels, content previews, and featured photo selection.
+- Added password-protected `/admin` routes using `ADMIN_PASSWORD`.
+- Added `/admin/login` for the simple Phase 1 admin password flow.
+- Added feed list/create/edit admin pages.
+- Added place list/create/edit admin pages.
+- Added photo upload and attached-photo editing inside the feed editor.
+- Added featured-photo handling that clears other featured photos in the same feed.
 - Added `AGENTS.md` as the agent working guide for product direction, engineering preferences, current architecture, and documentation maintenance.
 - Added `PROJECT_SUMMARY.md` with the current V2 direction, Phase 1 scope, planned routes, admin direction, and architecture source.
 - Added `CHANGELOG.md` to track future project changes.
@@ -34,4 +40,4 @@ All notable changes to AroundCities should be documented here.
 
 ### Notes
 
-- Admin UI, authentication, search, maps, tags UI, and multiple cities are not implemented yet.
+- Supabase Auth, search, maps, tags UI, and multiple cities are not implemented yet.

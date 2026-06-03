@@ -63,6 +63,23 @@ export async function getPlaces(): Promise<Place[]> {
   return data ?? [];
 }
 
+export async function getPlaceById(
+  placeId: string
+): Promise<Place | null> {
+  const { data, error } = await supabase
+    .from("places")
+    .select("*")
+    .eq("place_id", placeId)
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    return null;
+  }
+
+  return data;
+}
+
 export async function createPlace(
   input: NewPlace
 ): Promise<Place | null> {

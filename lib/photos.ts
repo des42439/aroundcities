@@ -1,5 +1,9 @@
 import { supabase } from "./supabase";
-import { Photo } from "@/types/database";
+import {
+  NewPhoto,
+  Photo,
+  PhotoUpdate,
+} from "@/types/database";
 
 export async function getPhotosByFeedId(
   feedId: string
@@ -20,4 +24,59 @@ export async function getPhotosByFeedId(
   }
 
   return data ?? [];
+}
+
+export async function createPhoto(
+  input: NewPhoto
+): Promise<Photo | null> {
+  const { data, error } = await supabase
+    .from("photos")
+    .insert(input)
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error(error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function updatePhoto(
+  photoId: string,
+  input: PhotoUpdate
+): Promise<Photo | null> {
+  const { data, error } = await supabase
+    .from("photos")
+    .update({
+      ...input,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("photo_id", photoId)
+    .select("*")
+    .single();
+
+  if (error) {
+    console.error(error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function clearFeaturedPhotos(
+  feedId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from("photos")
+    .update({
+      featured: false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("feed_id", feedId);
+
+  if (error) {
+    console.error(error);
+  }
 }

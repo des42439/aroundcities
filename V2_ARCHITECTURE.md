@@ -2,7 +2,7 @@
 
 Last updated: 3 June 2026
 
-Implementation status: Steps 1-4 are implemented. Admin UI is not implemented yet.
+Implementation status: Steps 1-5 are implemented.
 
 ## 1. Objective
 
@@ -400,6 +400,8 @@ Status: implemented.
 - Add optional source URL entry.
 - Add place list/create/edit.
 - Add photo attachment inside feed edit with optional photo-level place override.
+
+Status: implemented with simple `ADMIN_PASSWORD` protection.
 
 ### Step 6: Seed Initial Content
 

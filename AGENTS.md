@@ -115,11 +115,12 @@ Keep documentation practical and current.
 
 ## Current Implementation State
 
-V2 Phase 1 Steps 1-4 are implemented:
+V2 Phase 1 Steps 1-5 are implemented:
 
 - Project reset away from old V1 Photo/Event-first code.
 - Database migration for `places`, `feeds`, and `photos`.
 - TypeScript types and simple data helpers.
 - Public routes for `/`, `/kch`, `/feed/[slug]`, and `/place/[slug]`.
+- Minimal admin UI protected by `ADMIN_PASSWORD`.
 
-Admin UI, authentication, search, maps, tags UI, and multiple cities are not implemented yet.
+Supabase Auth, search, maps, tags UI, and multiple cities are not implemented yet.

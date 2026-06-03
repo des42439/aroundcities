@@ -81,6 +81,7 @@ The V2 Phase 1 foundation now includes:
 - Public routes for `/`, `/kch`, `/feed/[slug]`, and `/place/[slug]`.
 - Shared public shell and feed card components.
 - Formatting helpers for feed type labels, dates, content previews, and featured photo selection.
+- Password-protected admin routes for feed, place, and photo management.
 
 Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.
 
@@ -90,9 +91,19 @@ The repository may still contain archive files, notes, and backup artifacts, but
 
 ## Not Implemented Yet
 
-- Admin UI
-- Authentication
+- Supabase Auth
 - Search
 - Maps
 - Tags UI
 - Multiple cities
+
+## Admin Protection
+
+Admin routes are protected by a simple Phase 1 password flow:
+
+- `ADMIN_PASSWORD` is read from environment variables.
+- `/admin/login` accepts the password.
+- Successful login stores an httpOnly admin session cookie scoped to `/admin`.
+- Middleware redirects unauthenticated `/admin/*` requests to `/admin/login`.
+
+This intentionally avoids Supabase Auth and role management for Phase 1.
