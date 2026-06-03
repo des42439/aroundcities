@@ -224,6 +224,12 @@ create index places_slug_idx
   on public.places (slug);
 ```
 
+Storage:
+
+- Supabase Storage bucket `photos` stores uploaded feed images.
+- The bucket should be public for image delivery through public URLs.
+- Admin uploads should use the server-side `SUPABASE_SERVICE_ROLE_KEY`, not the public anon key.
+
 ### Schema Rules
 
 - Keep Feed as the primary content entity.

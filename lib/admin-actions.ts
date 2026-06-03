@@ -16,7 +16,7 @@ import {
   updatePhoto,
 } from "./photos";
 import { slugify } from "./slug";
-import { supabase } from "./supabase";
+import { getSupabaseAdmin } from "./supabase-admin";
 import {
   FeedStatus,
   FeedType,
@@ -433,9 +433,15 @@ async function uploadPhotosForFeed(
         item instanceof File && item.size > 0
     );
 
-  if (options.featureFirst && files.length > 0) {
+  if (files.length === 0) {
+    return;
+  }
+
+  if (options.featureFirst) {
     await clearFeaturedPhotos(feedId);
   }
+
+  const supabaseAdmin = getSupabaseAdmin();
 
   for (const [index, file] of files.entries()) {
     const extension =
@@ -446,7 +452,7 @@ async function uploadPhotosForFeed(
     )}.${extension}`;
     const path = `feeds/${feedId}/${filename}`;
 
-    const { error } = await supabase.storage
+    const { error } = await supabaseAdmin.storage
       .from("photos")
       .upload(path, file, {
         cacheControl: "31536000",
@@ -459,7 +465,7 @@ async function uploadPhotosForFeed(
       );
     }
 
-    const { data } = supabase.storage
+    const { data } = supabaseAdmin.storage
       .from("photos")
       .getPublicUrl(path);
 

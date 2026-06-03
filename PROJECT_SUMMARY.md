@@ -90,6 +90,8 @@ The V2 Phase 1 foundation now includes:
 - Feed edit includes a separated delete action with confirmation. Deleting a feed relies on the schema cascade to remove attached photo records and does not delete places.
 - Admin save, publish, upload, photo update, and delete forms show blocking overlay feedback, disable duplicate submissions while pending, and display inline errors when server actions fail.
 - New feed draft creation uses a unique generated slug and does not redirect as if successful when feed insert or photo upload fails.
+- Feed photo uploads use the Supabase Storage `photos` bucket and the server-side `SUPABASE_SERVICE_ROLE_KEY`.
+- The `photos` storage bucket has been created remotely and is also documented in a migration.
 
 Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.
 
@@ -114,6 +116,7 @@ The repository may still contain archive files, notes, and backup artifacts, but
 Admin routes are protected by a simple Phase 1 password flow:
 
 - `ADMIN_PASSWORD` is read from environment variables.
+- `SUPABASE_SERVICE_ROLE_KEY` is required for server-side admin photo uploads.
 - `/admin/login` accepts the password.
 - Successful login stores an httpOnly admin session cookie scoped to `/admin`.
 - Middleware redirects unauthenticated `/admin/*` requests to `/admin/login`.
