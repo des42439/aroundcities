@@ -22,6 +22,22 @@ import {
   FeedType,
 } from "@/types/database";
 
+type AdminActionState = {
+  error?: string | null;
+};
+
+function actionError(error: unknown): AdminActionState {
+  if (error instanceof Error) {
+    return {
+      error: error.message,
+    };
+  }
+
+  return {
+    error: "Something went wrong. Please try again.",
+  };
+}
+
 function nullableString(value: FormDataEntryValue | null) {
   const text = value?.toString().trim() ?? "";
 
@@ -124,232 +140,281 @@ function normalizePublishedAt(
 }
 
 export async function createPlaceAction(
+  _state: AdminActionState,
   formData: FormData
 ) {
   await requireAdmin();
 
-  const name = requiredString(formData, "name");
-  const slug =
-    nullableString(formData.get("slug")) ??
-    slugify(name);
+  let placeId: string | null = null;
 
-  const place = await createPlace({
-    name,
-    slug,
-    description: nullableString(
-      formData.get("description")
-    ),
-    latitude: optionalNumber(formData.get("latitude")),
-    longitude: optionalNumber(
-      formData.get("longitude")
-    ),
-  });
+  try {
+    const name = requiredString(formData, "name");
+    const slug =
+      nullableString(formData.get("slug")) ??
+      slugify(name);
 
-  revalidatePath("/admin/places");
+    const place = await createPlace({
+      name,
+      slug,
+      description: nullableString(
+        formData.get("description")
+      ),
+      latitude: optionalNumber(formData.get("latitude")),
+      longitude: optionalNumber(
+        formData.get("longitude")
+      ),
+    });
 
-  if (place) {
-    redirect(`/admin/places/${place.place_id}`);
+    placeId = place.place_id;
+    revalidatePath("/admin/places");
+  } catch (error) {
+    return actionError(error);
   }
 
-  redirect("/admin/places");
+  redirect(`/admin/places/${placeId}`);
 }
 
 export async function createPlaceForFeedAction(
   feedId: string,
+  _state: AdminActionState,
   formData: FormData
 ) {
   await requireAdmin();
 
-  const name = requiredString(formData, "name");
-  const slug =
-    nullableString(formData.get("slug")) ??
-    slugify(name);
+  try {
+    const name = requiredString(formData, "name");
+    const slug =
+      nullableString(formData.get("slug")) ??
+      slugify(name);
 
-  await createPlace({
-    name,
-    slug,
-    description: nullableString(
-      formData.get("description")
-    ),
-    latitude: null,
-    longitude: null,
-  });
+    await createPlace({
+      name,
+      slug,
+      description: nullableString(
+        formData.get("description")
+      ),
+      latitude: null,
+      longitude: null,
+    });
 
-  revalidatePath(`/admin/feeds/${feedId}`);
+    revalidatePath(`/admin/feeds/${feedId}`);
+  } catch (error) {
+    return actionError(error);
+  }
+
   redirect(`/admin/feeds/${feedId}`);
 }
 
 export async function updatePlaceAction(
   placeId: string,
+  _state: AdminActionState,
   formData: FormData
 ) {
   await requireAdmin();
 
-  const name = requiredString(formData, "name");
-  const slug =
-    nullableString(formData.get("slug")) ??
-    slugify(name);
+  try {
+    const name = requiredString(formData, "name");
+    const slug =
+      nullableString(formData.get("slug")) ??
+      slugify(name);
 
-  await updatePlace(placeId, {
-    name,
-    slug,
-    description: nullableString(
-      formData.get("description")
-    ),
-    latitude: optionalNumber(formData.get("latitude")),
-    longitude: optionalNumber(
-      formData.get("longitude")
-    ),
-  });
+    await updatePlace(placeId, {
+      name,
+      slug,
+      description: nullableString(
+        formData.get("description")
+      ),
+      latitude: optionalNumber(formData.get("latitude")),
+      longitude: optionalNumber(
+        formData.get("longitude")
+      ),
+    });
 
-  revalidatePath("/admin/places");
-  revalidatePath(`/admin/places/${placeId}`);
+    revalidatePath("/admin/places");
+    revalidatePath(`/admin/places/${placeId}`);
+  } catch (error) {
+    return actionError(error);
+  }
+
   redirect(`/admin/places/${placeId}`);
 }
 
 export async function createFeedAction(
+  _state: AdminActionState,
   formData: FormData
 ) {
   await requireAdmin();
 
-  const title = requiredString(formData, "title");
-  const status = parseFeedStatus(
-    formData.get("status")
-  );
-  const slug =
-    nullableString(formData.get("slug")) ??
-    slugify(title);
+  let feedId: string | null = null;
 
-  const feed = await createFeed({
-    feed_type: parseFeedType(
-      formData.get("feed_type")
-    ),
-    slug,
-    title,
-    content: nullableString(formData.get("content")),
-    place_id: nullableString(formData.get("place_id")),
-    source_url: nullableString(
-      formData.get("source_url")
-    ),
-    tags: parseTags(formData.get("tags")),
-    published_at: normalizePublishedAt(
+  try {
+    const title = requiredString(formData, "title");
+    const status = parseFeedStatus(
+      formData.get("status")
+    );
+    const slug =
+      nullableString(formData.get("slug")) ??
+      slugify(title);
+
+    const feed = await createFeed({
+      feed_type: parseFeedType(
+        formData.get("feed_type")
+      ),
+      slug,
+      title,
+      content: nullableString(formData.get("content")),
+      place_id: nullableString(formData.get("place_id")),
+      source_url: nullableString(
+        formData.get("source_url")
+      ),
+      tags: parseTags(formData.get("tags")),
+      published_at: normalizePublishedAt(
+        status,
+        formData.get("published_at")
+      ),
       status,
-      formData.get("published_at")
-    ),
-    status,
-  });
+    });
 
-  revalidatePath("/admin/feeds");
-  revalidatePath("/kch");
-
-  if (feed) {
-    redirect(`/admin/feeds/${feed.feed_id}`);
+    feedId = feed.feed_id;
+    revalidatePath("/admin/feeds");
+    revalidatePath("/kch");
+  } catch (error) {
+    return actionError(error);
   }
 
-  redirect("/admin/feeds");
+  redirect(`/admin/feeds/${feedId}`);
 }
 
 export async function createDraftFeedWithPhotosAction(
+  _state: AdminActionState,
   formData: FormData
 ) {
   await requireAdmin();
 
-  const title = requiredString(formData, "title");
-  const slug =
-    nullableString(formData.get("slug")) ??
-    slugify(title);
+  let feedId: string | null = null;
 
-  const feed = await createFeed({
-    feed_type: "local_discovery",
-    slug,
-    title,
-    content: nullableString(formData.get("content")),
-    place_id: null,
-    source_url: null,
-    tags: [],
-    published_at: null,
-    status: "draft",
-  });
+  try {
+    const title = requiredString(formData, "title");
+    const slug = `${slugify(title)}-${Date.now().toString(36)}`;
 
-  if (!feed) {
-    redirect("/admin/feeds");
+    const feed = await createFeed({
+      feed_type: "local_discovery",
+      slug,
+      title,
+      content: nullableString(formData.get("content")),
+      place_id: null,
+      source_url: null,
+      tags: [],
+      published_at: null,
+      status: "draft",
+    });
+
+    feedId = feed.feed_id;
+
+    await uploadPhotosForFeed(feed.feed_id, formData, {
+      featureFirst: true,
+      useNewPhotoMetadata: false,
+    });
+
+    revalidatePath("/admin/feeds");
+  } catch (error) {
+    if (feedId) {
+      await deleteFeed(feedId);
+    }
+
+    return actionError(error);
   }
 
-  await uploadPhotosForFeed(feed.feed_id, formData, {
-    featureFirst: true,
-    useNewPhotoMetadata: false,
-  });
-
-  revalidatePath("/admin/feeds");
-  redirect(`/admin/feeds/${feed.feed_id}`);
+  redirect(`/admin/feeds/${feedId}`);
 }
 
 export async function updateFeedAction(
   feedId: string,
+  _state: AdminActionState,
   formData: FormData
 ) {
   await requireAdmin();
 
-  const title = requiredString(formData, "title");
-  const status = parseFeedStatus(
-    formData.get("status")
-  );
-  const slug =
-    nullableString(formData.get("slug")) ??
-    slugify(title);
+  try {
+    const title = requiredString(formData, "title");
+    const status = parseFeedStatus(
+      formData.get("status")
+    );
+    const slug =
+      nullableString(formData.get("slug")) ??
+      slugify(title);
 
-  await updateFeed(feedId, {
-    feed_type: parseFeedType(formData.get("feed_type")),
-    slug,
-    title,
-    content: nullableString(formData.get("content")),
-    place_id: nullableString(formData.get("place_id")),
-    source_url: nullableString(
-      formData.get("source_url")
-    ),
-    tags: parseTags(formData.get("tags")),
-    published_at: normalizePublishedAt(
+    await updateFeed(feedId, {
+      feed_type: parseFeedType(formData.get("feed_type")),
+      slug,
+      title,
+      content: nullableString(formData.get("content")),
+      place_id: nullableString(formData.get("place_id")),
+      source_url: nullableString(
+        formData.get("source_url")
+      ),
+      tags: parseTags(formData.get("tags")),
+      published_at: normalizePublishedAt(
+        status,
+        formData.get("published_at")
+      ),
       status,
-      formData.get("published_at")
-    ),
-    status,
-  });
+    });
 
-  await replaceFeedPlaces(
-    feedId,
-    selectedPlaceIds(formData)
-  );
+    await replaceFeedPlaces(
+      feedId,
+      selectedPlaceIds(formData)
+    );
 
-  revalidatePath("/admin/feeds");
-  revalidatePath(`/admin/feeds/${feedId}`);
-  revalidatePath("/kch");
+    revalidatePath("/admin/feeds");
+    revalidatePath(`/admin/feeds/${feedId}`);
+    revalidatePath("/kch");
+  } catch (error) {
+    return actionError(error);
+  }
+
   redirect(`/admin/feeds/${feedId}`);
 }
 
-export async function deleteFeedAction(feedId: string) {
+export async function deleteFeedAction(
+  feedId: string,
+  _state: AdminActionState
+) {
   await requireAdmin();
+  void _state;
 
-  await deleteFeed(feedId);
+  try {
+    await deleteFeed(feedId);
 
-  revalidatePath("/admin/feeds");
-  revalidatePath("/kch");
+    revalidatePath("/admin/feeds");
+    revalidatePath("/kch");
+  } catch (error) {
+    return actionError(error);
+  }
+
   redirect("/admin/feeds");
 }
 
 export async function uploadFeedPhotosAction(
   feedId: string,
+  _state: AdminActionState,
   formData: FormData
 ) {
   await requireAdmin();
 
-  await uploadPhotosForFeed(feedId, formData, {
-    featureFirst:
-      formData.get("feature_first_photo") === "on",
-    useNewPhotoMetadata: true,
-  });
+  try {
+    await uploadPhotosForFeed(feedId, formData, {
+      featureFirst:
+        formData.get("feature_first_photo") === "on",
+      useNewPhotoMetadata: true,
+    });
 
-  revalidatePath(`/admin/feeds/${feedId}`);
-  revalidatePath("/kch");
+    revalidatePath(`/admin/feeds/${feedId}`);
+    revalidatePath("/kch");
+  } catch (error) {
+    return actionError(error);
+  }
+
   redirect(`/admin/feeds/${feedId}`);
 }
 
@@ -389,8 +454,9 @@ async function uploadPhotosForFeed(
       });
 
     if (error) {
-      console.error(error);
-      continue;
+      throw new Error(
+        `Photo upload failed: ${error.message}`
+      );
     }
 
     const { data } = supabase.storage
@@ -429,33 +495,39 @@ async function uploadPhotosForFeed(
 export async function updateFeedPhotoAction(
   feedId: string,
   photoId: string,
+  _state: AdminActionState,
   formData: FormData
 ) {
   await requireAdmin();
 
-  const isFeatured =
-    formData.get("featured") === "on";
+  try {
+    const isFeatured =
+      formData.get("featured") === "on";
 
-  if (isFeatured) {
-    await clearFeaturedPhotos(feedId);
+    if (isFeatured) {
+      await clearFeaturedPhotos(feedId);
+    }
+
+    await updatePhoto(photoId, {
+      title: nullableString(formData.get("title")),
+      description: nullableString(
+        formData.get("description")
+      ),
+      location_name: nullableString(
+        formData.get("location_name")
+      ),
+      place_id: nullableString(formData.get("place_id")),
+      captured_at: parseDateTime(
+        formData.get("captured_at")
+      ),
+      featured: isFeatured,
+    });
+
+    revalidatePath(`/admin/feeds/${feedId}`);
+    revalidatePath("/kch");
+  } catch (error) {
+    return actionError(error);
   }
 
-  await updatePhoto(photoId, {
-    title: nullableString(formData.get("title")),
-    description: nullableString(
-      formData.get("description")
-    ),
-    location_name: nullableString(
-      formData.get("location_name")
-    ),
-    place_id: nullableString(formData.get("place_id")),
-    captured_at: parseDateTime(
-      formData.get("captured_at")
-    ),
-    featured: isFeatured,
-  });
-
-  revalidatePath(`/admin/feeds/${feedId}`);
-  revalidatePath("/kch");
   redirect(`/admin/feeds/${feedId}`);
 }

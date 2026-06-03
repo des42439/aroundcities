@@ -1,3 +1,4 @@
+import AdminActionForm from "./AdminActionForm";
 import {
   Field,
   inputClassName,
@@ -11,7 +12,7 @@ import { createDraftFeedWithPhotosAction } from "@/lib/admin-actions";
 
 export default function NewFeedDraftForm() {
   return (
-    <form
+    <AdminActionForm
       action={createDraftFeedWithPhotosAction}
       className="space-y-6"
     >
@@ -45,6 +46,6 @@ export default function NewFeedDraftForm() {
       <AdminSubmitButton pendingLabel="Saving...">
         Save draft
       </AdminSubmitButton>
-    </form>
+    </AdminActionForm>
   );
 }

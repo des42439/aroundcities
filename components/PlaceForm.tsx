@@ -1,15 +1,21 @@
 import AutoSlugFields from "./AutoSlugFields";
+import AdminActionForm, {
+  AdminActionState,
+} from "./AdminActionForm";
 import {
   Field,
   inputClassName,
-  primaryButtonClassName,
   textareaClassName,
 } from "./AdminForm";
+import { AdminSubmitButton } from "./AdminSubmitButton";
 import { Place } from "@/types/database";
 
 type Props = {
   place?: Place | null;
-  action: (formData: FormData) => void | Promise<void>;
+  action: (
+    state: AdminActionState,
+    formData: FormData
+  ) => Promise<AdminActionState>;
   submitLabel: string;
 };
 
@@ -19,7 +25,7 @@ export default function PlaceForm({
   submitLabel,
 }: Props) {
   return (
-    <form action={action} className="space-y-6">
+    <AdminActionForm action={action} className="space-y-6">
       <AutoSlugFields
         sourceLabel="Name"
         sourceName="name"
@@ -57,12 +63,9 @@ export default function PlaceForm({
         </Field>
       </div>
 
-      <button
-        type="submit"
-        className={primaryButtonClassName}
-      >
+      <AdminSubmitButton pendingLabel="Saving...">
         {submitLabel}
-      </button>
-    </form>
+      </AdminSubmitButton>
+    </AdminActionForm>
   );
 }

@@ -128,7 +128,8 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Inline place creation is available from the feed editor.
 - Multiple feed places supported in code through the proposed `feed_places` migration.
 - Feed delete support from the edit page with confirmation.
-- Admin form loading states for save, publish, upload, photo update, and delete actions.
+- Blocking admin form loading states for save, publish, upload, photo update, and delete actions.
+- Inline admin action errors when feed/place/photo writes fail.
 
 Supabase Auth, search, maps, tags UI, and multiple cities are not implemented yet.
 
@@ -147,3 +148,4 @@ Feed creation should be photo-first and draft-first:
 - Treat `feeds.place_id` as the optional primary place and `feed_places` as the multiple-place path once its migration is applied.
 - Keep destructive actions visually separated and confirm before deleting.
 - Keep admin submit buttons visibly pending and disabled while server actions run.
+- Do not redirect as if successful when feed creation, photo upload, or other admin writes fail.

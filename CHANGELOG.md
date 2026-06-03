@@ -30,6 +30,8 @@ All notable changes to AroundCities should be documented here.
 - Added delete feed support on the feed edit page with confirmation.
 - Added admin form loading/progress states for save, publish, upload, photo update, and delete actions.
 - Added inline place creation from the feed editor.
+- Added blocking admin submit overlays and inline error messages for failed admin actions.
+- Changed new feed draft creation so insert/upload failures no longer redirect as if the save succeeded.
 - Added `AGENTS.md` as the agent working guide for product direction, engineering preferences, current architecture, and documentation maintenance.
 - Added `PROJECT_SUMMARY.md` with the current V2 direction, Phase 1 scope, planned routes, admin direction, and architecture source.
 - Added `CHANGELOG.md` to track future project changes.

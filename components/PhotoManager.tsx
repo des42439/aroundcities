@@ -1,3 +1,4 @@
+import AdminActionForm from "./AdminActionForm";
 import {
   Field,
   inputClassName,
@@ -40,7 +41,7 @@ export default function PhotoManager({
         </p>
       </div>
 
-      <form
+      <AdminActionForm
         action={uploadAction}
         className="space-y-5 rounded-lg border border-neutral-900 p-4"
       >
@@ -117,7 +118,7 @@ export default function PhotoManager({
         <AdminSubmitButton pendingLabel="Uploading...">
           Upload photos
         </AdminSubmitButton>
-      </form>
+      </AdminActionForm>
 
       <div className="space-y-4">
         {photos.length === 0 ? (
@@ -133,7 +134,7 @@ export default function PhotoManager({
             );
 
             return (
-              <form
+              <AdminActionForm
                 key={photo.photo_id}
                 action={action}
                 className="grid gap-4 rounded-lg border border-neutral-900 p-4 md:grid-cols-[180px_1fr]"
@@ -219,7 +220,7 @@ export default function PhotoManager({
                     Save photo
                   </AdminSubmitButton>
                 </div>
-              </form>
+              </AdminActionForm>
             );
           })
         )}

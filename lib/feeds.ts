@@ -91,7 +91,7 @@ export async function getFeedById(
 
 export async function createFeed(
   input: NewFeed
-): Promise<Feed | null> {
+): Promise<Feed> {
   const { data, error } = await supabase
     .from("feeds")
     .insert(input)
@@ -109,7 +109,7 @@ export async function createFeed(
 export async function updateFeed(
   feedId: string,
   input: FeedUpdate
-): Promise<Feed | null> {
+): Promise<Feed> {
   const { data, error } = await supabase
     .from("feeds")
     .update({
@@ -137,6 +137,6 @@ export async function deleteFeed(
     .eq("feed_id", feedId);
 
   if (error) {
-    console.error(error);
+    throw new Error(`Feed delete failed: ${error.message}`);
   }
 }

@@ -1,3 +1,4 @@
+import AdminActionForm from "./AdminActionForm";
 import {
   Field,
   inputClassName,
@@ -27,7 +28,10 @@ export default function InlinePlaceCreateForm({
         Add a new place
       </summary>
 
-      <form action={action} className="mt-5 space-y-4">
+      <AdminActionForm
+        action={action}
+        className="mt-5 space-y-4"
+      >
         <AdminFormProgress />
 
         <div className="grid gap-4 md:grid-cols-2">
@@ -58,7 +62,7 @@ export default function InlinePlaceCreateForm({
         <AdminSubmitButton pendingLabel="Saving...">
           Save place
         </AdminSubmitButton>
-      </form>
+      </AdminActionForm>
     </details>
   );
 }

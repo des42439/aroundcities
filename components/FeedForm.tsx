@@ -1,4 +1,7 @@
 import AutoSlugFields from "./AutoSlugFields";
+import AdminActionForm, {
+  AdminActionState,
+} from "./AdminActionForm";
 import {
   Field,
   inputClassName,
@@ -20,7 +23,10 @@ type Props = {
   feed?: FeedWithPlaceAndPhotos | null;
   feedPlaces?: FeedPlaceWithPlace[];
   places: Place[];
-  action: (formData: FormData) => void | Promise<void>;
+  action: (
+    state: AdminActionState,
+    formData: FormData
+  ) => Promise<AdminActionState>;
 };
 
 export default function FeedForm({
@@ -34,7 +40,7 @@ export default function FeedForm({
   );
 
   return (
-    <form action={action} className="space-y-6">
+    <AdminActionForm action={action} className="space-y-6">
       <AdminFormProgress />
 
       <input
@@ -163,6 +169,6 @@ export default function FeedForm({
           Publish
         </AdminSubmitButton>
       </div>
-    </form>
+    </AdminActionForm>
   );
 }

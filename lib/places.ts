@@ -82,7 +82,7 @@ export async function getPlaceById(
 
 export async function createPlace(
   input: NewPlace
-): Promise<Place | null> {
+): Promise<Place> {
   const { data, error } = await supabase
     .from("places")
     .insert(input)
@@ -90,8 +90,7 @@ export async function createPlace(
     .single();
 
   if (error) {
-    console.error(error);
-    return null;
+    throw new Error(`Place create failed: ${error.message}`);
   }
 
   return data;
@@ -100,7 +99,7 @@ export async function createPlace(
 export async function updatePlace(
   placeId: string,
   input: PlaceUpdate
-): Promise<Place | null> {
+): Promise<Place> {
   const { data, error } = await supabase
     .from("places")
     .update({
@@ -112,8 +111,7 @@ export async function updatePlace(
     .single();
 
   if (error) {
-    console.error(error);
-    return null;
+    throw new Error(`Place update failed: ${error.message}`);
   }
 
   return data;

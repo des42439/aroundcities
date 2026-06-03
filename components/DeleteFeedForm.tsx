@@ -1,3 +1,4 @@
+import AdminActionForm from "./AdminActionForm";
 import {
   AdminFormProgress,
   AdminSubmitButton,
@@ -24,7 +25,10 @@ export default function DeleteFeedForm({ feedId }: Props) {
           </p>
         </div>
 
-        <form action={action} className="space-y-4">
+        <AdminActionForm
+          action={action}
+          className="space-y-4"
+        >
           <AdminFormProgress />
           <AdminSubmitButton
             variant="danger"
@@ -33,7 +37,7 @@ export default function DeleteFeedForm({ feedId }: Props) {
           >
             Delete feed
           </AdminSubmitButton>
-        </form>
+        </AdminActionForm>
       </div>
     </section>
   );

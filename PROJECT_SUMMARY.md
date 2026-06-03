@@ -88,7 +88,8 @@ The V2 Phase 1 foundation now includes:
 - Inline place creation from the feed editor so missing places can be added without leaving the draft.
 - Multiple feed places are supported in code through the proposed `feed_places` join table migration while keeping `feeds.place_id` as an optional primary place.
 - Feed edit includes a separated delete action with confirmation. Deleting a feed relies on the schema cascade to remove attached photo records and does not delete places.
-- Admin save, publish, upload, photo update, and delete forms show visible loading text/progress and disable duplicate submissions while pending.
+- Admin save, publish, upload, photo update, and delete forms show blocking overlay feedback, disable duplicate submissions while pending, and display inline errors when server actions fail.
+- New feed draft creation uses a unique generated slug and does not redirect as if successful when feed insert or photo upload fails.
 
 Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.
 

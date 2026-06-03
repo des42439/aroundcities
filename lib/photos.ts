@@ -28,7 +28,7 @@ export async function getPhotosByFeedId(
 
 export async function createPhoto(
   input: NewPhoto
-): Promise<Photo | null> {
+): Promise<Photo> {
   const { data, error } = await supabase
     .from("photos")
     .insert(input)
@@ -36,8 +36,7 @@ export async function createPhoto(
     .single();
 
   if (error) {
-    console.error(error);
-    return null;
+    throw new Error(`Photo create failed: ${error.message}`);
   }
 
   return data;
@@ -46,7 +45,7 @@ export async function createPhoto(
 export async function updatePhoto(
   photoId: string,
   input: PhotoUpdate
-): Promise<Photo | null> {
+): Promise<Photo> {
   const { data, error } = await supabase
     .from("photos")
     .update({
@@ -58,8 +57,7 @@ export async function updatePhoto(
     .single();
 
   if (error) {
-    console.error(error);
-    return null;
+    throw new Error(`Photo update failed: ${error.message}`);
   }
 
   return data;
@@ -77,6 +75,8 @@ export async function clearFeaturedPhotos(
     .eq("feed_id", feedId);
 
   if (error) {
-    console.error(error);
+    throw new Error(
+      `Featured photo update failed: ${error.message}`
+    );
   }
 }
