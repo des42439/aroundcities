@@ -34,6 +34,7 @@ All notable changes to AroundCities should be documented here.
 - Changed new feed draft creation so insert/upload failures no longer redirect as if the save succeeded.
 - Added a Supabase Storage migration for the public `photos` bucket.
 - Switched admin photo uploads to the server-side service-role Supabase client.
+- Added durable admin error logging with Error IDs, Supabase persistence, server console output, browser console output, and local JSONL fallback logs.
 - Added `AGENTS.md` as the agent working guide for product direction, engineering preferences, current architecture, and documentation maintenance.
 - Added `PROJECT_SUMMARY.md` with the current V2 direction, Phase 1 scope, planned routes, admin direction, and architecture source.
 - Added `CHANGELOG.md` to track future project changes.

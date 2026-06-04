@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { useActionState } from "react";
 
 export type AdminActionState = {
   error?: string | null;
+  errorId?: string | null;
 };
 
 type Props = {
@@ -28,6 +30,15 @@ export default function AdminActionForm({
     action,
     initialState
   );
+
+  useEffect(() => {
+    if (state.error) {
+      console.error("[admin-action-error]", {
+        error: state.error,
+        errorId: state.errorId,
+      });
+    }
+  }, [state.error, state.errorId]);
 
   return (
     <form action={formAction} className={className}>

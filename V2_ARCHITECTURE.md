@@ -196,6 +196,15 @@ create table public.feed_places (
   primary key (feed_id, place_id)
 );
 
+create table public.admin_error_logs (
+  log_id uuid primary key default gen_random_uuid(),
+  error_id text not null unique,
+  area text not null,
+  message text not null,
+  details jsonb not null default '{}',
+  created_at timestamptz not null default now()
+);
+
 create index feeds_status_published_at_idx
   on public.feeds (status, published_at desc);
 
@@ -222,6 +231,9 @@ create index feed_places_place_id_idx
 
 create index places_slug_idx
   on public.places (slug);
+
+create index admin_error_logs_created_at_idx
+  on public.admin_error_logs (created_at desc);
 ```
 
 Storage:
@@ -229,6 +241,14 @@ Storage:
 - Supabase Storage bucket `photos` stores uploaded feed images.
 - The bucket should be public for image delivery through public URLs.
 - Admin uploads should use the server-side `SUPABASE_SERVICE_ROLE_KEY`, not the public anon key.
+
+Admin error logging:
+
+- Admin action failures should generate an Error ID.
+- The Error ID should be shown in the admin UI and printed in the browser console.
+- Server-side logs should be written to `admin_error_logs` in Supabase when available.
+- Local development may also append JSONL entries to `.logs/admin-errors.jsonl`.
+- Logs must avoid secrets and only include minimal troubleshooting context.
 
 ### Schema Rules
 

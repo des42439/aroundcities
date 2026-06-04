@@ -131,6 +131,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Blocking admin form loading states for save, publish, upload, photo update, and delete actions.
 - Inline admin action errors when feed/place/photo writes fail.
 - Supabase Storage `photos` bucket is required for feed photo uploads.
+- Admin action failures should be logged with an Error ID for troubleshooting.
 
 Supabase Auth, search, maps, tags UI, and multiple cities are not implemented yet.
 
@@ -151,3 +152,4 @@ Feed creation should be photo-first and draft-first:
 - Keep admin submit buttons visibly pending and disabled while server actions run.
 - Do not redirect as if successful when feed creation, photo upload, or other admin writes fail.
 - Admin photo uploads should use the server-side service-role Supabase client, not the public anon client.
+- Error logs should avoid secrets and use minimal context such as action area, feed ID, or photo ID.

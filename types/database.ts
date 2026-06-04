@@ -67,6 +67,15 @@ export interface FeedPlaceWithPlace extends FeedPlace {
   place: Place;
 }
 
+export interface AdminErrorLog {
+  log_id: string;
+  error_id: string;
+  area: string;
+  message: string;
+  details: Json;
+  created_at: string;
+}
+
 export interface FeedWithPlaceAndPhotos extends Feed {
   place: Place | null;
   photos: Photo[];
@@ -239,6 +248,26 @@ export interface Database {
             referencedColumns: ["place_id"];
           },
         ];
+      };
+      admin_error_logs: {
+        Row: AdminErrorLog;
+        Insert: {
+          log_id?: string;
+          error_id: string;
+          area: string;
+          message: string;
+          details?: Json;
+          created_at?: string;
+        };
+        Update: {
+          log_id?: string;
+          error_id?: string;
+          area?: string;
+          message?: string;
+          details?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
       };
     };
     Views: Record<string, never>;

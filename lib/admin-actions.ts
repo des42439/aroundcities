@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { logAdminError } from "./admin-error-log";
 import { requireAdmin } from "./admin-auth";
 import {
   createFeed,
@@ -24,17 +25,23 @@ import {
 
 type AdminActionState = {
   error?: string | null;
+  errorId?: string | null;
 };
 
-function actionError(error: unknown): AdminActionState {
-  if (error instanceof Error) {
-    return {
-      error: error.message,
-    };
-  }
+async function actionError(
+  area: string,
+  error: unknown,
+  context: Record<string, unknown> = {}
+): Promise<AdminActionState> {
+  const loggedError = await logAdminError(
+    area,
+    error,
+    context
+  );
 
   return {
-    error: "Something went wrong. Please try again.",
+    error: `${loggedError.message} (Error ID: ${loggedError.errorId})`,
+    errorId: loggedError.errorId,
   };
 }
 
@@ -168,7 +175,7 @@ export async function createPlaceAction(
     placeId = place.place_id;
     revalidatePath("/admin/places");
   } catch (error) {
-    return actionError(error);
+    return await actionError("create_place", error);
   }
 
   redirect(`/admin/places/${placeId}`);
@@ -199,7 +206,9 @@ export async function createPlaceForFeedAction(
 
     revalidatePath(`/admin/feeds/${feedId}`);
   } catch (error) {
-    return actionError(error);
+    return await actionError("create_place_for_feed", error, {
+      feedId,
+    });
   }
 
   redirect(`/admin/feeds/${feedId}`);
@@ -233,7 +242,9 @@ export async function updatePlaceAction(
     revalidatePath("/admin/places");
     revalidatePath(`/admin/places/${placeId}`);
   } catch (error) {
-    return actionError(error);
+    return await actionError("update_place", error, {
+      placeId,
+    });
   }
 
   redirect(`/admin/places/${placeId}`);
@@ -279,7 +290,7 @@ export async function createFeedAction(
     revalidatePath("/admin/feeds");
     revalidatePath("/kch");
   } catch (error) {
-    return actionError(error);
+    return await actionError("create_feed", error);
   }
 
   redirect(`/admin/feeds/${feedId}`);
@@ -322,7 +333,13 @@ export async function createDraftFeedWithPhotosAction(
       await deleteFeed(feedId);
     }
 
-    return actionError(error);
+    return await actionError(
+      "create_draft_feed_with_photos",
+      error,
+      {
+        feedId,
+      }
+    );
   }
 
   redirect(`/admin/feeds/${feedId}`);
@@ -370,7 +387,9 @@ export async function updateFeedAction(
     revalidatePath(`/admin/feeds/${feedId}`);
     revalidatePath("/kch");
   } catch (error) {
-    return actionError(error);
+    return await actionError("update_feed", error, {
+      feedId,
+    });
   }
 
   redirect(`/admin/feeds/${feedId}`);
@@ -389,7 +408,9 @@ export async function deleteFeedAction(
     revalidatePath("/admin/feeds");
     revalidatePath("/kch");
   } catch (error) {
-    return actionError(error);
+    return await actionError("delete_feed", error, {
+      feedId,
+    });
   }
 
   redirect("/admin/feeds");
@@ -412,7 +433,9 @@ export async function uploadFeedPhotosAction(
     revalidatePath(`/admin/feeds/${feedId}`);
     revalidatePath("/kch");
   } catch (error) {
-    return actionError(error);
+    return await actionError("upload_feed_photos", error, {
+      feedId,
+    });
   }
 
   redirect(`/admin/feeds/${feedId}`);
@@ -532,7 +555,10 @@ export async function updateFeedPhotoAction(
     revalidatePath(`/admin/feeds/${feedId}`);
     revalidatePath("/kch");
   } catch (error) {
-    return actionError(error);
+    return await actionError("update_feed_photo", error, {
+      feedId,
+      photoId,
+    });
   }
 
   redirect(`/admin/feeds/${feedId}`);
