@@ -11,7 +11,9 @@ export async function getFeeds(): Promise<
 > {
   const { data, error } = await supabase
     .from("feeds")
-    .select("*, place:places(*), photos(*)")
+    .select(
+      "*, place:places!feeds_place_id_fkey(*), photos(*)"
+    )
     .order("published_at", {
       ascending: false,
       nullsFirst: false,
@@ -31,7 +33,9 @@ export async function getLatestPublishedFeeds(): Promise<
 > {
   const { data, error } = await supabase
     .from("feeds")
-    .select("*, place:places(*), photos(*)")
+    .select(
+      "*, place:places!feeds_place_id_fkey(*), photos(*)"
+    )
     .eq("status", "published")
     .order("published_at", {
       ascending: false,
@@ -51,7 +55,9 @@ export async function getFeedBySlug(
 ): Promise<FeedWithPlaceAndPhotos | null> {
   const { data, error } = await supabase
     .from("feeds")
-    .select("*, place:places(*), photos(*)")
+    .select(
+      "*, place:places!feeds_place_id_fkey(*), photos(*)"
+    )
     .eq("slug", slug)
     .eq("status", "published")
     .maybeSingle();
@@ -73,7 +79,9 @@ export async function getFeedById(
 ): Promise<FeedWithPlaceAndPhotos | null> {
   const { data, error } = await supabase
     .from("feeds")
-    .select("*, place:places(*), photos(*)")
+    .select(
+      "*, place:places!feeds_place_id_fkey(*), photos(*)"
+    )
     .eq("feed_id", feedId)
     .maybeSingle();
 
@@ -99,8 +107,7 @@ export async function createFeed(
     .single();
 
   if (error) {
-    console.error(error);
-    return null;
+    throw new Error(`Feed create failed: ${error.message}`);
   }
 
   return data;
@@ -121,8 +128,7 @@ export async function updateFeed(
     .single();
 
   if (error) {
-    console.error(error);
-    return null;
+    throw new Error(`Feed update failed: ${error.message}`);
   }
 
   return data;

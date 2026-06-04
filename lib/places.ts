@@ -27,7 +27,9 @@ export async function getPlaceBySlug(
 
   const { data: feeds, error: feedsError } = await supabase
     .from("feeds")
-    .select("*, place:places(*), photos(*)")
+    .select(
+      "*, place:places!feeds_place_id_fkey(*), photos(*)"
+    )
     .eq("place_id", place.place_id)
     .eq("status", "published")
     .order("published_at", {
