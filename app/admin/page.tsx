@@ -19,6 +19,18 @@ export default async function AdminPage() {
             Write, draft, publish, and attach photos.
           </p>
         </Link>
+
+        <Link
+          href="/admin/sources"
+          className="rounded-lg border border-neutral-900 p-5 hover:border-neutral-700"
+        >
+          <h2 className="text-xl font-semibold">
+            Sources
+          </h2>
+          <p className="mt-2 text-sm text-neutral-500">
+            Manually check useful pages and websites.
+          </p>
+        </Link>
       </div>
     </AdminShell>
   );

@@ -135,6 +135,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Blocking admin form loading states for save, publish, upload, photo update, and delete actions.
 - Inline admin action errors when feed/place/photo writes fail.
 - `/admin/sources` is available as a simple manual curator checklist sorted by never checked first, then oldest checked first.
+- Source creation uses `/admin/sources/new`; keep the main Sources page focused on the checklist list.
 - Supabase Storage `photos` bucket is required for feed photo uploads.
 - Admin action failures should be logged with an Error ID for troubleshooting.
 

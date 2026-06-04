@@ -385,6 +385,7 @@ Suggested minimal routes:
 - `/admin/places/new` maintenance route
 - `/admin/places/[placeId]` maintenance route
 - `/admin/sources`
+- `/admin/sources/new`
 - `/admin/sources/[sourceId]`
 
 Photo management can live inside the feed editor during Phase 1.

@@ -1,13 +1,12 @@
 import Link from "next/link";
 import AdminActionForm from "@/components/AdminActionForm";
 import {
+  primaryButtonClassName,
   secondaryButtonClassName,
 } from "@/components/AdminForm";
 import AdminShell from "@/components/AdminShell";
 import { AdminSubmitButton } from "@/components/AdminSubmitButton";
-import SourceForm from "@/components/SourceForm";
 import {
-  createSourceAction,
   deleteSourceAction,
   markSourceCheckedAction,
 } from "@/lib/admin-actions";
@@ -37,19 +36,15 @@ export default async function AdminSourcesPage() {
 
   return (
     <AdminShell title="Sources">
-      <div className="space-y-8">
-        <section className="rounded-lg border border-neutral-900 p-4">
-          <h2 className="text-lg font-semibold">
-            Add source
-          </h2>
-          <div className="mt-4">
-            <SourceForm
-              action={createSourceAction}
-              submitLabel="Add source"
-              pendingLabel="Adding..."
-            />
-          </div>
-        </section>
+      <div className="space-y-6">
+        <div>
+          <Link
+            href="/admin/sources/new"
+            className={primaryButtonClassName}
+          >
+            New source
+          </Link>
+        </div>
 
         {sources.length === 0 ? (
           <p className="text-neutral-500">

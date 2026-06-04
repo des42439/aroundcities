@@ -11,6 +11,8 @@ All notable changes to AroundCities should be documented here.
 - Added a `sources` table migration with name, URL, notes, last checked timestamp, and timestamps.
 - Added Source TypeScript types, data helpers, create/edit/delete actions, and a manual "Mark Checked" action sorted by never checked first, then oldest checked first.
 - Added inline admin errors and pending states for source create, update, delete, and mark checked actions.
+- Changed Sources admin flow so `/admin/sources` focuses on the checklist list, with source creation moved to `/admin/sources/new`.
+- Added Sources to the main admin landing panel for consistency with the top admin navigation.
 
 ### Notes
 

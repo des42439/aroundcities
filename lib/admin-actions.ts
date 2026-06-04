@@ -860,13 +860,11 @@ export async function createSourceAction(
     });
 
     revalidatePath("/admin/sources");
-
-    return {
-      error: null,
-    };
   } catch (error) {
     return await actionError("create_source", error);
   }
+
+  redirect("/admin/sources");
 }
 
 export async function updateSourceAction(
