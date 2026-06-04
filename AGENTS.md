@@ -71,6 +71,7 @@ Prefer a simple workflow:
 
 - Create a draft feed from title, content, and photos
 - Post-process slug, tags, source, places, and publishing later
+- Add operating hours / schedule during post-processing when a feed needs it
 - Create missing places inline while editing feeds/photos
 - Attach or edit photos inside the feed editor
 
@@ -141,6 +142,7 @@ Feed creation should be photo-first and draft-first:
 
 - Ask only for title, content/description, and photos during creation.
 - Hide feed type, slug, tags, source URL, place, status, and published time during creation.
+- Treat operating hours as optional feed-level free text, not a full calendar or directory-hours system.
 - Use the edit page for post-processing.
 - Keep place assignment human-controlled only.
 - Keep Places out of the main admin workflow; treat place routes as maintenance tools.

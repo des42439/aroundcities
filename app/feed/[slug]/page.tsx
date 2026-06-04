@@ -79,6 +79,17 @@ export default async function FeedDetailPage({
           </div>
         )}
 
+        {feed.operating_hours && (
+          <section className="mt-8 border-y border-neutral-900 py-5">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
+              Operating hours / schedule
+            </h2>
+            <p className="mt-3 whitespace-pre-wrap leading-7 text-neutral-300">
+              {feed.operating_hours}
+            </p>
+          </section>
+        )}
+
         {photos.length > 0 && (
           <div className="mt-10 space-y-8">
             {photos.map((photo) => (

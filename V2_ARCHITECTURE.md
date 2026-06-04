@@ -59,6 +59,7 @@ Fields:
 - `content`
 - `place_id` nullable
 - `source_url` nullable
+- `operating_hours` nullable
 - `tags`
 - `published_at`
 - `status`
@@ -70,6 +71,7 @@ Notes:
 - `feed_type` is kept internally for now with a default value. It should not be shown during creation because tags/categories are a better long-term classification direction.
 - `slug` should be unique and used for public feed URLs.
 - `source_url` is optional and should be used only when a feed references an external source.
+- `operating_hours` is optional free text for human-entered schedules, such as shop hours, clinic sessions, or temporary festival dates and times.
 - `tags` is a simple `text[]` field for Phase 1. It avoids extra tag tables while still allowing lightweight categorization.
 - `status` should support draft and published states at minimum.
 - `published_at` controls public chronological ordering.
@@ -167,6 +169,7 @@ create table public.feeds (
   content text,
   place_id uuid references public.places(place_id),
   source_url text,
+  operating_hours text,
   tags text[] not null default '{}',
   published_at timestamptz,
   status text not null default 'draft'
@@ -256,6 +259,7 @@ Admin error logging:
 - Keep `feed_type` hidden/defaulted for now. Prefer flexible tags/categories for future content classification instead of forcing a single feed type during creation.
 - Use `slug` for public feed URLs.
 - Use `source_url` only for optional external references.
+- Use `operating_hours` as flexible free text for schedules. Do not introduce a calendar, recurrence engine, or business-directory operating-hours model in Phase 1.
 - Use `tags text[]` for simple Phase 1 tags without introducing tag entities or tag UI.
 - Keep Photo attached directly to Feed.
 - Keep Place optional on Feed.
@@ -297,6 +301,7 @@ Purpose:
 - Shows one published feed.
 - Displays title, content, place link when available, published date, and all attached photos.
 - Shows source link when `source_url` is available.
+- Shows operating hours / schedule when `operating_hours` is available.
 
 Use `slug` for public feed URLs because slugs are now part of the Phase 1 feed model.
 
@@ -339,7 +344,7 @@ Place management routes should remain available directly for maintenance, but Pl
 3. Optionally assign primary place and multiple feed places.
 4. Optionally assign photo-level places.
 5. Create a missing place inline from the feed editor when needed.
-6. Optionally edit slug, tags, source URL, and published time.
+6. Optionally edit slug, tags, source URL, operating hours / schedule, and published time.
 7. Choose a featured photo.
 8. Publish when ready.
 9. Delete the feed only from the separated delete area when it is no longer needed.
@@ -377,6 +382,7 @@ Minimum card content:
 - Published date
 - Place name/link if available
 - Optional tags
+- Optional operating hours / schedule
 
 ### Feed Detail
 
@@ -390,6 +396,7 @@ Minimum detail content:
 - Photo gallery for attached photos
 - Source link if available
 - Optional tags
+- Optional operating hours / schedule
 
 ### Place Detail
 

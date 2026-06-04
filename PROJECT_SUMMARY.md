@@ -73,7 +73,7 @@ The V2 Phase 1 foundation now includes:
 
 - Project reset removing old V1 public/admin routes, V1 components, and V1 Photo/Event helpers.
 - Database migration for `places`, `feeds`, and `photos`.
-- Feed fields: `feed_type`, `slug`, `title`, `content`, nullable `place_id`, nullable `source_url`, `tags`, `published_at`, `status`, timestamps.
+- Feed fields: `feed_type`, `slug`, `title`, `content`, nullable `place_id`, nullable `source_url`, nullable `operating_hours`, `tags`, `published_at`, `status`, timestamps.
 - Photo fields: `feed_id`, nullable `place_id`, title, description, URL, location name, captured timestamp, featured flag, timestamps.
 - Place fields: name, slug, description, optional coordinates, timestamps.
 - TypeScript database types for the V2 schema.
@@ -83,7 +83,7 @@ The V2 Phase 1 foundation now includes:
 - Formatting helpers for feed type labels, dates, content previews, and featured photo selection.
 - Password-protected admin routes for feed, place, and photo management.
 - Photo-first feed creation: title, content, multiple photos, save draft.
-- Post-processing feed edit flow for slug, tags, source URL, places, featured photo, and publishing.
+- Post-processing feed edit flow for slug, tags, source URL, operating hours / schedule, places, featured photo, and publishing.
 - Places are no longer promoted as a main admin navigation item. `/admin/places` remains available directly as a maintenance route.
 - Inline place creation from the feed editor so missing places can be added without leaving the draft.
 - Multiple feed places are supported in code through the proposed `feed_places` join table migration while keeping `feeds.place_id` as an optional primary place.
@@ -97,11 +97,13 @@ The V2 Phase 1 foundation now includes:
 - New feed photos are compressed in the browser before upload, targeting less than 1MB per photo with a 1600px longest-side resize.
 - New feed creation returns to `/admin/feeds` after save.
 - Admin feed list shows the featured photo or first attached photo as a thumbnail.
-- Feed editing uses an optional-field picker so slug, places, publishing time, source URL, and tags can be added only when needed.
+- Feed editing uses an optional-field picker so slug, places, publishing time, source URL, operating hours / schedule, and tags can be added only when needed.
 - Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
 - Existing feed photo uploads are still guarded at roughly 4MB total per submit until that editor flow is also moved to direct uploads.
 
 Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.
+
+Operating hours are implemented as flexible feed-level free text in `feeds.operating_hours`. This intentionally supports shop hours, temporary festival schedules, and clinic session hours without introducing a recurrence/calendar system in Phase 1.
 
 `feed_type` is kept internally with a `local_discovery` default for compatibility, but it is hidden from the creation workflow. Future classification should lean on flexible tags/categories instead.
 

@@ -54,6 +54,12 @@ export default function FeedCard({ feed }: Props) {
           </p>
         )}
 
+        {feed.operating_hours && (
+          <div className="whitespace-pre-wrap border-l border-neutral-800 pl-3 text-sm leading-6 text-neutral-400">
+            {feed.operating_hours}
+          </div>
+        )}
+
         {feed.place && (
           <Link
             href={`/place/${feed.place.slug}`}

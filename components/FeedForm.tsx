@@ -27,6 +27,7 @@ type OptionalField =
   | "feedPlaces"
   | "publishedAt"
   | "sourceUrl"
+  | "operatingHours"
   | "tags";
 
 type Props = {
@@ -64,6 +65,10 @@ const optionalFields: {
     label: "Source URL",
   },
   {
+    id: "operatingHours",
+    label: "Operating hours",
+  },
+  {
     id: "tags",
     label: "Tags",
   },
@@ -89,6 +94,10 @@ export default function FeedForm({
 
     if (feed?.source_url) {
       initial.add("sourceUrl");
+    }
+
+    if (feed?.operating_hours) {
+      initial.add("operatingHours");
     }
 
     if (feed?.tags.length) {
@@ -306,6 +315,23 @@ export default function FeedForm({
               type="hidden"
               name="source_url"
               value={feed?.source_url ?? ""}
+            />
+          )}
+
+          {isActive("operatingHours") ? (
+            <Field label="Operating hours / schedule">
+              <textarea
+                name="operating_hours"
+                defaultValue={feed?.operating_hours ?? ""}
+                placeholder={"Mon-Fri 9am-5pm\nSat 12pm-5pm\nSun off"}
+                className={textareaClassName}
+              />
+            </Field>
+          ) : (
+            <input
+              type="hidden"
+              name="operating_hours"
+              value={feed?.operating_hours ?? ""}
             />
           )}
 

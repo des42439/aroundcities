@@ -36,6 +36,7 @@ export interface Feed {
   content: string | null;
   place_id: string | null;
   source_url: string | null;
+  operating_hours: string | null;
   tags: string[];
   published_at: string | null;
   status: FeedStatus;
@@ -150,6 +151,7 @@ export interface Database {
           content?: string | null;
           place_id?: string | null;
           source_url?: string | null;
+          operating_hours?: string | null;
           tags?: string[];
           published_at?: string | null;
           status?: FeedStatus;
@@ -164,6 +166,7 @@ export interface Database {
           content?: string | null;
           place_id?: string | null;
           source_url?: string | null;
+          operating_hours?: string | null;
           tags?: string[];
           published_at?: string | null;
           status?: FeedStatus;

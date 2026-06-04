@@ -278,6 +278,9 @@ export async function createFeedAction(
       source_url: nullableString(
         formData.get("source_url")
       ),
+      operating_hours: nullableString(
+        formData.get("operating_hours")
+      ),
       tags: parseTags(formData.get("tags")),
       published_at: normalizePublishedAt(
         status,
@@ -315,6 +318,7 @@ export async function createDraftFeedWithPhotosAction(
       content: nullableString(formData.get("content")),
       place_id: null,
       source_url: null,
+      operating_hours: null,
       tags: [],
       published_at: null,
       status: "draft",
@@ -372,6 +376,7 @@ export async function createDraftFeedOnlyAction(input: {
       content: input.content?.trim() || null,
       place_id: null,
       source_url: null,
+      operating_hours: null,
       tags: [],
       published_at: null,
       status: "draft",
@@ -496,6 +501,9 @@ export async function updateFeedAction(
       place_id: nullableString(formData.get("place_id")),
       source_url: nullableString(
         formData.get("source_url")
+      ),
+      operating_hours: nullableString(
+        formData.get("operating_hours")
       ),
       tags: parseTags(formData.get("tags")),
       published_at: normalizePublishedAt(
