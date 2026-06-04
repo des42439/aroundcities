@@ -37,6 +37,7 @@ All notable changes to AroundCities should be documented here.
 - Added durable admin error logging with Error IDs, Supabase persistence, server console output, browser console output, and local JSONL fallback logs.
 - Added admin photo upload size checks and raised the Server Action body limit to reduce opaque upload failure pages.
 - Changed new feed creation to upload selected photos directly to Supabase Storage through signed upload URLs instead of sending files through a Server Action body.
+- Added browser-side image compression for new feed photos, targeting less than 1MB per uploaded image.
 - Added `AGENTS.md` as the agent working guide for product direction, engineering preferences, current architecture, and documentation maintenance.
 - Added `PROJECT_SUMMARY.md` with the current V2 direction, Phase 1 scope, planned routes, admin direction, and architecture source.
 - Added `CHANGELOG.md` to track future project changes.

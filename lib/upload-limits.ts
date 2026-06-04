@@ -1,2 +1,4 @@
 export const ADMIN_UPLOAD_BODY_LIMIT = "4mb";
 export const ADMIN_UPLOAD_MAX_BYTES = 4 * 1024 * 1024;
+export const ADMIN_PHOTO_MAX_BYTES = 1024 * 1024;
+export const ADMIN_PHOTO_MAX_DIMENSION = 1600;
