@@ -87,6 +87,7 @@ The V2 Phase 1 foundation now includes:
 - Places are no longer promoted as a main admin navigation item. `/admin/places` remains available directly as a maintenance route.
 - Inline place creation from the feed editor so missing places can be added without leaving the draft.
 - Multiple feed places are supported in code through the proposed `feed_places` join table migration while keeping `feeds.place_id` as an optional primary place.
+- Structured feed operating hours are supported through `feed_operating_hours` rows tied to a feed.
 - Feed edit includes a separated delete action with confirmation. Deleting a feed relies on the schema cascade to remove attached photo records and does not delete places.
 - Admin save, publish, upload, photo update, and delete forms show blocking overlay feedback, disable duplicate submissions while pending, and display inline errors when server actions fail.
 - New feed draft creation uses a unique generated slug and does not redirect as if successful when feed insert or photo upload fails.
@@ -103,7 +104,12 @@ The V2 Phase 1 foundation now includes:
 
 Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.
 
-Operating hours are implemented as flexible feed-level free text in `feeds.operating_hours`. This intentionally supports shop hours, temporary festival schedules, and clinic session hours without introducing a recurrence/calendar system in Phase 1.
+Operating hours use two layers:
+
+- `feeds.operating_hours` is the curator-written public display note.
+- `feed_operating_hours` stores structured queryable rows for weekly schedules, date ranges, time windows, closed days, and notes.
+
+This intentionally avoids a full calendar or recurrence engine while making future open-now queries possible.
 
 `feed_type` is kept internally with a `local_discovery` default for compatibility, but it is hidden from the creation workflow. Future classification should lean on flexible tags/categories instead.
 

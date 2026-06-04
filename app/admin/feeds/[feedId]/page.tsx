@@ -2,10 +2,12 @@ import Link from "next/link";
 import AdminShell from "@/components/AdminShell";
 import DeleteFeedForm from "@/components/DeleteFeedForm";
 import FeedForm from "@/components/FeedForm";
+import FeedOperatingHoursForm from "@/components/FeedOperatingHoursForm";
 import InlinePlaceCreateForm from "@/components/InlinePlaceCreateForm";
 import PhotoManager from "@/components/PhotoManager";
 import { updateFeedAction } from "@/lib/admin-actions";
 import { requireAdmin } from "@/lib/admin-auth";
+import { getFeedOperatingHours } from "@/lib/feed-operating-hours";
 import { getFeedPlaces } from "@/lib/feed-places";
 import { getFeedById } from "@/lib/feeds";
 import { getPhotosByFeedId } from "@/lib/photos";
@@ -25,11 +27,18 @@ export default async function EditFeedPage({
   await requireAdmin();
   const { feedId } = await params;
 
-  const [feed, places, photos, feedPlaces] = await Promise.all([
+  const [
+    feed,
+    places,
+    photos,
+    feedPlaces,
+    operatingHours,
+  ] = await Promise.all([
     getFeedById(feedId),
     getPlaces(),
     getPhotosByFeedId(feedId),
     getFeedPlaces(feedId),
+    getFeedOperatingHours(feedId),
   ]);
 
   if (!feed) {
@@ -61,6 +70,11 @@ export default async function EditFeedPage({
         />
 
         <InlinePlaceCreateForm feedId={feed.feed_id} />
+
+        <FeedOperatingHoursForm
+          feedId={feed.feed_id}
+          rows={operatingHours}
+        />
 
         <PhotoManager
           feedId={feed.feed_id}

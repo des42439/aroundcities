@@ -35,6 +35,8 @@ Only three core entities should exist in Phase 1:
 - Photo
 - Place
 
+Supporting tables may exist for feed-place links, structured operating hours, storage, and admin diagnostics. Do not treat these as new public product entities.
+
 No comments, likes, followers, messaging, ratings, reviews, public contributor accounts, or business-directory workflows.
 
 ## 4. Core Entities
@@ -72,6 +74,7 @@ Notes:
 - `slug` should be unique and used for public feed URLs.
 - `source_url` is optional and should be used only when a feed references an external source.
 - `operating_hours` is optional free text for human-entered schedules, such as shop hours, clinic sessions, or temporary festival dates and times.
+- Structured queryable schedules belong in `feed_operating_hours`; keep `operating_hours` as the readable curator note.
 - `tags` is a simple `text[]` field for Phase 1. It avoids extra tag tables while still allowing lightweight categorization.
 - `status` should support draft and published states at minimum.
 - `published_at` controls public chronological ordering.
@@ -199,6 +202,23 @@ create table public.feed_places (
   primary key (feed_id, place_id)
 );
 
+create table public.feed_operating_hours (
+  operating_hour_id uuid primary key default gen_random_uuid(),
+  feed_id uuid not null references public.feeds(feed_id) on delete cascade,
+  schedule_type text not null
+    check (schedule_type in ('weekly', 'date_range')),
+  days_of_week int[],
+  date_start date,
+  date_end date,
+  time_start time,
+  time_end time,
+  closed boolean not null default false,
+  note text,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table public.admin_error_logs (
   log_id uuid primary key default gen_random_uuid(),
   error_id text not null unique,
@@ -222,6 +242,15 @@ create index feeds_place_id_idx
 
 create index feeds_tags_idx
   on public.feeds using gin (tags);
+
+create index feed_operating_hours_feed_id_idx
+  on public.feed_operating_hours (feed_id, sort_order);
+
+create index feed_operating_hours_days_idx
+  on public.feed_operating_hours using gin (days_of_week);
+
+create index feed_operating_hours_date_range_idx
+  on public.feed_operating_hours (date_start, date_end);
 
 create index photos_feed_id_idx
   on public.photos (feed_id);
@@ -259,7 +288,9 @@ Admin error logging:
 - Keep `feed_type` hidden/defaulted for now. Prefer flexible tags/categories for future content classification instead of forcing a single feed type during creation.
 - Use `slug` for public feed URLs.
 - Use `source_url` only for optional external references.
-- Use `operating_hours` as flexible free text for schedules. Do not introduce a calendar, recurrence engine, or business-directory operating-hours model in Phase 1.
+- Use `operating_hours` as flexible free text for public schedule wording.
+- Use `feed_operating_hours` for structured rows when open-now or date/time queries are needed.
+- Do not introduce a full calendar, recurrence engine, or business-directory operating-hours model in Phase 1.
 - Use `tags text[]` for simple Phase 1 tags without introducing tag entities or tag UI.
 - Keep Photo attached directly to Feed.
 - Keep Place optional on Feed.
@@ -345,9 +376,10 @@ Place management routes should remain available directly for maintenance, but Pl
 4. Optionally assign photo-level places.
 5. Create a missing place inline from the feed editor when needed.
 6. Optionally edit slug, tags, source URL, operating hours / schedule, and published time.
-7. Choose a featured photo.
-8. Publish when ready.
-9. Delete the feed only from the separated delete area when it is no longer needed.
+7. Add structured operating-hour rows only when the feed needs date/time querying later.
+8. Choose a featured photo.
+9. Publish when ready.
+10. Delete the feed only from the separated delete area when it is no longer needed.
 
 ### Admin Principles
 

@@ -10,6 +10,10 @@ import {
   updateFeed,
 } from "./feeds";
 import { replaceFeedPlaces } from "./feed-places";
+import {
+  FeedOperatingHourInput,
+  replaceFeedOperatingHours,
+} from "./feed-operating-hours";
 import { createPlace, updatePlace } from "./places";
 import {
   clearFeaturedPhotos,
@@ -19,6 +23,7 @@ import {
 import { slugify } from "./slug";
 import { getSupabaseAdmin } from "./supabase-admin";
 import {
+  FeedOperatingHourScheduleType,
   FeedStatus,
   FeedType,
 } from "@/types/database";
@@ -144,6 +149,113 @@ function normalizePublishedAt(
   }
 
   return null;
+}
+
+function parseScheduleType(
+  value: FormDataEntryValue | null
+): FeedOperatingHourScheduleType {
+  return value?.toString() === "date_range"
+    ? "date_range"
+    : "weekly";
+}
+
+function parseTime(value: FormDataEntryValue | null) {
+  const text = value?.toString().trim() ?? "";
+
+  return text || null;
+}
+
+function parseDate(value: FormDataEntryValue | null) {
+  const text = value?.toString().trim() ?? "";
+
+  return text || null;
+}
+
+function parseOperatingHourRows(
+  formData: FormData
+): FeedOperatingHourInput[] {
+  const rowCount = Number(
+    formData.get("operating_hour_row_count") ?? 0
+  );
+  const rows: FeedOperatingHourInput[] = [];
+
+  for (let index = 0; index < rowCount; index += 1) {
+    const prefix = `operating_hour_${index}`;
+    const scheduleType = parseScheduleType(
+      formData.get(`${prefix}_schedule_type`)
+    );
+    const closed =
+      formData.get(`${prefix}_closed`) === "on";
+    const note = nullableString(
+      formData.get(`${prefix}_note`)
+    );
+    const timeStart = closed
+      ? null
+      : parseTime(formData.get(`${prefix}_time_start`));
+    const timeEnd = closed
+      ? null
+      : parseTime(formData.get(`${prefix}_time_end`));
+
+    if (scheduleType === "weekly") {
+      const daysOfWeek = formData
+        .getAll(`${prefix}_days_of_week`)
+        .map((value) => Number(value))
+        .filter((value) => Number.isInteger(value));
+
+      if (!daysOfWeek.length) {
+        continue;
+      }
+
+      if (!closed && (!timeStart || !timeEnd)) {
+        continue;
+      }
+
+      rows.push({
+        schedule_type: scheduleType,
+        days_of_week: Array.from(new Set(daysOfWeek)).sort(
+          (left, right) => left - right
+        ),
+        date_start: null,
+        date_end: null,
+        time_start: timeStart,
+        time_end: timeEnd,
+        closed,
+        note,
+        sort_order: rows.length,
+      });
+
+      continue;
+    }
+
+    const dateStart = parseDate(
+      formData.get(`${prefix}_date_start`)
+    );
+    const dateEnd = parseDate(
+      formData.get(`${prefix}_date_end`)
+    );
+
+    if (!dateStart || !dateEnd) {
+      continue;
+    }
+
+    if (!closed && (!timeStart || !timeEnd)) {
+      continue;
+    }
+
+    rows.push({
+      schedule_type: scheduleType,
+      days_of_week: null,
+      date_start: dateStart,
+      date_end: dateEnd,
+      time_start: timeStart,
+      time_end: timeEnd,
+      closed,
+      note,
+      sort_order: rows.length,
+    });
+  }
+
+  return rows;
 }
 
 export async function createPlaceAction(
@@ -549,6 +661,34 @@ export async function deleteFeedAction(
   }
 
   redirect("/admin/feeds");
+}
+
+export async function replaceFeedOperatingHoursAction(
+  feedId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  try {
+    await replaceFeedOperatingHours(
+      feedId,
+      parseOperatingHourRows(formData)
+    );
+
+    revalidatePath(`/admin/feeds/${feedId}`);
+    revalidatePath("/kch");
+  } catch (error) {
+    return await actionError(
+      "replace_feed_operating_hours",
+      error,
+      {
+        feedId,
+      }
+    );
+  }
+
+  redirect(`/admin/feeds/${feedId}`);
 }
 
 export async function uploadFeedPhotosAction(

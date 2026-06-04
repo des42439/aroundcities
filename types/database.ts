@@ -17,6 +17,10 @@ export type FeedType =
   | "event_observation"
   | "local_discovery";
 
+export type FeedOperatingHourScheduleType =
+  | "weekly"
+  | "date_range";
+
 export interface Place {
   place_id: string;
   name: string;
@@ -68,6 +72,22 @@ export interface FeedPlaceWithPlace extends FeedPlace {
   place: Place;
 }
 
+export interface FeedOperatingHour {
+  operating_hour_id: string;
+  feed_id: string;
+  schedule_type: FeedOperatingHourScheduleType;
+  days_of_week: number[] | null;
+  date_start: string | null;
+  date_end: string | null;
+  time_start: string | null;
+  time_end: string | null;
+  closed: boolean;
+  note: string | null;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AdminErrorLog {
   log_id: string;
   error_id: string;
@@ -81,6 +101,7 @@ export interface FeedWithPlaceAndPhotos extends Feed {
   place: Place | null;
   photos: Photo[];
   feed_places?: FeedPlaceWithPlace[];
+  operating_hour_rows?: FeedOperatingHour[];
 }
 
 export interface PlaceWithFeeds extends Place {
@@ -249,6 +270,47 @@ export interface Database {
             columns: ["place_id"];
             referencedRelation: "places";
             referencedColumns: ["place_id"];
+          },
+        ];
+      };
+      feed_operating_hours: {
+        Row: FeedOperatingHour;
+        Insert: {
+          operating_hour_id?: string;
+          feed_id: string;
+          schedule_type: FeedOperatingHourScheduleType;
+          days_of_week?: number[] | null;
+          date_start?: string | null;
+          date_end?: string | null;
+          time_start?: string | null;
+          time_end?: string | null;
+          closed?: boolean;
+          note?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          operating_hour_id?: string;
+          feed_id?: string;
+          schedule_type?: FeedOperatingHourScheduleType;
+          days_of_week?: number[] | null;
+          date_start?: string | null;
+          date_end?: string | null;
+          time_start?: string | null;
+          time_end?: string | null;
+          closed?: boolean;
+          note?: string | null;
+          sort_order?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feed_operating_hours_feed_id_fkey";
+            columns: ["feed_id"];
+            referencedRelation: "feeds";
+            referencedColumns: ["feed_id"];
           },
         ];
       };

@@ -128,6 +128,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - `/admin/places` remains available as a direct maintenance route.
 - Inline place creation is available from the feed editor.
 - Multiple feed places supported in code through the proposed `feed_places` migration.
+- Structured operating hours supported through `feed_operating_hours`.
 - Feed delete support from the edit page with confirmation.
 - Blocking admin form loading states for save, publish, upload, photo update, and delete actions.
 - Inline admin action errors when feed/place/photo writes fail.
@@ -143,6 +144,7 @@ Feed creation should be photo-first and draft-first:
 - Ask only for title, content/description, and photos during creation.
 - Hide feed type, slug, tags, source URL, place, status, and published time during creation.
 - Treat operating hours as optional feed-level free text, not a full calendar or directory-hours system.
+- Use `feeds.operating_hours` for public wording and `feed_operating_hours` for queryable schedule rows.
 - Use the edit page for post-processing.
 - Keep place assignment human-controlled only.
 - Keep Places out of the main admin workflow; treat place routes as maintenance tools.
