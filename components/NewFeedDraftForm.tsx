@@ -231,9 +231,9 @@ export default function NewFeedDraftForm() {
       setState({
         error: null,
         pending: true,
-        message: "Opening draft...",
+        message: "Opening feeds...",
       });
-      router.push(`/admin/feeds/${draft.feedId}`);
+      router.push("/admin/feeds");
       router.refresh();
     } catch (error) {
       setState({
