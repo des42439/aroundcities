@@ -14,6 +14,7 @@ import {
   uploadFeedPhotosAction,
 } from "@/lib/admin-actions";
 import { toDateTimeInputValue } from "@/lib/format";
+import { ADMIN_UPLOAD_MAX_BYTES } from "@/lib/upload-limits";
 import { Photo, Place } from "@/types/database";
 
 type Props = {
@@ -44,6 +45,8 @@ export default function PhotoManager({
       <AdminActionForm
         action={uploadAction}
         className="space-y-5 rounded-lg border border-neutral-900 p-4"
+        maxFileBytes={ADMIN_UPLOAD_MAX_BYTES}
+        maxFileBytesMessage="Selected photos are too large for this upload. Please upload smaller or compressed photos, or upload one photo at a time."
       >
         <AdminFormProgress />
 

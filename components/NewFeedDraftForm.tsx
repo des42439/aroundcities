@@ -9,12 +9,15 @@ import {
   AdminSubmitButton,
 } from "./AdminSubmitButton";
 import { createDraftFeedWithPhotosAction } from "@/lib/admin-actions";
+import { ADMIN_UPLOAD_MAX_BYTES } from "@/lib/upload-limits";
 
 export default function NewFeedDraftForm() {
   return (
     <AdminActionForm
       action={createDraftFeedWithPhotosAction}
       className="space-y-6"
+      maxFileBytes={ADMIN_UPLOAD_MAX_BYTES}
+      maxFileBytesMessage="Selected photos are too large for this upload. Please add smaller or compressed photos, or create the draft first and upload photos one at a time."
     >
       <AdminFormProgress />
 
