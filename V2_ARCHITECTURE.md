@@ -1,8 +1,8 @@
 # AroundCities V2 Phase 1 Architecture
 
-Last updated: 3 June 2026
+Last updated: 4 June 2026
 
-Implementation status: Steps 1-5 are implemented.
+Implementation status: Steps 1-5 are implemented, plus a simple manual admin Sources checklist.
 
 ## 1. Objective
 
@@ -35,7 +35,7 @@ Only three core entities should exist in Phase 1:
 - Photo
 - Place
 
-Supporting tables may exist for feed-place links, structured operating hours, storage, and admin diagnostics. Do not treat these as new public product entities.
+Supporting tables may exist for feed-place links, structured operating hours, storage, admin diagnostics, and manual admin source checklists. Do not treat these as new public product entities.
 
 No comments, likes, followers, messaging, ratings, reviews, public contributor accounts, or business-directory workflows.
 
@@ -228,6 +228,16 @@ create table public.admin_error_logs (
   created_at timestamptz not null default now()
 );
 
+create table public.sources (
+  source_id uuid primary key default gen_random_uuid(),
+  name text not null,
+  url text not null,
+  notes text,
+  last_checked_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create index feeds_status_published_at_idx
   on public.feeds (status, published_at desc);
 
@@ -266,6 +276,9 @@ create index places_slug_idx
 
 create index admin_error_logs_created_at_idx
   on public.admin_error_logs (created_at desc);
+
+create index sources_last_checked_created_idx
+  on public.sources (last_checked_at asc nulls first, created_at asc);
 ```
 
 Storage:
@@ -281,6 +294,13 @@ Admin error logging:
 - Server-side logs should be written to `admin_error_logs` in Supabase when available.
 - Local development may also append JSONL entries to `.logs/admin-errors.jsonl`.
 - Logs must avoid secrets and only include minimal troubleshooting context.
+
+Sources:
+
+- `sources` stores a simple manual checklist of useful Facebook pages, groups, and websites for content discovery.
+- Sources are sorted by `last_checked_at asc nulls first`, then `created_at asc`, so never checked and oldest checked items rise to the top.
+- Opening a source should not mark it checked. The curator manually clicks `Mark Checked` after review.
+- Sources must not become a crawler, scraper, scheduled checker, Facebook automation system, priority queue, or frequency system during Phase 1.
 
 ### Schema Rules
 
@@ -364,9 +384,12 @@ Suggested minimal routes:
 - `/admin/places` maintenance route
 - `/admin/places/new` maintenance route
 - `/admin/places/[placeId]` maintenance route
+- `/admin/sources`
+- `/admin/sources/[sourceId]`
 
 Photo management can live inside the feed editor during Phase 1.
 Place management routes should remain available directly for maintenance, but Places should not appear as a main admin navigation item.
+Sources may appear as a main admin item because they support the curator's manual discovery workflow.
 
 ### Curator Workflow
 
@@ -380,6 +403,7 @@ Place management routes should remain available directly for maintenance, but Pl
 8. Choose a featured photo.
 9. Publish when ready.
 10. Delete the feed only from the separated delete area when it is no longer needed.
+11. Review saved Sources manually, open useful pages in a new tab, and click `Mark Checked` only after review.
 
 ### Admin Principles
 
@@ -399,6 +423,7 @@ Place management routes should remain available directly for maintenance, but Pl
 - Feed deletion must require confirmation, redirect back to `/admin/feeds`, and must not delete unrelated places.
 - Avoid separate complex modules for events, registrations, or programs.
 - Avoid dashboard analytics in Phase 1.
+- Keep Sources compact and manual. Do not add source crawling, scraping, bot browsing, Facebook login, scheduled checking, priority, or frequency fields.
 - Protect all admin routes before public launch.
 
 ## 8. Public UI Proposal

@@ -97,6 +97,16 @@ export interface AdminErrorLog {
   created_at: string;
 }
 
+export interface Source {
+  source_id: string;
+  name: string;
+  url: string;
+  notes: string | null;
+  last_checked_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface FeedWithPlaceAndPhotos extends Feed {
   place: Place | null;
   photos: Photo[];
@@ -133,6 +143,15 @@ export type NewPhoto = Omit<
 
 export type PhotoUpdate = Partial<
   Omit<Photo, "photo_id" | "created_at" | "updated_at">
+>;
+
+export type NewSource = Omit<
+  Source,
+  "source_id" | "created_at" | "updated_at"
+>;
+
+export type SourceUpdate = Partial<
+  Omit<Source, "source_id" | "created_at" | "updated_at">
 >;
 
 export interface Database {
@@ -331,6 +350,28 @@ export interface Database {
           message?: string;
           details?: Json;
           created_at?: string;
+        };
+        Relationships: [];
+      };
+      sources: {
+        Row: Source;
+        Insert: {
+          source_id?: string;
+          name: string;
+          url: string;
+          notes?: string | null;
+          last_checked_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          source_id?: string;
+          name?: string;
+          url?: string;
+          notes?: string | null;
+          last_checked_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
         };
         Relationships: [];
       };

@@ -23,6 +23,12 @@ import {
 import { slugify } from "./slug";
 import { getSupabaseAdmin } from "./supabase-admin";
 import {
+  createSource,
+  deleteSource,
+  markSourceChecked,
+  updateSource,
+} from "./sources";
+import {
   FeedOperatingHourScheduleType,
   FeedStatus,
   FeedType,
@@ -837,4 +843,97 @@ export async function updateFeedPhotoAction(
   }
 
   redirect(`/admin/feeds/${feedId}`);
+}
+
+export async function createSourceAction(
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  try {
+    await createSource({
+      name: requiredString(formData, "name"),
+      url: requiredString(formData, "url"),
+      notes: nullableString(formData.get("notes")),
+      last_checked_at: null,
+    });
+
+    revalidatePath("/admin/sources");
+
+    return {
+      error: null,
+    };
+  } catch (error) {
+    return await actionError("create_source", error);
+  }
+}
+
+export async function updateSourceAction(
+  sourceId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  try {
+    await updateSource(sourceId, {
+      name: requiredString(formData, "name"),
+      url: requiredString(formData, "url"),
+      notes: nullableString(formData.get("notes")),
+    });
+
+    revalidatePath("/admin/sources");
+    revalidatePath(`/admin/sources/${sourceId}`);
+  } catch (error) {
+    return await actionError("update_source", error, {
+      sourceId,
+    });
+  }
+
+  redirect("/admin/sources");
+}
+
+export async function deleteSourceAction(
+  sourceId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await deleteSource(sourceId);
+
+    revalidatePath("/admin/sources");
+
+    return {
+      error: null,
+    };
+  } catch (error) {
+    return await actionError("delete_source", error, {
+      sourceId,
+    });
+  }
+}
+
+export async function markSourceCheckedAction(
+  sourceId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await markSourceChecked(sourceId);
+
+    revalidatePath("/admin/sources");
+
+    return {
+      error: null,
+    };
+  } catch (error) {
+    return await actionError("mark_source_checked", error, {
+      sourceId,
+    });
+  }
 }

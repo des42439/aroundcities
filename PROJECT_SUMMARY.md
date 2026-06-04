@@ -1,6 +1,6 @@
 # AroundCities Project Summary
 
-Last updated: 3 June 2026
+Last updated: 4 June 2026
 
 ## Current Direction
 
@@ -47,6 +47,7 @@ Minimum workflow:
 - Attach photos to feeds
 - Assign or create places while editing feeds/photos
 - Mark one photo as featured
+- Manually check saved sources for possible content leads
 - Save draft or publish
 
 Admin must be protected before public launch.
@@ -100,7 +101,10 @@ The V2 Phase 1 foundation now includes:
 - Admin feed list shows the featured photo or first attached photo as a thumbnail.
 - Feed editing uses an optional-field picker so slug, places, publishing time, source URL, operating hours / schedule, and tags can be added only when needed.
 - Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
+- Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
+- Sources can be created, edited, deleted, opened in a new tab, and manually marked checked. The list is sorted with never checked sources first, then oldest checked first.
 - Existing feed photo uploads are still guarded at roughly 4MB total per submit until that editor flow is also moved to direct uploads.
+- Supabase CLI schema-change access was verified by creating and then removing temporary table `codex_dummy_schema_test` with dedicated migrations.
 
 Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.
 
@@ -110,6 +114,8 @@ Operating hours use two layers:
 - `feed_operating_hours` stores structured queryable rows for weekly schedules, date ranges, time windows, closed days, and notes.
 
 This intentionally avoids a full calendar or recurrence engine while making future open-now queries possible.
+
+Sources are intentionally manual. They are not a crawler, scraper, scheduled job queue, Facebook automation layer, priority system, or frequency system.
 
 `feed_type` is kept internally with a `local_discovery` default for compatibility, but it is hidden from the creation workflow. Future classification should lean on flexible tags/categories instead.
 

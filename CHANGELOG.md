@@ -2,6 +2,20 @@
 
 All notable changes to AroundCities should be documented here.
 
+## 2026-06-04
+
+### Added
+
+- Added and then removed a temporary `codex_dummy_schema_test` database table via Supabase CLI migrations to verify schema-change access.
+- Added a simple `/admin/sources` section for manually tracking useful Facebook pages, groups, and websites to check for possible AroundCities content.
+- Added a `sources` table migration with name, URL, notes, last checked timestamp, and timestamps.
+- Added Source TypeScript types, data helpers, create/edit/delete actions, and a manual "Mark Checked" action sorted by never checked first, then oldest checked first.
+- Added inline admin errors and pending states for source create, update, delete, and mark checked actions.
+
+### Notes
+
+- Sources is a manual curator checklist only. It does not add Facebook automation, scraping, crawling, scheduled checking, priority, or frequency logic.
+
 ## 2026-06-03
 
 ### Added

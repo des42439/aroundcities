@@ -72,6 +72,7 @@ Prefer a simple workflow:
 - Create a draft feed from title, content, and photos
 - Post-process slug, tags, source, places, and publishing later
 - Add operating hours / schedule during post-processing when a feed needs it
+- Keep a manual Sources checklist for useful Facebook pages/groups/websites to review for content leads
 - Create missing places inline while editing feeds/photos
 - Attach or edit photos inside the feed editor
 
@@ -91,6 +92,7 @@ Do not introduce:
 - Public contributor accounts
 - Business directory workflows
 - Event-portal complexity
+- Source crawling, scraping, scheduled checking, Facebook automation, priority, or frequency systems
 
 ## Documentation Maintenance
 
@@ -132,6 +134,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Feed delete support from the edit page with confirmation.
 - Blocking admin form loading states for save, publish, upload, photo update, and delete actions.
 - Inline admin action errors when feed/place/photo writes fail.
+- `/admin/sources` is available as a simple manual curator checklist sorted by never checked first, then oldest checked first.
 - Supabase Storage `photos` bucket is required for feed photo uploads.
 - Admin action failures should be logged with an Error ID for troubleshooting.
 
@@ -160,3 +163,5 @@ Feed creation should be photo-first and draft-first:
 - New feed photo uploads should use signed Supabase Storage upload URLs so large photos do not pass through Vercel Server Action request bodies.
 - Keep the feed edit page compact by showing optional feed fields only after the curator explicitly selects them.
 - Keep feed photo editing thumbnail-first; open one photo-specific editor at a time instead of listing every photo edit form inline.
+- Keep Sources manual-only: opening a source must not mark it checked, and marking checked should happen only when the curator clicks `Mark Checked`.
+- Do not add source crawling, scraping, bot browsing, scheduled checking, Facebook login, priority, or frequency fields unless the user explicitly expands scope.
