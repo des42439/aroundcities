@@ -40,6 +40,8 @@ All notable changes to AroundCities should be documented here.
 - Added browser-side image compression for new feed photos, targeting less than 1MB per uploaded image.
 - Changed new feed creation to return to the feed list after save.
 - Added photo thumbnails to the admin feed list.
+- Changed the feed edit page so optional fields are added through a field picker instead of expanding every advanced field at once.
+- Changed feed photo editing to a thumbnail grid with one photo editor modal at a time, avoiding long inline photo forms on feeds with many photos.
 - Added `AGENTS.md` as the agent working guide for product direction, engineering preferences, current architecture, and documentation maintenance.
 - Added `PROJECT_SUMMARY.md` with the current V2 direction, Phase 1 scope, planned routes, admin direction, and architecture source.
 - Added `CHANGELOG.md` to track future project changes.

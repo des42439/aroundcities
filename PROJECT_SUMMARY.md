@@ -97,6 +97,8 @@ The V2 Phase 1 foundation now includes:
 - New feed photos are compressed in the browser before upload, targeting less than 1MB per photo with a 1600px longest-side resize.
 - New feed creation returns to `/admin/feeds` after save.
 - Admin feed list shows the featured photo or first attached photo as a thumbnail.
+- Feed editing uses an optional-field picker so slug, places, publishing time, source URL, and tags can be added only when needed.
+- Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
 - Existing feed photo uploads are still guarded at roughly 4MB total per submit until that editor flow is also moved to direct uploads.
 
 Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.

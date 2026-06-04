@@ -1,3 +1,7 @@
+"use client";
+
+import Image from "next/image";
+import { useState } from "react";
 import AdminActionForm from "./AdminActionForm";
 import {
   Field,
@@ -28,23 +32,30 @@ export default function PhotoManager({
   photos,
   places,
 }: Props) {
+  const [selectedPhotoId, setSelectedPhotoId] = useState<
+    string | null
+  >(null);
   const uploadAction =
     uploadFeedPhotosAction.bind(null, feedId);
+  const selectedPhoto =
+    photos.find(
+      (photo) => photo.photo_id === selectedPhotoId
+    ) ?? null;
 
   return (
-    <section className="space-y-8">
+    <section className="space-y-6">
       <div>
         <h2 className="text-xl font-semibold">
           Photos
         </h2>
         <p className="mt-2 text-sm text-neutral-500">
-          Attach photos to this feed and choose one featured photo.
+          Upload photos here. Edit each photo from its thumbnail.
         </p>
       </div>
 
       <AdminActionForm
         action={uploadAction}
-        className="space-y-5 rounded-lg border border-neutral-900 p-4"
+        className="space-y-4 rounded-lg border border-neutral-900 p-4"
         maxFileBytes={ADMIN_UPLOAD_MAX_BYTES}
         maxFileBytesMessage="Selected photos are too large for this upload. Please upload smaller or compressed photos, or upload one photo at a time."
       >
@@ -56,55 +67,6 @@ export default function PhotoManager({
             type="file"
             multiple
             accept="image/*"
-            className={inputClassName}
-          />
-        </Field>
-
-        <div className="grid gap-4 md:grid-cols-2">
-          <Field label="Photo title">
-            <input
-              name="new_photo_title"
-              className={inputClassName}
-            />
-          </Field>
-
-          <Field label="Photo place">
-            <select
-              name="new_photo_place_id"
-              className={selectClassName}
-              defaultValue=""
-            >
-              <option value="">Use feed place or no place</option>
-              {places.map((place) => (
-                <option
-                  key={place.place_id}
-                  value={place.place_id}
-                >
-                  {place.name}
-                </option>
-              ))}
-            </select>
-          </Field>
-        </div>
-
-        <Field label="Location name">
-          <input
-            name="new_photo_location_name"
-            className={inputClassName}
-          />
-        </Field>
-
-        <Field label="Description">
-          <textarea
-            name="new_photo_description"
-            className={textareaClassName}
-          />
-        </Field>
-
-        <Field label="Captured at">
-          <input
-            name="new_photo_captured_at"
-            type="datetime-local"
             className={inputClassName}
           />
         </Field>
@@ -123,111 +85,185 @@ export default function PhotoManager({
         </AdminSubmitButton>
       </AdminActionForm>
 
-      <div className="space-y-4">
-        {photos.length === 0 ? (
-          <p className="text-sm text-neutral-500">
-            No photos attached yet.
-          </p>
-        ) : (
-          photos.map((photo) => {
-            const action = updateFeedPhotoAction.bind(
-              null,
-              feedId,
-              photo.photo_id
-            );
-
-            return (
-              <AdminActionForm
-                key={photo.photo_id}
-                action={action}
-                className="grid gap-4 rounded-lg border border-neutral-900 p-4 md:grid-cols-[180px_1fr]"
-              >
-                <AdminFormProgress className="md:col-span-2" />
-
-                <img
+      {photos.length === 0 ? (
+        <p className="text-sm text-neutral-500">
+          No photos attached yet.
+        </p>
+      ) : (
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+          {photos.map((photo, index) => (
+            <button
+              key={photo.photo_id}
+              type="button"
+              onClick={() =>
+                setSelectedPhotoId(photo.photo_id)
+              }
+              className="group relative overflow-hidden rounded-md border border-neutral-900 bg-neutral-950 text-left outline-none transition hover:border-neutral-600 focus:border-neutral-500"
+            >
+              <div className="relative aspect-square">
+                <Image
                   src={photo.photo_url}
-                  alt={photo.title ?? "Feed photo"}
-                  className="h-40 w-full rounded-md bg-neutral-900 object-cover"
+                  alt={photo.title ?? `Feed photo ${index + 1}`}
+                  fill
+                  sizes="(min-width: 1024px) 12vw, (min-width: 640px) 20vw, 33vw"
+                  className="object-cover transition group-hover:scale-105"
+                  unoptimized
                 />
+              </div>
+              <div className="p-2">
+                <p className="truncate text-xs text-neutral-300">
+                  {photo.title || `Photo ${index + 1}`}
+                </p>
+                {photo.featured ? (
+                  <p className="mt-1 text-xs text-neutral-500">
+                    Featured
+                  </p>
+                ) : null}
+              </div>
+            </button>
+          ))}
+        </div>
+      )}
 
-                <div className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <Field label="Title">
-                      <input
-                        name="title"
-                        defaultValue={photo.title ?? ""}
-                        className={inputClassName}
-                      />
-                    </Field>
-
-                    <Field label="Photo place">
-                      <select
-                        name="place_id"
-                        defaultValue={photo.place_id ?? ""}
-                        className={selectClassName}
-                      >
-                        <option value="">No photo-specific place</option>
-                        {places.map((place) => (
-                          <option
-                            key={place.place_id}
-                            value={place.place_id}
-                          >
-                            {place.name}
-                          </option>
-                        ))}
-                      </select>
-                    </Field>
-                  </div>
-
-                  <Field label="Location name">
-                    <input
-                      name="location_name"
-                      defaultValue={photo.location_name ?? ""}
-                      className={inputClassName}
-                    />
-                  </Field>
-
-                  <Field label="Description">
-                    <textarea
-                      name="description"
-                      defaultValue={photo.description ?? ""}
-                      className={textareaClassName}
-                    />
-                  </Field>
-
-                  <Field label="Captured at">
-                    <input
-                      name="captured_at"
-                      type="datetime-local"
-                      defaultValue={toDateTimeInputValue(
-                        photo.captured_at
-                      )}
-                      className={inputClassName}
-                    />
-                  </Field>
-
-                  <label className="flex items-center gap-3 text-sm text-neutral-300">
-                    <input
-                      type="checkbox"
-                      name="featured"
-                      defaultChecked={photo.featured}
-                      className="h-4 w-4"
-                    />
-                    Featured photo
-                  </label>
-
-                  <AdminSubmitButton
-                    variant="secondary"
-                    pendingLabel="Saving..."
-                  >
-                    Save photo
-                  </AdminSubmitButton>
-                </div>
-              </AdminActionForm>
-            );
-          })
-        )}
-      </div>
+      {selectedPhoto ? (
+        <PhotoEditorModal
+          feedId={feedId}
+          photo={selectedPhoto}
+          places={places}
+          onClose={() => setSelectedPhotoId(null)}
+        />
+      ) : null}
     </section>
+  );
+}
+
+function PhotoEditorModal({
+  feedId,
+  photo,
+  places,
+  onClose,
+}: {
+  feedId: string;
+  photo: Photo;
+  places: Place[];
+  onClose: () => void;
+}) {
+  const action = updateFeedPhotoAction.bind(
+    null,
+    feedId,
+    photo.photo_id
+  );
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/85 px-4 py-6 backdrop-blur-sm">
+      <div className="max-h-full w-full max-w-3xl overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-950 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-neutral-900 px-4 py-3">
+          <div>
+            <h3 className="font-semibold text-neutral-100">
+              Edit photo
+            </h3>
+            <p className="text-sm text-neutral-500">
+              Update details for this photo only.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-neutral-800 px-3 py-2 text-sm text-neutral-300 hover:border-neutral-600"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="grid gap-5 p-4 md:grid-cols-[240px_1fr]">
+          <div className="relative aspect-square overflow-hidden rounded-md bg-neutral-900 md:aspect-[4/5]">
+            <Image
+              src={photo.photo_url}
+              alt={photo.title ?? "Feed photo"}
+              fill
+              sizes="(min-width: 768px) 240px, 100vw"
+              className="object-cover"
+              unoptimized
+            />
+          </div>
+
+          <AdminActionForm action={action} className="space-y-4">
+            <AdminFormProgress />
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Title">
+                <input
+                  name="title"
+                  defaultValue={photo.title ?? ""}
+                  className={inputClassName}
+                />
+              </Field>
+
+              <Field label="Photo place">
+                <select
+                  name="place_id"
+                  defaultValue={photo.place_id ?? ""}
+                  className={selectClassName}
+                >
+                  <option value="">No photo-specific place</option>
+                  {places.map((place) => (
+                    <option
+                      key={place.place_id}
+                      value={place.place_id}
+                    >
+                      {place.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            </div>
+
+            <Field label="Location name">
+              <input
+                name="location_name"
+                defaultValue={photo.location_name ?? ""}
+                className={inputClassName}
+              />
+            </Field>
+
+            <Field label="Description">
+              <textarea
+                name="description"
+                defaultValue={photo.description ?? ""}
+                className={textareaClassName}
+              />
+            </Field>
+
+            <Field label="Captured at">
+              <input
+                name="captured_at"
+                type="datetime-local"
+                defaultValue={toDateTimeInputValue(
+                  photo.captured_at
+                )}
+                className={inputClassName}
+              />
+            </Field>
+
+            <label className="flex items-center gap-3 text-sm text-neutral-300">
+              <input
+                type="checkbox"
+                name="featured"
+                defaultChecked={photo.featured}
+                className="h-4 w-4"
+              />
+              Featured photo
+            </label>
+
+            <AdminSubmitButton
+              variant="secondary"
+              pendingLabel="Saving..."
+            >
+              Save photo
+            </AdminSubmitButton>
+          </AdminActionForm>
+        </div>
+      </div>
+    </div>
   );
 }

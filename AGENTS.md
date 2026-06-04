@@ -154,3 +154,5 @@ Feed creation should be photo-first and draft-first:
 - Admin photo uploads should use the server-side service-role Supabase client, not the public anon client.
 - Error logs should avoid secrets and use minimal context such as action area, feed ID, or photo ID.
 - New feed photo uploads should use signed Supabase Storage upload URLs so large photos do not pass through Vercel Server Action request bodies.
+- Keep the feed edit page compact by showing optional feed fields only after the curator explicitly selects them.
+- Keep feed photo editing thumbnail-first; open one photo-specific editor at a time instead of listing every photo edit form inline.
