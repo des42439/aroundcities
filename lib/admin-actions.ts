@@ -345,6 +345,133 @@ export async function createDraftFeedWithPhotosAction(
   redirect(`/admin/feeds/${feedId}`);
 }
 
+export async function createDraftFeedOnlyAction(input: {
+  title: string;
+  content?: string | null;
+}): Promise<
+  | {
+      feedId: string;
+    }
+  | AdminActionState
+> {
+  await requireAdmin();
+
+  try {
+    const title = input.title.trim();
+
+    if (!title) {
+      throw new Error("Title is required.");
+    }
+
+    const slug = `${slugify(title)}-${Date.now().toString(36)}`;
+
+    const feed = await createFeed({
+      feed_type: "local_discovery",
+      slug,
+      title,
+      content: input.content?.trim() || null,
+      place_id: null,
+      source_url: null,
+      tags: [],
+      published_at: null,
+      status: "draft",
+    });
+
+    revalidatePath("/admin/feeds");
+
+    return {
+      feedId: feed.feed_id,
+    };
+  } catch (error) {
+    return await actionError("create_draft_feed_only", error);
+  }
+}
+
+export async function createPhotoUploadTargetAction(input: {
+  feedId: string;
+  fileName: string;
+}): Promise<
+  | {
+      path: string;
+      token: string;
+      publicUrl: string;
+    }
+  | AdminActionState
+> {
+  await requireAdmin();
+
+  try {
+    const extension =
+      input.fileName.split(".").pop()?.toLowerCase() ?? "jpg";
+    const filename = `${Date.now()}-${slugify(
+      input.fileName.replace(/\.[^.]+$/, "")
+    )}.${extension}`;
+    const path = `feeds/${input.feedId}/${filename}`;
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { data, error } = await supabaseAdmin.storage
+      .from("photos")
+      .createSignedUploadUrl(path);
+
+    if (error) {
+      throw new Error(
+        `Photo upload URL failed: ${error.message}`
+      );
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from("photos")
+      .getPublicUrl(path);
+
+    return {
+      path,
+      token: data.token,
+      publicUrl: publicUrlData.publicUrl,
+    };
+  } catch (error) {
+    return await actionError("create_photo_upload_target", error, {
+      feedId: input.feedId,
+      fileName: input.fileName,
+    });
+  }
+}
+
+export async function createUploadedPhotoRecordAction(input: {
+  feedId: string;
+  photoUrl: string;
+  featured: boolean;
+}): Promise<AdminActionState> {
+  await requireAdmin();
+
+  try {
+    if (input.featured) {
+      await clearFeaturedPhotos(input.feedId);
+    }
+
+    await createPhoto({
+      feed_id: input.feedId,
+      place_id: null,
+      title: null,
+      description: null,
+      photo_url: input.photoUrl,
+      location_name: null,
+      captured_at: null,
+      featured: input.featured,
+    });
+
+    revalidatePath(`/admin/feeds/${input.feedId}`);
+    revalidatePath("/admin/feeds");
+
+    return {
+      error: null,
+    };
+  } catch (error) {
+    return await actionError("create_uploaded_photo_record", error, {
+      feedId: input.feedId,
+    });
+  }
+}
+
 export async function updateFeedAction(
   feedId: string,
   _state: AdminActionState,

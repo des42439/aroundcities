@@ -93,7 +93,8 @@ The V2 Phase 1 foundation now includes:
 - Feed photo uploads use the Supabase Storage `photos` bucket and the server-side `SUPABASE_SERVICE_ROLE_KEY`.
 - The `photos` storage bucket has been created remotely and is also documented in a migration.
 - Admin action failures are logged with an Error ID. Logs are written to `admin_error_logs` in Supabase when available, printed to server logs, and appended to `.logs/admin-errors.jsonl` locally when the filesystem allows it.
-- Admin photo uploads are guarded at roughly 4MB total per submit because Server Actions and Vercel request bodies cannot reliably carry large photo batches.
+- New feed photo creation uploads directly from the browser to Supabase Storage using signed upload URLs, avoiding Vercel Server Action body limits for initial feed creation.
+- Existing feed photo uploads are still guarded at roughly 4MB total per submit until that editor flow is also moved to direct uploads.
 
 Simple tags are implemented as `feeds.tags text[]` to avoid a separate tag entity or tag UI in Phase 1.
 

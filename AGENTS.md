@@ -153,3 +153,4 @@ Feed creation should be photo-first and draft-first:
 - Do not redirect as if successful when feed creation, photo upload, or other admin writes fail.
 - Admin photo uploads should use the server-side service-role Supabase client, not the public anon client.
 - Error logs should avoid secrets and use minimal context such as action area, feed ID, or photo ID.
+- New feed photo uploads should use signed Supabase Storage upload URLs so large photos do not pass through Vercel Server Action request bodies.
