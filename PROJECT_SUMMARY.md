@@ -152,6 +152,7 @@ Phase 2 database status:
 - The `/kch` public feed now uses a compact header instead of a large hero and adapts feed cards between visual-first local discovery posts and information-first announcement posts.
 - Placeholder seed photos are treated as small supporting poster thumbnails in cards so grey placeholder blocks do not dominate the feed.
 - The `/kch` page now shows feed items immediately after the city header. Feed cards keep text first, then render real photos as larger single images or compact social-style grids. Placeholder-only feeds keep the image small and muted.
+- Public feed photo blocks now keep roughly the same large footprint for single and multi-photo feeds, avoiding tiny thumbnail previews on mobile.
 
 UI and data-helper wiring for the new `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` workflows is not implemented yet.
 

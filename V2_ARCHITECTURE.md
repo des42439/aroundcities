@@ -319,6 +319,7 @@ Sources:
 - Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
 - Use simple display heuristics for now: visual-first feeds can emphasize photos when real photos exist; information-first feeds should lead with title and short copy, with poster/placeholder images kept smaller.
 - The current `/kch` feed shows items immediately after the city header. Cards should keep text first, then show real photos as a larger single image or compact multi-photo grid. Placeholder-only photo content should remain small and subtle.
+- Multi-photo grids should occupy a similar visual footprint to a single-photo block: 2 photos side-by-side, 3 photos with one large image and two stacked images, and 4+ photos as 2x2 with a `+N` overlay when needed.
 - Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed when that workflow is implemented.
 - Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
 

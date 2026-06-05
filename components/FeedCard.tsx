@@ -98,20 +98,20 @@ function FeedPhotoGrid({
       <FeedImageLink
         feed={feed}
         photo={photos[0]}
-        className="aspect-[4/3] w-full sm:aspect-[16/10]"
+        className="aspect-[4/3] w-full"
       />
     );
   }
 
   if (photos.length === 2) {
     return (
-      <div className="grid grid-cols-2 gap-1.5">
+      <div className="grid aspect-[4/3] grid-cols-2 gap-1">
         {visiblePhotos.map((photo) => (
           <FeedImageLink
             key={photo.photo_id}
             feed={feed}
             photo={photo}
-            className="aspect-square w-full"
+            className="h-full w-full"
           />
         ))}
       </div>
@@ -120,19 +120,19 @@ function FeedPhotoGrid({
 
   if (photos.length === 3) {
     return (
-      <div className="grid grid-cols-2 gap-1.5">
+      <div className="grid aspect-[4/3] grid-cols-[2fr_1fr] gap-1">
         <FeedImageLink
           feed={feed}
           photo={visiblePhotos[0]}
-          className="aspect-square w-full"
+          className="h-full w-full"
         />
-        <div className="grid gap-1.5">
+        <div className="grid grid-rows-2 gap-1">
           {visiblePhotos.slice(1).map((photo) => (
             <FeedImageLink
               key={photo.photo_id}
               feed={feed}
               photo={photo}
-              className="aspect-[2/1] w-full"
+              className="h-full w-full"
             />
           ))}
         </div>
@@ -141,13 +141,13 @@ function FeedPhotoGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 gap-1.5">
+    <div className="grid aspect-[4/3] grid-cols-2 grid-rows-2 gap-1">
       {visiblePhotos.map((photo, index) => (
         <FeedImageLink
           key={photo.photo_id}
           feed={feed}
           photo={photo}
-          className="aspect-square w-full"
+          className="h-full w-full"
           overlay={
             index === 3 && extraCount > 0 ? `+${extraCount}` : undefined
           }

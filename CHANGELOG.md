@@ -30,6 +30,7 @@ All notable changes to AroundCities should be documented here.
 - Changed placeholder photos so they render as small supporting poster thumbnails instead of dominating feed cards.
 - Removed the remaining `/kch` feed heading section so feed items appear immediately after the city header.
 - Changed public feed cards so text comes first, followed by larger real-photo displays or multi-photo grids. Placeholder-only feeds now show only a small muted thumbnail.
+- Refined public feed photo grids so single-photo and multi-photo cards use a similarly large visual block: 2 photos side-by-side, 3 photos with one large image plus two stacked images, and 4+ photos as a 2x2 grid with a `+N` overlay when needed.
 
 ## 2026-06-04
 

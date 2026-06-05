@@ -149,6 +149,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Public `/kch` should stay compact and feed-first. Avoid large formal hero sections, official listing tone, and category-heavy card layouts.
 - Feed cards should feel like relaxed local notes. Use simple display heuristics for visual-first versus information-first feeds; do not add a complex feed type system unless explicitly requested.
 - Current public feed cards show text first and then photos. Real photos should render as a larger single image or compact multi-photo grid; placeholder-only photos should stay small and muted.
+- Multi-photo feed grids should feel like one substantial content block, not tiny thumbnails. Keep the 2-photo, 3-photo, and 4+ photo layouts visually close to the single-photo block size.
 - The new schema-extension tables and fields are not yet wired into the admin or public UI unless explicitly implemented later.
 
 Supabase Auth, search, maps, tags UI, and multiple cities are not implemented yet.
