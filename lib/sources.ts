@@ -23,6 +23,22 @@ export async function getSources(): Promise<Source[]> {
   return data ?? [];
 }
 
+export async function getSourceCount(): Promise<number> {
+  const { count, error } = await getSupabaseAdmin()
+    .from("sources")
+    .select("source_id", {
+      count: "exact",
+      head: true,
+    });
+
+  if (error) {
+    console.error(error);
+    return 0;
+  }
+
+  return count ?? 0;
+}
+
 export async function getSourceById(
   sourceId: string
 ): Promise<Source | null> {

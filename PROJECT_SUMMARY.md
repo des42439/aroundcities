@@ -44,6 +44,7 @@ Admin should be optimized for a single curator.
 Implemented mobile-first workflow:
 
 - `/admin/feeds/new` is the fast capture screen. It asks only for photos, title, and description, then creates a draft.
+- `/admin` shows total counts for Drafted Feeds, Published Feeds, and Sources on the workflow cards.
 - `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
 - The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.

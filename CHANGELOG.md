@@ -6,6 +6,7 @@ All notable changes to AroundCities should be documented here.
 
 ### Added
 
+- Added total counts to the admin hub cards for Drafted Feeds, Published Feeds, and Sources.
 - Added admin photo deletion from the feed photo editor, with confirmation.
 - Added full-size image opening from the edit-photo preview image.
 - Added standalone Photo feed cards on `/kch` for photos marked to show as photo feeds, shuffled into the discovery stream.

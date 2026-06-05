@@ -66,6 +66,25 @@ export async function getFeedsByStatus(
   return (data ?? []) as FeedWithPlaceAndPhotos[];
 }
 
+export async function getFeedCountByStatus(
+  status: Feed["status"]
+): Promise<number> {
+  const { count, error } = await getSupabaseAdmin()
+    .from("feeds")
+    .select("feed_id", {
+      count: "exact",
+      head: true,
+    })
+    .eq("status", status);
+
+  if (error) {
+    console.error(error);
+    return 0;
+  }
+
+  return count ?? 0;
+}
+
 export async function getParentFeedCandidates(
   currentFeedId: string
 ): Promise<Feed[]> {
