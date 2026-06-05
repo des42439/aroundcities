@@ -483,7 +483,6 @@ export async function createDraftFeedWithPhotosAction(
     feedId = feed.feed_id;
 
     await uploadPhotosForFeed(feed.feed_id, formData, {
-      featureFirst: true,
       useNewPhotoMetadata: false,
     });
 
@@ -899,8 +898,6 @@ export async function uploadFeedPhotosAction(
 
   try {
     await uploadPhotosForFeed(feedId, formData, {
-      featureFirst:
-        formData.get("feature_first_photo") === "on",
       useNewPhotoMetadata: true,
     });
 
@@ -919,7 +916,6 @@ async function uploadPhotosForFeed(
   feedId: string,
   formData: FormData,
   options: {
-    featureFirst: boolean;
     useNewPhotoMetadata: boolean;
   }
 ) {
@@ -990,7 +986,7 @@ async function uploadPhotosForFeed(
         : metadata.capturedAt,
       latitude: metadata.latitude,
       longitude: metadata.longitude,
-      featured: options.featureFirst && index === 0,
+      featured: false,
       sequence: firstSequence + index,
     });
   }

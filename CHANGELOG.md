@@ -13,6 +13,7 @@ All notable changes to AroundCities should be documented here.
 ### Changed
 
 - Changed the admin photo featured checkbox label to `Show as photo feed` and allowed multiple photos in one feed to be selected.
+- Changed photo uploads so newly uploaded photos are never auto-marked as Photo feed candidates; admins must select `Show as photo feed` manually.
 - Changed public feed photo galleries and admin feed thumbnails to use photo sequence ordering from smallest to largest, with unsequenced `0` photos falling behind manually ordered photos.
 - Changed new photo uploads to assign default sequence values in upload order.
 

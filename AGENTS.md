@@ -133,6 +133,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Photos use `photos.sequence` for display order. Smaller positive sequence numbers appear first; unsequenced `0` photos fall behind manually ordered photos.
 - Admin feed thumbnails should use the first photo by sequence, not the featured flag.
 - Photo `featured` is now a multi-photo curator flag surfaced as `Show as photo feed`; marked photos may appear as standalone Photo feed cards on `/kch`.
+- Uploaded photos must not be auto-marked as `Show as photo feed`; this is a manual admin choice only.
 - Photo uploads extract JPEG EXIF capture datetime, longitude, and latitude when available.
 - Feed photo editing shows capture datetime, longitude, latitude, and an Open Map button when coordinates exist.
 - Photo-specific Place and Location name fields are hidden in admin photo editing; leave the underlying database columns untouched for now.
@@ -203,6 +204,7 @@ Feed creation should be photo-first and draft-first:
 - Keep feed photo editing thumbnail-first; open one photo-specific editor at a time instead of listing every photo edit form inline.
 - Keep photo order numeric and curator-controlled through `photos.sequence`; do not let `featured` override sequence ordering for public galleries or admin thumbnails.
 - Allow multiple photos per feed to be marked for Photo feed cards. Do not reintroduce a one-featured-photo-per-feed clearing workflow.
+- Do not auto-select Photo feed candidates during upload. The curator should mark them manually in the photo editor.
 - Keep photo metadata as curator reference only. Extract EXIF captured datetime/GPS when available, but do not use it to assign places automatically.
 - Use a searchable modal/picker for parent feed selection; do not use a huge plain dropdown.
 - Archive published feeds by setting status to `archived`; archived feeds remain in the database and stay hidden from public `/kch`.

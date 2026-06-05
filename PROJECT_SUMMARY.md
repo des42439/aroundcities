@@ -110,6 +110,7 @@ The V2 Phase 1 foundation now includes:
 - Feed photo upload from the editor opens from an Add Photos overlay so the main editor stays thumbnail-first and compact on iPhone.
 - Feed photo editing includes a numeric Photo order field backed by `photos.sequence`; public galleries and admin thumbnails display photos from smallest positive sequence to largest.
 - Feed photo editing allows multiple photos to be marked `Show as photo feed`; those photos are shuffled into `/kch` as single-photo cards linked back to the parent feed.
+- Uploaded photos are not marked `Show as photo feed` automatically; the curator must select that manually while editing a photo.
 - Admin photo uploads now read JPEG EXIF metadata when available and store photo capture datetime, latitude, and longitude. The photo editor shows those metadata fields and an Open Map button for coordinates.
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.

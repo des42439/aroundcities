@@ -221,7 +221,7 @@ export default function NewFeedDraftForm() {
           await createUploadedPhotoRecordAction({
             feedId: draft.feedId,
             photoUrl: target.publicUrl,
-            featured: index === 0,
+            featured: false,
             sequence: index + 1,
             capturedAt: metadata.capturedAt,
             latitude: metadata.latitude,

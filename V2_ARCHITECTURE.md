@@ -466,6 +466,7 @@ Sources may appear as a main admin item because they support the curator's manua
 - Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
 - Photo order should stay numeric and curator-controlled through `photos.sequence`; do not let the featured flag override sequence ordering for public galleries or admin thumbnails.
 - Multiple photos in one feed may be marked as Photo feed candidates. Do not enforce one featured photo per feed.
+- Uploading photos must not automatically mark them as Photo feed candidates; this is a manual admin decision in the photo editor.
 - Photo metadata such as captured dates or GPS should be extracted from JPEG EXIF data when available and displayed as curator reference only. It must not automatically assign places.
 - Keep photo-specific Place and Location name hidden in the admin photo editor unless explicitly reintroduced.
 - Save, publish, upload, photo update, and delete actions should show blocking pending overlays and prevent duplicate submissions.

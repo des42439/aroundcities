@@ -161,15 +161,6 @@ function PhotoUploadModal({
             />
           </Field>
 
-          <label className="flex items-center gap-3 text-sm text-neutral-300">
-            <input
-              type="checkbox"
-              name="feature_first_photo"
-              className="h-4 w-4"
-            />
-            Show first uploaded photo as photo feed
-          </label>
-
           <AdminSubmitButton pendingLabel="Uploading...">
             Upload photos
           </AdminSubmitButton>
