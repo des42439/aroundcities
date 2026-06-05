@@ -60,21 +60,3 @@ export async function updatePhoto(
 
   return data;
 }
-
-export async function clearFeaturedPhotos(
-  feedId: string
-): Promise<void> {
-  const { error } = await getSupabaseAdmin()
-    .from("photos")
-    .update({
-      featured: false,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("feed_id", feedId);
-
-  if (error) {
-    throw new Error(
-      `Featured photo update failed: ${error.message}`
-    );
-  }
-}

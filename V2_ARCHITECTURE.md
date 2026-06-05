@@ -104,7 +104,8 @@ Fields:
 Notes:
 
 - A feed can contain multiple photos.
-- `featured` is a curator flag only; it should not override sequence ordering for feed cards, previews, or galleries.
+- `featured` is a multi-photo curator flag surfaced as `Show as photo feed`; it makes photos eligible for standalone Photo feed cards on `/kch`.
+- `featured` should not override sequence ordering for feed cards, previews, or galleries.
 - `sequence` controls the photo display order within a feed. Smaller positive numbers appear first; unsequenced `0` values fall behind manually ordered photos.
 - `place_id` should be optional on Photo.
 - `location_name` allows a human-readable photo-specific location without requiring a full Place record.
@@ -464,6 +465,7 @@ Sources may appear as a main admin item because they support the curator's manua
 - New feeds should be drafts by default.
 - Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
 - Photo order should stay numeric and curator-controlled through `photos.sequence`; do not let the featured flag override sequence ordering for public galleries or admin thumbnails.
+- Multiple photos in one feed may be marked as Photo feed candidates. Do not enforce one featured photo per feed.
 - Photo metadata such as captured dates or GPS should be extracted from JPEG EXIF data when available and displayed as curator reference only. It must not automatically assign places.
 - Keep photo-specific Place and Location name hidden in the admin photo editor unless explicitly reintroduced.
 - Save, publish, upload, photo update, and delete actions should show blocking pending overlays and prevent duplicate submissions.
@@ -482,6 +484,7 @@ Sources may appear as a main admin item because they support the curator's manua
 Minimum card content:
 
 - First photo by sequence if available
+- Standalone Photo feed cards for selected photos when available
 - Feed type label
 - Feed title
 - Short content preview

@@ -78,7 +78,7 @@ export default function PhotoManager({
                 </p>
                 {photo.featured ? (
                   <p className="mt-1 text-xs text-neutral-500">
-                    Featured
+                    Photo feed
                   </p>
                 ) : null}
                 <p className="mt-1 text-xs text-neutral-500">
@@ -167,7 +167,7 @@ function PhotoUploadModal({
               name="feature_first_photo"
               className="h-4 w-4"
             />
-            Mark first uploaded photo as featured
+            Show first uploaded photo as photo feed
           </label>
 
           <AdminSubmitButton pendingLabel="Uploading...">
@@ -306,7 +306,7 @@ function PhotoEditorModal({
                 defaultChecked={photo.featured}
                 className="h-4 w-4"
               />
-              Featured photo
+              Show as photo feed
             </label>
 
             <div className="flex flex-wrap items-center gap-3">

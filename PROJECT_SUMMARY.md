@@ -48,6 +48,7 @@ Implemented mobile-first workflow:
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
 - The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Photo order is controlled by `photos.sequence`, with smaller positive numbers displayed first.
+- Photos marked `Show as photo feed` can appear as standalone Photo feed cards in the public `/kch` discovery stream.
 - Optional Sources, Places, Schedules, and Parent Feed sections appear only when added or when existing data is present.
 - Source evidence, feed schedules, parent feed selection, and feed-place metadata are wired into admin as compact refinement sections.
 - Published feeds can be archived without deleting their database rows.
@@ -108,6 +109,7 @@ The V2 Phase 1 foundation now includes:
 - Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
 - Feed photo upload from the editor opens from an Add Photos overlay so the main editor stays thumbnail-first and compact on iPhone.
 - Feed photo editing includes a numeric Photo order field backed by `photos.sequence`; public galleries and admin thumbnails display photos from smallest positive sequence to largest.
+- Feed photo editing allows multiple photos to be marked `Show as photo feed`; those photos are shuffled into `/kch` as single-photo cards linked back to the parent feed.
 - Admin photo uploads now read JPEG EXIF metadata when available and store photo capture datetime, latitude, and longitude. The photo editor shows those metadata fields and an Open Map button for coordinates.
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.

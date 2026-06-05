@@ -25,7 +25,6 @@ import {
 } from "./feed-operating-hours";
 import { createPlace, updatePlace } from "./places";
 import {
-  clearFeaturedPhotos,
   createPhoto,
   updatePhoto,
 } from "./photos";
@@ -610,10 +609,6 @@ export async function createUploadedPhotoRecordAction(input: {
   await requireAdmin();
 
   try {
-    if (input.featured) {
-      await clearFeaturedPhotos(input.feedId);
-    }
-
     await createPhoto({
       feed_id: input.feedId,
       place_id: null,
@@ -939,10 +934,6 @@ async function uploadPhotosForFeed(
     return;
   }
 
-  if (options.featureFirst) {
-    await clearFeaturedPhotos(feedId);
-  }
-
   const supabaseAdmin = getSupabaseAdmin();
   const firstSequence = await getNextPhotoSequence(feedId);
 
@@ -1037,10 +1028,6 @@ export async function updateFeedPhotoAction(
   try {
     const isFeatured =
       formData.get("featured") === "on";
-
-    if (isFeatured) {
-      await clearFeaturedPhotos(feedId);
-    }
 
     await updatePhoto(photoId, {
       title: nullableString(formData.get("title")),

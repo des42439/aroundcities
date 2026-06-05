@@ -4,7 +4,22 @@ import {
   FeedUpdate,
   FeedWithPlaceAndPhotos,
   NewFeed,
+  Photo,
 } from "@/types/database";
+import { getOrderedPhotos } from "./format";
+
+export type DiscoveryFeedItem =
+  | {
+      kind: "feed";
+      id: string;
+      feed: FeedWithPlaceAndPhotos;
+    }
+  | {
+      kind: "photo";
+      id: string;
+      feed: FeedWithPlaceAndPhotos;
+      photo: Photo;
+    };
 
 export async function getFeeds(): Promise<
   FeedWithPlaceAndPhotos[]
@@ -100,6 +115,15 @@ export async function getDiscoveryPublishedFeeds(): Promise<
   const feeds = await getLatestPublishedFeeds();
 
   return buildDiscoveryFeedOrder(feeds);
+}
+
+export async function getDiscoveryFeedItems(): Promise<
+  DiscoveryFeedItem[]
+> {
+  const feeds = await getLatestPublishedFeeds();
+  const orderedFeeds = buildDiscoveryFeedOrder(feeds);
+
+  return buildDiscoveryItems(orderedFeeds);
 }
 
 export async function getFeedBySlug(
@@ -273,6 +297,63 @@ function buildDiscoveryFeedOrder(
   }
 
   return orderedFeeds;
+}
+
+function buildDiscoveryItems(
+  feeds: FeedWithPlaceAndPhotos[]
+): DiscoveryFeedItem[] {
+  const photoItems = shuffle(
+    feeds.flatMap((feed) =>
+      getOrderedPhotos(feed.photos)
+        .filter((photo) => photo.featured)
+        .map((photo) => ({
+          kind: "photo" as const,
+          id: `photo-${photo.photo_id}`,
+          feed,
+          photo,
+        }))
+    )
+  );
+  const items: DiscoveryFeedItem[] = [];
+  let nextPhotoIndex = 0;
+
+  feeds.forEach((feed, feedIndex) => {
+    items.push({
+      kind: "feed",
+      id: `feed-${feed.feed_id}`,
+      feed,
+    });
+
+    const shouldInsertPhoto =
+      photoItems.length > 0 &&
+      (feedIndex === 0 || Math.random() > 0.35);
+
+    if (shouldInsertPhoto && nextPhotoIndex < photoItems.length) {
+      items.push(photoItems[nextPhotoIndex]);
+      nextPhotoIndex += 1;
+    }
+  });
+
+  while (nextPhotoIndex < photoItems.length) {
+    items.push(photoItems[nextPhotoIndex]);
+    nextPhotoIndex += 1;
+  }
+
+  return items;
+}
+
+function shuffle<T>(items: T[]): T[] {
+  const shuffledItems = [...items];
+
+  for (let index = shuffledItems.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    const currentItem = shuffledItems[index];
+
+    shuffledItems[index] = shuffledItems[swapIndex];
+    shuffledItems[swapIndex] = currentItem;
+  }
+
+  return shuffledItems;
 }
 
 function getUnselectedFeedsWithinDays(

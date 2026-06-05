@@ -6,10 +6,13 @@ All notable changes to AroundCities should be documented here.
 
 ### Added
 
+- Added standalone Photo feed cards on `/kch` for photos marked to show as photo feeds, shuffled into the discovery stream.
 - Added admin editing for `photos.sequence` as a numeric Photo order field.
+- Added `supabase/migrations/20260606000000_allow_multiple_featured_photos.sql` to remove the one-featured-photo-per-feed index.
 
 ### Changed
 
+- Changed the admin photo featured checkbox label to `Show as photo feed` and allowed multiple photos in one feed to be selected.
 - Changed public feed photo galleries and admin feed thumbnails to use photo sequence ordering from smallest to largest, with unsequenced `0` photos falling behind manually ordered photos.
 - Changed new photo uploads to assign default sequence values in upload order.
 
