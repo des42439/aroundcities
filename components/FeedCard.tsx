@@ -3,7 +3,6 @@ import { FeedWithPlaceAndPhotos } from "@/types/database";
 import {
   formatDate,
   getContentPreview,
-  isPlaceholderPhoto,
 } from "@/lib/format";
 
 type Props = {
@@ -15,8 +14,6 @@ type FeedPhoto = FeedWithPlaceAndPhotos["photos"][number];
 export default function FeedCard({ feed }: Props) {
   const photos = getDisplayPhotos(feed.photos);
   const preview = getContentPreview(feed.description ?? feed.content);
-  const realPhotos = photos.filter((photo) => !isPlaceholderPhoto(photo));
-  const placeholderPhotos = photos.filter(isPlaceholderPhoto);
 
   return (
     <article className="border-b border-neutral-900 py-5 sm:py-6">
@@ -47,16 +44,7 @@ export default function FeedCard({ feed }: Props) {
           </Link>
         </div>
 
-        {realPhotos.length > 0 ? (
-          <FeedPhotoGrid feed={feed} photos={realPhotos} />
-        ) : (
-          placeholderPhotos.length > 0 && (
-            <SubtlePlaceholderPhoto
-              feed={feed}
-              photo={placeholderPhotos[0]}
-            />
-          )
-        )}
+        {photos.length > 0 && <FeedPhotoGrid feed={feed} photos={photos} />}
       </div>
     </article>
   );
@@ -98,20 +86,20 @@ function FeedPhotoGrid({
       <FeedImageLink
         feed={feed}
         photo={photos[0]}
-        className="aspect-[4/3] w-full"
+        className="aspect-[4/3] w-full rounded-lg"
       />
     );
   }
 
   if (photos.length === 2) {
     return (
-      <div className="grid aspect-[4/3] grid-cols-2 gap-1">
+      <div className="grid aspect-[4/3] w-full grid-cols-2 gap-1 overflow-hidden rounded-lg bg-neutral-900">
         {visiblePhotos.map((photo) => (
           <FeedImageLink
             key={photo.photo_id}
             feed={feed}
             photo={photo}
-            className="h-full w-full"
+            className="h-full w-full rounded-none"
           />
         ))}
       </div>
@@ -120,11 +108,11 @@ function FeedPhotoGrid({
 
   if (photos.length === 3) {
     return (
-      <div className="grid aspect-[4/3] grid-cols-[2fr_1fr] gap-1">
+      <div className="grid aspect-[4/3] w-full grid-cols-[2fr_1fr] gap-1 overflow-hidden rounded-lg bg-neutral-900">
         <FeedImageLink
           feed={feed}
           photo={visiblePhotos[0]}
-          className="h-full w-full"
+          className="h-full w-full rounded-none"
         />
         <div className="grid grid-rows-2 gap-1">
           {visiblePhotos.slice(1).map((photo) => (
@@ -132,7 +120,7 @@ function FeedPhotoGrid({
               key={photo.photo_id}
               feed={feed}
               photo={photo}
-              className="h-full w-full"
+              className="h-full w-full rounded-none"
             />
           ))}
         </div>
@@ -141,13 +129,13 @@ function FeedPhotoGrid({
   }
 
   return (
-    <div className="grid aspect-[4/3] grid-cols-2 grid-rows-2 gap-1">
+    <div className="grid aspect-[4/3] w-full grid-cols-2 grid-rows-2 gap-1 overflow-hidden rounded-lg bg-neutral-900">
       {visiblePhotos.map((photo, index) => (
         <FeedImageLink
           key={photo.photo_id}
           feed={feed}
           photo={photo}
-          className="h-full w-full"
+          className="h-full w-full rounded-none"
           overlay={
             index === 3 && extraCount > 0 ? `+${extraCount}` : undefined
           }
@@ -171,7 +159,7 @@ function FeedImageLink({
   return (
     <Link
       href={`/feed/${feed.slug}`}
-      className={`relative block overflow-hidden rounded-md bg-neutral-900 ${className}`}
+      className={`relative block min-w-0 overflow-hidden bg-neutral-900 ${className}`}
     >
       <img
         src={photo.photo_url}
@@ -184,28 +172,6 @@ function FeedImageLink({
           {overlay}
         </span>
       )}
-    </Link>
-  );
-}
-
-function SubtlePlaceholderPhoto({
-  feed,
-  photo,
-}: {
-  feed: FeedWithPlaceAndPhotos;
-  photo: FeedPhoto;
-}) {
-  return (
-    <Link
-      href={`/feed/${feed.slug}`}
-      className="block w-36 overflow-hidden rounded-md bg-neutral-900 opacity-70 sm:w-44"
-    >
-      <img
-        src={photo.photo_url}
-        alt={photo.title ?? feed.title}
-        className="aspect-[4/3] w-full object-cover"
-        loading="lazy"
-      />
     </Link>
   );
 }

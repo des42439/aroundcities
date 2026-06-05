@@ -27,10 +27,10 @@ All notable changes to AroundCities should be documented here.
 - Updated app-facing database types for parent feeds, source evidence, channels, source screenshots, feed schedules, audit fields, feed-place metadata, and photo ordering/coordinates.
 - Reduced the public `/kch` homepage intro from a large hero into a compact feed header so feed content appears sooner.
 - Changed feed cards to feel more like local discovery notes, with shorter previews, softer metadata, a "See more" link, and different visual treatment for visual-first versus information-first posts.
-- Changed placeholder photos so they render as small supporting poster thumbnails instead of dominating feed cards.
 - Removed the remaining `/kch` feed heading section so feed items appear immediately after the city header.
-- Changed public feed cards so text comes first, followed by larger real-photo displays or multi-photo grids. Placeholder-only feeds now show only a small muted thumbnail.
+- Changed public feed cards so text comes first, followed by full-width photo displays or multi-photo grids for every attached photo set.
 - Refined public feed photo grids so single-photo and multi-photo cards use a similarly large visual block: 2 photos side-by-side, 3 photos with one large image plus two stacked images, and 4+ photos as a 2x2 grid with a `+N` overlay when needed.
+- Removed the small public placeholder thumbnail treatment from `/kch` feed cards so seeded placeholder URLs also occupy the full feed image block.
 
 ## 2026-06-04
 
