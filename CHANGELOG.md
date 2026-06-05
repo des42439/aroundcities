@@ -36,6 +36,7 @@ All notable changes to AroundCities should be documented here.
 - Changed homepage feed cards to keep description text above the photo gallery and render inline `See more` only when the description exceeds two displayed lines.
 - Added `supabase/migrations/20260605006000_update_multi_photo_seed_image_urls.sql` to replace the multi-photo test feeds' text-only placeholder images with external food/scenery sample photos.
 - Added `supabase/migrations/20260605007000_seed_real_sample_images_for_all_public_feeds.sql` so every published seed feed has at least one photo and older word-only placeholders use external sample images.
+- Refined `/kch` feed cards into a clearer social-feed order: title, muted place/date, two-line description with inline `more`, photo gallery, small footer link, then the divider.
 
 ## 2026-06-04
 

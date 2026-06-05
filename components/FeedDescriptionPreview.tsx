@@ -46,7 +46,7 @@ export default function FeedDescriptionPreview({ href, text }: Props) {
       const textNode = document.createElement("span");
       const link = document.createElement("a");
 
-      link.textContent = " See more";
+      link.textContent = " more";
       measurer.append(textNode);
       document.body.append(measurer);
 
@@ -95,13 +95,13 @@ export default function FeedDescriptionPreview({ href, text }: Props) {
   return (
     <p
       ref={previewRef}
-      className="max-h-[3rem] overflow-hidden text-[15px] leading-6 text-neutral-300 sm:text-base"
+      className="max-h-10 overflow-hidden text-sm leading-5 text-neutral-300 sm:text-[15px]"
     >
       <span>{previewText}</span>
       {isTruncated && (
         <Link href={href} className="text-neutral-500 hover:text-neutral-200">
           {" "}
-          See more
+          more
         </Link>
       )}
     </p>

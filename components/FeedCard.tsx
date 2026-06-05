@@ -15,11 +15,9 @@ export default function FeedCard({ feed }: Props) {
   const feedHref = `/feed/${feed.slug}`;
 
   return (
-    <article className="border-b border-neutral-900 py-5 sm:py-6">
-      <div className="space-y-3">
-        <div className="min-w-0 space-y-2">
-          <FeedMeta feed={feed} />
-
+    <article className="border-b border-neutral-900 py-4 sm:py-5">
+      <div className="space-y-2.5">
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold leading-snug sm:text-xl">
             <Link
               href={feedHref}
@@ -28,11 +26,15 @@ export default function FeedCard({ feed }: Props) {
               {feed.title}
             </Link>
           </h2>
+
+          <FeedMeta feed={feed} />
         </div>
 
         {preview && <FeedDescriptionPreview href={feedHref} text={preview} />}
 
         {photos.length > 0 && <FeedPhotoGrid feed={feed} photos={photos} />}
+
+        <FeedFooter feed={feed} href={feedHref} />
       </div>
     </article>
   );
@@ -40,7 +42,7 @@ export default function FeedCard({ feed }: Props) {
 
 function FeedMeta({ feed }: Props) {
   return (
-    <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-500">
+    <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-neutral-500 sm:text-sm">
       {feed.place && (
         <>
           <Link
@@ -55,6 +57,37 @@ function FeedMeta({ feed }: Props) {
       <time dateTime={feed.published_at ?? undefined}>
         {formatDate(feed.published_at)}
       </time>
+    </div>
+  );
+}
+
+function FeedFooter({
+  feed,
+  href,
+}: {
+  feed: FeedWithPlaceAndPhotos;
+  href: string;
+}) {
+  if (feed.place) {
+    return (
+      <div className="border-t border-neutral-900 pt-2 text-xs text-neutral-500">
+        <Link
+          href={`/place/${feed.place.slug}`}
+          className="inline-flex items-center gap-1.5 hover:text-neutral-300"
+        >
+          <span>View place</span>
+          <span aria-hidden="true">&middot;</span>
+          <span>{feed.place.name}</span>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="border-t border-neutral-900 pt-2 text-xs text-neutral-500">
+      <Link href={href} className="hover:text-neutral-300">
+        Open feed
+      </Link>
     </div>
   );
 }
@@ -74,14 +107,14 @@ function FeedPhotoGrid({
       <FeedImageLink
         feed={feed}
         photo={photos[0]}
-        className="aspect-[4/3] w-full rounded-lg"
+        className="aspect-[4/3] w-full rounded-md"
       />
     );
   }
 
   if (photos.length === 2) {
     return (
-      <div className="grid aspect-[4/3] w-full grid-cols-2 gap-1 overflow-hidden rounded-lg bg-neutral-900">
+      <div className="grid aspect-[4/3] w-full grid-cols-2 gap-1 overflow-hidden rounded-md bg-neutral-900">
         {visiblePhotos.map((photo) => (
           <FeedImageLink
             key={photo.photo_id}
@@ -96,7 +129,7 @@ function FeedPhotoGrid({
 
   if (photos.length === 3) {
     return (
-      <div className="grid aspect-[4/3] w-full grid-cols-[2fr_1fr] gap-1 overflow-hidden rounded-lg bg-neutral-900">
+      <div className="grid aspect-[4/3] w-full grid-cols-[2fr_1fr] gap-1 overflow-hidden rounded-md bg-neutral-900">
         <FeedImageLink
           feed={feed}
           photo={visiblePhotos[0]}
@@ -117,7 +150,7 @@ function FeedPhotoGrid({
   }
 
   return (
-    <div className="grid aspect-[4/3] w-full grid-cols-2 grid-rows-2 gap-1 overflow-hidden rounded-lg bg-neutral-900">
+    <div className="grid aspect-[4/3] w-full grid-cols-2 grid-rows-2 gap-1 overflow-hidden rounded-md bg-neutral-900">
       {visiblePhotos.map((photo, index) => (
         <FeedImageLink
           key={photo.photo_id}
