@@ -32,6 +32,8 @@ All notable changes to AroundCities should be documented here.
 - Refined public feed photo grids so single-photo and multi-photo cards use a similarly large visual block: 2 photos side-by-side, 3 photos with one large image plus two stacked images, and 4+ photos as a 2x2 grid with a `+N` overlay when needed.
 - Removed the small public placeholder thumbnail treatment from `/kch` feed cards so seeded placeholder URLs also occupy the full feed image block.
 - Added `supabase/migrations/20260605005000_seed_multi_photo_feed_examples.sql` with two published public test feeds containing five and six photos for collage and `+N` overlay testing.
+- Changed the public feed listing order to place/date, title, photo block, two-line description, "See more", then divider.
+- Added `supabase/migrations/20260605006000_update_multi_photo_seed_image_urls.sql` to replace the multi-photo test feeds' text-only placeholder images with external food/scenery sample photos.
 
 ## 2026-06-04
 

@@ -13,7 +13,7 @@ type FeedPhoto = FeedWithPlaceAndPhotos["photos"][number];
 
 export default function FeedCard({ feed }: Props) {
   const photos = getDisplayPhotos(feed.photos);
-  const preview = getContentPreview(feed.description ?? feed.content);
+  const preview = getContentPreview(feed.description ?? feed.content, 180);
 
   return (
     <article className="border-b border-neutral-900 py-5 sm:py-6">
@@ -21,7 +21,7 @@ export default function FeedCard({ feed }: Props) {
         <div className="min-w-0 space-y-2">
           <FeedMeta feed={feed} />
 
-          <h2 className="text-xl font-semibold leading-snug sm:text-2xl">
+          <h2 className="text-lg font-semibold leading-snug sm:text-xl">
             <Link
               href={`/feed/${feed.slug}`}
               className="hover:text-neutral-300"
@@ -29,9 +29,13 @@ export default function FeedCard({ feed }: Props) {
               {feed.title}
             </Link>
           </h2>
+        </div>
 
+        {photos.length > 0 && <FeedPhotoGrid feed={feed} photos={photos} />}
+
+        <div className="space-y-1">
           {preview && (
-            <p className="text-[15px] leading-6 text-neutral-300 sm:text-base">
+            <p className="overflow-hidden text-[15px] leading-6 text-neutral-300 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:text-base">
               {preview}
             </p>
           )}
@@ -43,8 +47,6 @@ export default function FeedCard({ feed }: Props) {
             See more
           </Link>
         </div>
-
-        {photos.length > 0 && <FeedPhotoGrid feed={feed} photos={photos} />}
       </div>
     </article>
   );
