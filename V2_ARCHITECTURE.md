@@ -1,8 +1,8 @@
 # AroundCities V2 Phase 1 Architecture
 
-Last updated: 4 June 2026
+Last updated: 5 June 2026
 
-Implementation status: Steps 1-5 are implemented, plus a simple manual admin Sources checklist.
+Implementation status: Steps 1-5 are implemented, plus a simple manual admin Sources checklist. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, but the new source evidence, channel, screenshot, and feed schedule UI/data-helper wiring is not implemented yet.
 
 ## 1. Objective
 
@@ -301,6 +301,25 @@ Sources:
 - Sources are sorted by `last_checked_at asc nulls first`, then `created_at asc`, so never checked and oldest checked items rise to the top.
 - Opening a source should not mark it checked. The curator manually clicks `Mark Checked` after review.
 - Sources must not become a crawler, scraper, scheduled checker, Facebook automation system, priority queue, or frequency system during Phase 1.
+
+2026-06-05 use-case schema review:
+
+- Review document: `20260605_schema_review_erd.md`.
+- Additive migrations:
+  - `supabase/migrations/20260605000000_v2_use_case_schema_extensions.sql`
+  - `supabase/migrations/20260605001000_enable_v2_rls_policies.sql`
+  - `supabase/migrations/20260605002000_add_remaining_audit_fields.sql`
+  - `supabase/migrations/20260605003000_seed_phase3_test_data.sql`
+  - `supabase/migrations/20260605004000_seed_more_public_feed_styles.sql`
+- The reviewed final use cases need `feeds.parent_feed_id`, feed-tied source evidence, source screenshots, flexible feed schedules, `feed_places.is_primary`, `feed_places.location_note`, photo sequence/coordinates, and audit user fields.
+- These migrations have been applied to linked Supabase project `fblhoxcdfnxnqzmuczkx`.
+- RLS is enabled on app tables. Anonymous reads are limited to published public feed content and related rows. Admin/server writes use the service-role client.
+- Raw generated Supabase types live in `types/supabase.generated.ts`; app-facing aliases remain in `types/database.ts`.
+- Phase 3 seed data has been applied and verified for nine sample feeds covering events, major event parent feeds, sub-events, registration periods, food sharing, multi-place walks, seasonal greetings, and featured photos.
+- Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
+- Use simple display heuristics for now: visual-first feeds can emphasize photos when real photos exist; information-first feeds should lead with title and short copy, with poster/placeholder images kept smaller.
+- Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed when that workflow is implemented.
+- Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
 
 ### Schema Rules
 

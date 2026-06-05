@@ -2,6 +2,33 @@
 
 All notable changes to AroundCities should be documented here.
 
+## 2026-06-05
+
+### Added
+
+- Added `20260605_schema_review_erd.md` reviewing the final table design against the final V2 feed use cases.
+- Added an ERD covering feeds, photos, places, feed places, schedules, channels, feed sources, and source screenshots.
+- Added `supabase/migrations/20260605000000_v2_use_case_schema_extensions.sql` as an additive migration script for parent feeds, source evidence, schedule windows, feed-place metadata, photo ordering, photo coordinates, and audit fields.
+- Added `supabase/migrations/20260605001000_enable_v2_rls_policies.sql` to enable RLS for V2 app tables with anonymous read access limited to published public feed content.
+- Added `supabase/migrations/20260605002000_add_remaining_audit_fields.sql` so older support tables also have created/updated audit user fields.
+- Added `supabase/migrations/20260605003000_seed_phase3_test_data.sql` with Phase 3 sample records for DIY Sape Competition, Kuching Food Festival, Kuching Got Talent, Kuching Marathon, Registration Period, Food Sharing, Waterfront Walk, Seasonal Greeting, and Featured Photo.
+- Added `supabase/migrations/20260605004000_seed_more_public_feed_styles.sql` with additional public browsing seed data for Singing Competition at The Spring, Kuching Marathon Route / Jersey Reveal, Kuching Food Festival Day 1 visit, and New Kids Playground at Boulevard.
+- Generated raw Supabase TypeScript schema types in `types/supabase.generated.ts`.
+
+### Notes
+
+- The Phase 2 database migrations were applied to the linked Supabase project `fblhoxcdfnxnqzmuczkx`.
+- The Phase 3 seed migration was applied to the linked Supabase project and verified with 9 seeded feeds, 7 places, 9 photos, 9 feed-place links, 7 schedule rows, 5 feed sources, and 5 source screenshots.
+- The new migration scripts are additive and keep the current Phase 1 app schema intact. UI/data helper wiring for the new source evidence, channel, and feed schedule tables is not implemented yet.
+
+### Changed
+
+- Typed Supabase clients with the generated schema and switched server-side data helpers to the service-role client so admin draft/source operations continue to work after RLS is enabled.
+- Updated app-facing database types for parent feeds, source evidence, channels, source screenshots, feed schedules, audit fields, feed-place metadata, and photo ordering/coordinates.
+- Reduced the public `/kch` homepage intro from a large hero into a compact feed header so feed content appears sooner.
+- Changed feed cards to feel more like local discovery notes, with shorter previews, softer metadata, a "See more" link, and different visual treatment for visual-first versus information-first posts.
+- Changed placeholder photos so they render as small supporting poster thumbnails instead of dominating feed cards.
+
 ## 2026-06-04
 
 ### Added

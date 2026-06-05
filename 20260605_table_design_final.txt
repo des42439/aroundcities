@@ -1,0 +1,64 @@
+feeds
+- feed_id
+- title
+- description
+- slug
+- status
+- published_at
+- parent_feed_id nullable
+
+channels
+- channel_id
+- name
+- url
+- screenshot_url nullable
+- remarks
+- last_checked_at nullable
+
+feed_sources
+- source_id
+- feed_id
+- source_url nullable
+- channel_id nullable
+- source_note nullable
+
+source_screenshots
+- screenshot_id
+- source_id
+- screenshot_url
+- sequence
+- remarks nullable
+
+photos
+- photo_id
+- feed_id
+- photo_url
+- longitude nullable
+- latitude nullable
+- title nullable
+- featured
+- sequence
+
+places
+- place_id
+- name
+- slug
+- longitude nullable
+- latitude nullable
+
+feed_places
+- feed_id
+- place_id
+- is_primary
+- location_note nullable
+
+feed_schedules
+- schedule_id
+- feed_id
+- schedule_date
+- start_time nullable
+- end_time nullable
+- remarks nullable
+
+
+note: all table should have created by, created datetime, updated by and updated datetime.

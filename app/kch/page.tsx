@@ -9,20 +9,22 @@ export default async function KuchingPage() {
 
   return (
     <PublicShell>
-      <div className="mx-auto max-w-3xl px-4 py-10">
-        <section className="mb-4">
-          <p className="mb-3 text-sm uppercase tracking-wide text-neutral-500">
-            Latest Around Kuching
-          </p>
+      <div className="mx-auto max-w-3xl px-4 py-4 sm:py-6">
+        <section className="border-b border-neutral-900 pb-3">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-sm text-neutral-500">
+                Around Kuching
+              </p>
+              <h1 className="mt-1 text-2xl font-semibold leading-tight sm:text-3xl">
+                Latest local notes
+              </h1>
+            </div>
 
-          <h1 className="max-w-2xl text-4xl font-semibold leading-tight">
-            What is happening around Kuching?
-          </h1>
-
-          <p className="mt-4 max-w-2xl text-base leading-7 text-neutral-400">
-            Local observations, photo walks, food visits, and discoveries
-            shared from around the city.
-          </p>
+            <p className="hidden max-w-56 text-right text-sm leading-5 text-neutral-500 sm:block">
+              Photos, food, small events, and things worth noticing.
+            </p>
+          </div>
         </section>
 
         {feeds.length === 0 ? (

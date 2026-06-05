@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { getSupabaseAdmin } from "./supabase-admin";
 import {
   FeedWithPlaceAndPhotos,
   NewPlace,
@@ -10,7 +10,7 @@ import {
 export async function getPlaceBySlug(
   slug: string
 ): Promise<PlaceWithFeeds | null> {
-  const { data: place, error: placeError } = await supabase
+  const { data: place, error: placeError } = await getSupabaseAdmin()
     .from("places")
     .select("*")
     .eq("slug", slug)
@@ -25,7 +25,7 @@ export async function getPlaceBySlug(
     return null;
   }
 
-  const { data: feeds, error: feedsError } = await supabase
+  const { data: feeds, error: feedsError } = await getSupabaseAdmin()
     .from("feeds")
     .select(
       "*, place:places!feeds_place_id_fkey(*), photos(*)"
@@ -52,7 +52,7 @@ export async function getPlaceBySlug(
 }
 
 export async function getPlaces(): Promise<Place[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("places")
     .select("*")
     .order("name", { ascending: true });
@@ -68,7 +68,7 @@ export async function getPlaces(): Promise<Place[]> {
 export async function getPlaceById(
   placeId: string
 ): Promise<Place | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("places")
     .select("*")
     .eq("place_id", placeId)
@@ -85,7 +85,7 @@ export async function getPlaceById(
 export async function createPlace(
   input: NewPlace
 ): Promise<Place> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("places")
     .insert(input)
     .select("*")
@@ -102,7 +102,7 @@ export async function updatePlace(
   placeId: string,
   input: PlaceUpdate
 ): Promise<Place> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("places")
     .update({
       ...input,

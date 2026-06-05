@@ -1,10 +1,10 @@
-import { supabase } from "./supabase";
+import { getSupabaseAdmin } from "./supabase-admin";
 import { FeedPlaceWithPlace } from "@/types/database";
 
 export async function getFeedPlaces(
   feedId: string
 ): Promise<FeedPlaceWithPlace[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("feed_places")
     .select("*, place:places(*)")
     .eq("feed_id", feedId)
@@ -22,7 +22,7 @@ export async function replaceFeedPlaces(
   feedId: string,
   placeIds: string[]
 ): Promise<void> {
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await getSupabaseAdmin()
     .from("feed_places")
     .delete()
     .eq("feed_id", feedId);
@@ -43,7 +43,7 @@ export async function replaceFeedPlaces(
     return;
   }
 
-  const { error } = await supabase
+  const { error } = await getSupabaseAdmin()
     .from("feed_places")
     .insert(rows);
 

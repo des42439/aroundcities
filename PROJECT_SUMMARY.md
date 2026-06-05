@@ -1,6 +1,6 @@
 # AroundCities Project Summary
 
-Last updated: 4 June 2026
+Last updated: 5 June 2026
 
 ## Current Direction
 
@@ -120,6 +120,39 @@ Sources are intentionally manual. They are not a crawler, scraper, scheduled job
 `feed_type` is kept internally with a `local_discovery` default for compatibility, but it is hidden from the creation workflow. Future classification should lean on flexible tags/categories instead.
 
 The `feed_places` migration SQL has been created but not run by Codex. Until that migration is applied to Supabase, multiple feed-level place assignment will remain a prepared schema/code path rather than active production data.
+
+## 2026-06-05 Schema Review
+
+The final table design and final feed use cases were reviewed in:
+
+- `20260605_schema_review_erd.md`
+
+The review identified missing support for parent-child feed relationships, feed-tied source evidence, source screenshots, date-window schedules, feed-place metadata, photo ordering, optional photo coordinates, and audit user fields.
+
+Additive migration scripts were produced and applied to the linked Supabase project `fblhoxcdfnxnqzmuczkx`:
+
+- `supabase/migrations/20260605000000_v2_use_case_schema_extensions.sql`
+- `supabase/migrations/20260605001000_enable_v2_rls_policies.sql`
+- `supabase/migrations/20260605002000_add_remaining_audit_fields.sql`
+- `supabase/migrations/20260605003000_seed_phase3_test_data.sql`
+
+These scripts keep the current app-facing schema intact while adding the tables and columns needed by the reviewed use cases.
+
+Phase 2 database status:
+
+- Remote migration history is aligned with local migrations through `20260605002000`.
+- `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` now exist in Supabase.
+- Foreign keys and indexes for parent feeds, feed sources, source screenshots, schedules, photos, places, and feed-place links are in place.
+- RLS is enabled on V2 app tables. Anonymous reads are limited to published feed content and related public rows. Admin/server writes use the service-role client.
+- Raw generated Supabase types are stored in `types/supabase.generated.ts`.
+- Existing app-facing types in `types/database.ts` were updated for the new schema.
+- Phase 3 seed data is applied and verified for the requested sample feeds: DIY Sape Competition, Kuching Food Festival, Kuching Got Talent, Kuching Marathon, Registration Period, Food Sharing, Waterfront Walk, Seasonal Greeting, and Featured Photo.
+- The seed data includes places, photos, feed-place links, parent-child feed links, schedules, source channels, feed sources, and source screenshots.
+- Additional public-browsing seed data was added for Singing Competition at The Spring, Kuching Marathon Route / Jersey Reveal, Visit to Kuching Food Festival Day 1, and New Kids Playground at Boulevard.
+- The `/kch` public feed now uses a compact header instead of a large hero and adapts feed cards between visual-first local discovery posts and information-first announcement posts.
+- Placeholder seed photos are treated as small supporting poster thumbnails in cards so grey placeholder blocks do not dominate the feed.
+
+UI and data-helper wiring for the new `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` workflows is not implemented yet.
 
 ## Current Repo Note
 

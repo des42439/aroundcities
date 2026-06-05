@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { getSupabaseAdmin } from "./supabase-admin";
 import {
   Feed,
   FeedUpdate,
@@ -9,7 +9,7 @@ import {
 export async function getFeeds(): Promise<
   FeedWithPlaceAndPhotos[]
 > {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("feeds")
     .select(
       "*, place:places!feeds_place_id_fkey(*), photos(*)"
@@ -31,7 +31,7 @@ export async function getFeeds(): Promise<
 export async function getLatestPublishedFeeds(): Promise<
   FeedWithPlaceAndPhotos[]
 > {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("feeds")
     .select(
       "*, place:places!feeds_place_id_fkey(*), photos(*)"
@@ -53,7 +53,7 @@ export async function getLatestPublishedFeeds(): Promise<
 export async function getFeedBySlug(
   slug: string
 ): Promise<FeedWithPlaceAndPhotos | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("feeds")
     .select(
       "*, place:places!feeds_place_id_fkey(*), photos(*)"
@@ -77,7 +77,7 @@ export async function getFeedBySlug(
 export async function getFeedById(
   feedId: string
 ): Promise<FeedWithPlaceAndPhotos | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("feeds")
     .select(
       "*, place:places!feeds_place_id_fkey(*), photos(*)"
@@ -100,7 +100,7 @@ export async function getFeedById(
 export async function createFeed(
   input: NewFeed
 ): Promise<Feed> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("feeds")
     .insert(input)
     .select("*")
@@ -110,14 +110,14 @@ export async function createFeed(
     throw new Error(`Feed create failed: ${error.message}`);
   }
 
-  return data;
+  return data as Feed;
 }
 
 export async function updateFeed(
   feedId: string,
   input: FeedUpdate
 ): Promise<Feed> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("feeds")
     .update({
       ...input,
@@ -131,13 +131,13 @@ export async function updateFeed(
     throw new Error(`Feed update failed: ${error.message}`);
   }
 
-  return data;
+  return data as Feed;
 }
 
 export async function deleteFeed(
   feedId: string
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabaseAdmin()
     .from("feeds")
     .delete()
     .eq("feed_id", feedId);

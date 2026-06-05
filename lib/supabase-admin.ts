@@ -1,6 +1,9 @@
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/supabase.generated";
 
-let supabaseAdminClient: ReturnType<typeof createClient> | null =
+let supabaseAdminClient: ReturnType<
+  typeof createClient<Database>
+> | null =
   null;
 
 export function getSupabaseAdmin() {
@@ -24,12 +27,16 @@ export function getSupabaseAdmin() {
     );
   }
 
-  supabaseAdminClient = createClient(supabaseUrl, supabaseServiceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
+  supabaseAdminClient = createClient<Database>(
+    supabaseUrl,
+    supabaseServiceRoleKey,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    }
+  );
 
   return supabaseAdminClient;
 }

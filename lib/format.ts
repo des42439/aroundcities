@@ -1,4 +1,4 @@
-import { FeedType, Photo } from "@/types/database";
+import { FeedType, FeedWithPlaceAndPhotos, Photo } from "@/types/database";
 
 export function formatDate(value?: string | null): string {
   if (!value) {
@@ -26,7 +26,7 @@ export function formatFeedType(feedType: FeedType): string {
 
 export function getContentPreview(
   content?: string | null,
-  maxLength = 180
+  maxLength = 140
 ): string {
   if (!content) {
     return "";
@@ -52,6 +52,36 @@ export function getFeaturedPhoto(
     photos.find((photo) => photo.featured) ??
     photos[0] ??
     null
+  );
+}
+
+export function isPlaceholderPhoto(photo?: Photo | null): boolean {
+  if (!photo) {
+    return false;
+  }
+
+  return /placehold\.co|placeholder|dummyimage/i.test(photo.photo_url);
+}
+
+export function isVisualFirstFeed(feed: FeedWithPlaceAndPhotos): boolean {
+  const text = `${feed.feed_type} ${feed.title} ${feed.tags.join(" ")}`.toLowerCase();
+
+  if (
+    text.includes("registration") ||
+    text.includes("competition") ||
+    text.includes("route") ||
+    text.includes("jersey") ||
+    text.includes("announcement")
+  ) {
+    return false;
+  }
+
+  return (
+    feed.feed_type === "photo_walk" ||
+    feed.feed_type === "food_visit" ||
+    text.includes("featured") ||
+    text.includes("walk") ||
+    text.includes("visit")
   );
 }
 

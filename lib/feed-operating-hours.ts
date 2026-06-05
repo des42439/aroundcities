@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { getSupabaseAdmin } from "./supabase-admin";
 import {
   FeedOperatingHour,
   FeedOperatingHourScheduleType,
@@ -19,7 +19,7 @@ export type FeedOperatingHourInput = {
 export async function getFeedOperatingHours(
   feedId: string
 ): Promise<FeedOperatingHour[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("feed_operating_hours")
     .select("*")
     .eq("feed_id", feedId)
@@ -38,7 +38,7 @@ export async function replaceFeedOperatingHours(
   feedId: string,
   rows: FeedOperatingHourInput[]
 ): Promise<void> {
-  const { error: deleteError } = await supabase
+  const { error: deleteError } = await getSupabaseAdmin()
     .from("feed_operating_hours")
     .delete()
     .eq("feed_id", feedId);
@@ -53,7 +53,7 @@ export async function replaceFeedOperatingHours(
     return;
   }
 
-  const { error } = await supabase
+  const { error } = await getSupabaseAdmin()
     .from("feed_operating_hours")
     .insert(
       rows.map((row) => ({

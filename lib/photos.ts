@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { getSupabaseAdmin } from "./supabase-admin";
 import {
   NewPhoto,
   Photo,
@@ -8,7 +8,7 @@ import {
 export async function getPhotosByFeedId(
   feedId: string
 ): Promise<Photo[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("photos")
     .select("*")
     .eq("feed_id", feedId)
@@ -29,7 +29,7 @@ export async function getPhotosByFeedId(
 export async function createPhoto(
   input: NewPhoto
 ): Promise<Photo> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("photos")
     .insert(input)
     .select("*")
@@ -46,7 +46,7 @@ export async function updatePhoto(
   photoId: string,
   input: PhotoUpdate
 ): Promise<Photo> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("photos")
     .update({
       ...input,
@@ -66,7 +66,7 @@ export async function updatePhoto(
 export async function clearFeaturedPhotos(
   feedId: string
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabaseAdmin()
     .from("photos")
     .update({
       featured: false,

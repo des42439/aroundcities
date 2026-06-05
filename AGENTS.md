@@ -138,6 +138,17 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Source creation uses `/admin/sources/new`; keep the main Sources page focused on the checklist list.
 - Supabase Storage `photos` bucket is required for feed photo uploads.
 - Admin action failures should be logged with an Error ID for troubleshooting.
+- `20260605_schema_review_erd.md` reviews the final table design against the final V2 feed use cases and includes an ERD.
+- `supabase/migrations/20260605000000_v2_use_case_schema_extensions.sql` is an additive migration script for parent feeds, source evidence, source screenshots, flexible feed schedules, feed-place metadata, photo ordering/coordinates, and audit fields.
+- `supabase/migrations/20260605001000_enable_v2_rls_policies.sql` enables RLS with anonymous reads limited to published public feed content and related rows.
+- `supabase/migrations/20260605002000_add_remaining_audit_fields.sql` adds missing audit fields to older support tables.
+- `supabase/migrations/20260605003000_seed_phase3_test_data.sql` seeds Phase 3 test data for the requested sample feeds and their related places, photos, schedules, sources, screenshots, and parent-child links.
+- Phase 2 database migrations are applied on linked Supabase project `fblhoxcdfnxnqzmuczkx`, and raw generated schema types are stored in `types/supabase.generated.ts`.
+- Phase 3 seed data is also applied and verified on linked Supabase project `fblhoxcdfnxnqzmuczkx`.
+- `supabase/migrations/20260605004000_seed_more_public_feed_styles.sql` adds richer public feed examples for browsing different feed styles.
+- Public `/kch` should stay compact and feed-first. Avoid large formal hero sections, official listing tone, and category-heavy card layouts.
+- Feed cards should feel like relaxed local notes. Use simple display heuristics for visual-first versus information-first feeds; do not add a complex feed type system unless explicitly requested.
+- The new schema-extension tables and fields are not yet wired into the admin or public UI unless explicitly implemented later.
 
 Supabase Auth, search, maps, tags UI, and multiple cities are not implemented yet.
 

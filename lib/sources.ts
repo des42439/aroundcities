@@ -1,4 +1,4 @@
-import { supabase } from "./supabase";
+import { getSupabaseAdmin } from "./supabase-admin";
 import {
   NewSource,
   Source,
@@ -6,7 +6,7 @@ import {
 } from "@/types/database";
 
 export async function getSources(): Promise<Source[]> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("sources")
     .select("*")
     .order("last_checked_at", {
@@ -26,7 +26,7 @@ export async function getSources(): Promise<Source[]> {
 export async function getSourceById(
   sourceId: string
 ): Promise<Source | null> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("sources")
     .select("*")
     .eq("source_id", sourceId)
@@ -43,7 +43,7 @@ export async function getSourceById(
 export async function createSource(
   input: NewSource
 ): Promise<Source> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("sources")
     .insert(input)
     .select("*")
@@ -62,7 +62,7 @@ export async function updateSource(
   sourceId: string,
   input: SourceUpdate
 ): Promise<Source> {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabaseAdmin()
     .from("sources")
     .update({
       ...input,
@@ -84,7 +84,7 @@ export async function updateSource(
 export async function deleteSource(
   sourceId: string
 ): Promise<void> {
-  const { error } = await supabase
+  const { error } = await getSupabaseAdmin()
     .from("sources")
     .delete()
     .eq("source_id", sourceId);

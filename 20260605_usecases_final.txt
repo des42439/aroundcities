@@ -1,0 +1,363 @@
+# AroundCities Feed Use Cases (V2)
+
+## Core Philosophy
+
+A Feed represents anything worth sharing around Kuching.
+
+A Feed is not limited to events.
+
+Examples include:
+
+* Events
+* Event updates
+* Event registrations
+* Food discoveries
+* Place visits
+* Personal experiences
+* Business discoveries
+* Seasonal greetings
+* Featured photos
+* Interesting observations
+
+Most feed attributes are optional.
+
+Only the following should be considered core:
+
+* Title
+* Description
+
+Everything else depends on the type of content being shared.
+
+---
+
+# 1. Single Day Event
+
+Example:
+DIY Sape Competition
+
+Purpose:
+Share a one-day activity discovered from an external source.
+
+Data:
+
+* Title
+* Description
+* Photos (usually promotional poster)
+* Place: AEON Mall Kuching Central
+* Schedule:
+
+  * 7 June, 3:00 PM
+* Source URL
+* Source Screenshot (private evidence)
+* Source Channel: AEON Mall Kuching Central
+
+---
+
+# 2. Multi-Day Event
+
+Example:
+Singing Competition
+
+Purpose:
+Share an activity spanning multiple days.
+
+Data:
+
+* Title
+* Description
+* Photos
+* Place: The Spring
+* Schedule:
+
+  * 7 June, 12 PM – 7 PM
+  * 8 June, 12 PM – 7 PM
+  * 9 June, 12 PM – 7 PM
+* Source URL
+* Source Screenshot
+* Source Channel
+
+---
+
+# 3. Major Event / Festival
+
+Example:
+Kuching Food Festival
+
+Purpose:
+Represent a large event that may contain multiple sub-events.
+
+Data:
+
+* Title
+* Description
+* Photos
+* Place: MBKS
+* Schedule:
+
+  * 22 June – 20 August
+  * Daily 5 PM – 11 PM
+* Source URL
+* Source Screenshot
+* Source Channel
+
+May act as a Parent Feed.
+
+---
+
+# 4. Sub Event Within Larger Event
+
+Example:
+Kuching Got Talent
+
+Purpose:
+Represent a smaller activity that belongs to a larger event.
+
+Data:
+
+* Title
+* Description
+* Photos
+* Place: MBKS
+* Schedule:
+
+  * 23 June, 7 PM – 11 PM
+  * 24 June, 7 PM – 11 PM
+  * 25 June, 7 PM – 11 PM
+* Parent Feed:
+
+  * Kuching Food Festival
+* Source Screenshot may be a photo taken on-site
+* Source URL optional
+* Source Channel optional
+
+---
+
+# 5. Event Day
+
+Example:
+Kuching Marathon
+
+Purpose:
+Represent the actual event day.
+
+Data:
+
+* Title
+* Description
+* Photos
+* Place: Padang Merdeka
+* Schedule:
+
+  * 22 September, 4:00 AM
+* Source URL
+* Source Screenshot
+* Source Channel
+
+---
+
+# 6. Registration Period
+
+Example:
+Kuching Marathon Registration
+
+Purpose:
+Represent a registration window rather than the event itself.
+
+Data:
+
+* Title
+* Description
+* Parent Feed:
+
+  * Kuching Marathon
+* Schedule:
+
+  * Registration Open Date
+  * Registration Close Date
+* Source URL
+* Source Screenshot
+* Source Channel
+
+Place is optional.
+
+---
+
+# 7. Event Update / Announcement
+
+Example:
+Kuching Marathon Route Released
+
+Purpose:
+Represent updates related to an existing event.
+
+Data:
+
+* Title
+* Description
+* Parent Feed:
+
+  * Kuching Marathon
+* Source URL
+* Source Screenshot
+* Source Channel
+
+Schedule optional.
+
+---
+
+# 8. Food Discovery
+
+Example:
+Nice Kolomee in Town
+
+Purpose:
+Share a food experience.
+
+Data:
+
+* Title
+* Description
+* Photos
+* Place:
+
+  * Lien Hin Kopitiam
+
+No source required.
+
+No schedule required.
+
+---
+
+# 9. Place Visit
+
+Example:
+Kuching Waterfront Afternoon Walk
+
+Purpose:
+Share a visit to one or more locations.
+
+Data:
+
+* Title
+* Description
+* Photos
+* Places:
+
+  * Kuching Waterfront
+  * Carpenter Street
+  * Old Court House
+
+No source required.
+
+No schedule required.
+
+---
+
+# 10. Event Experience
+
+Example:
+Visit to Kuching Food Festival Day 1
+
+Purpose:
+Share a personal experience attending an event.
+
+Data:
+
+* Title
+* Description
+* Photos
+* Place:
+
+  * MBKS
+* Parent Feed:
+
+  * Kuching Food Festival
+
+No source required.
+
+---
+
+# 11. Business Discovery
+
+Example:
+New Kids Playground in Town
+
+Purpose:
+Share awareness of a newly discovered business or attraction.
+
+Data:
+
+* Title
+* Description
+* Photos
+* Place:
+
+  * Boulevard Shopping Mall
+* Location Note:
+
+  * Second Floor, Old Wing
+
+Source optional.
+
+---
+
+# 12. Seasonal Greeting
+
+Example:
+Selamat Hari Gawai
+
+Purpose:
+General community greeting.
+
+Data:
+
+* Title
+* Description
+
+No place.
+
+No source.
+
+No schedule.
+
+No photos required.
+
+---
+
+# 13. Featured Photo
+
+Example:
+Alley in Carpenter Street
+
+Purpose:
+Highlight a single photo.
+
+Data:
+
+* Title
+* Photo
+* Parent Feed:
+
+  * Kuching Waterfront Afternoon Walk
+
+Description optional.
+
+No source required.
+
+---
+
+# Design Conclusions
+
+A Feed may optionally have:
+
+* Photos
+* Places
+* Schedule
+* Source URL
+* Source Evidence
+* Source Channel
+* Parent Feed
+
+Not every Feed requires all fields.
+
+The system should be designed around flexibility rather than assuming every Feed is an event.
