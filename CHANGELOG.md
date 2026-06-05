@@ -28,6 +28,8 @@ All notable changes to AroundCities should be documented here.
 - Reduced the public `/kch` homepage intro from a large hero into a compact feed header so feed content appears sooner.
 - Changed feed cards to feel more like local discovery notes, with shorter previews, softer metadata, a "See more" link, and different visual treatment for visual-first versus information-first posts.
 - Changed placeholder photos so they render as small supporting poster thumbnails instead of dominating feed cards.
+- Removed the remaining `/kch` feed heading section so feed items appear immediately after the city header.
+- Changed public feed cards so text comes first, followed by larger real-photo displays or multi-photo grids. Placeholder-only feeds now show only a small muted thumbnail.
 
 ## 2026-06-04
 

@@ -318,6 +318,7 @@ Sources:
 - Phase 3 seed data has been applied and verified for nine sample feeds covering events, major event parent feeds, sub-events, registration periods, food sharing, multi-place walks, seasonal greetings, and featured photos.
 - Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
 - Use simple display heuristics for now: visual-first feeds can emphasize photos when real photos exist; information-first feeds should lead with title and short copy, with poster/placeholder images kept smaller.
+- The current `/kch` feed shows items immediately after the city header. Cards should keep text first, then show real photos as a larger single image or compact multi-photo grid. Placeholder-only photo content should remain small and subtle.
 - Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed when that workflow is implemented.
 - Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
 
