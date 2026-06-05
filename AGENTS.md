@@ -146,6 +146,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Phase 2 database migrations are applied on linked Supabase project `fblhoxcdfnxnqzmuczkx`, and raw generated schema types are stored in `types/supabase.generated.ts`.
 - Phase 3 seed data is also applied and verified on linked Supabase project `fblhoxcdfnxnqzmuczkx`.
 - `supabase/migrations/20260605004000_seed_more_public_feed_styles.sql` adds richer public feed examples for browsing different feed styles.
+- `supabase/migrations/20260605005000_seed_multi_photo_feed_examples.sql` adds public test feeds with five and six photos for multi-photo collage testing.
 - Public `/kch` should stay compact and feed-first. Avoid large formal hero sections, official listing tone, and category-heavy card layouts.
 - Feed cards should feel like relaxed local notes. Use simple display heuristics for visual-first versus information-first feeds; do not add a complex feed type system unless explicitly requested.
 - Current public feed cards show text first and then photos. Any attached photos should render as a full-width social-feed image block, including seeded placeholder image URLs.
