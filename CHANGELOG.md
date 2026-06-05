@@ -38,6 +38,7 @@ All notable changes to AroundCities should be documented here.
 - Added `supabase/migrations/20260605007000_seed_real_sample_images_for_all_public_feeds.sql` so every published seed feed has at least one photo and older word-only placeholders use external sample images.
 - Refined `/kch` feed cards into a clearer social-feed order: title, muted place/date, two-line description with inline `more`, photo gallery, small footer link, then the divider.
 - Added `supabase/migrations/20260605008000_seed_long_description_feed_examples.sql` with two published long-description feeds for testing the inline `more` link on `/kch`.
+- Removed the `/kch` feed footer action row and made the post divider brighter, thicker, and roomier so one post ends clearly before the next begins.
 
 ## 2026-06-04
 

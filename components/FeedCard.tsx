@@ -15,7 +15,7 @@ export default function FeedCard({ feed }: Props) {
   const feedHref = `/feed/${feed.slug}`;
 
   return (
-    <article className="border-b border-neutral-900 py-4 sm:py-5">
+    <article className="border-b-2 border-neutral-800 pb-6 pt-4 sm:pb-7 sm:pt-5">
       <div className="space-y-2.5">
         <div className="min-w-0">
           <h2 className="text-lg font-semibold leading-snug sm:text-xl">
@@ -33,8 +33,6 @@ export default function FeedCard({ feed }: Props) {
         {preview && <FeedDescriptionPreview href={feedHref} text={preview} />}
 
         {photos.length > 0 && <FeedPhotoGrid feed={feed} photos={photos} />}
-
-        <FeedFooter feed={feed} href={feedHref} />
       </div>
     </article>
   );
@@ -57,37 +55,6 @@ function FeedMeta({ feed }: Props) {
       <time dateTime={feed.published_at ?? undefined}>
         {formatDate(feed.published_at)}
       </time>
-    </div>
-  );
-}
-
-function FeedFooter({
-  feed,
-  href,
-}: {
-  feed: FeedWithPlaceAndPhotos;
-  href: string;
-}) {
-  if (feed.place) {
-    return (
-      <div className="border-t border-neutral-900 pt-2 text-xs text-neutral-500">
-        <Link
-          href={`/place/${feed.place.slug}`}
-          className="inline-flex items-center gap-1.5 hover:text-neutral-300"
-        >
-          <span>View place</span>
-          <span aria-hidden="true">&middot;</span>
-          <span>{feed.place.name}</span>
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="border-t border-neutral-900 pt-2 text-xs text-neutral-500">
-      <Link href={href} className="hover:text-neutral-300">
-        Open feed
-      </Link>
     </div>
   );
 }

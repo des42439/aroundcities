@@ -152,7 +152,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - `supabase/migrations/20260605008000_seed_long_description_feed_examples.sql` adds two published long-description feeds for testing the inline `more` link on `/kch`.
 - Public `/kch` should stay compact and feed-first. Avoid large formal hero sections, official listing tone, and category-heavy card layouts.
 - Feed cards should feel like relaxed local notes. Use simple display heuristics for visual-first versus information-first feeds; do not add a complex feed type system unless explicitly requested.
-- Current public feed cards should show title, muted place/date, a maximum two-line description with inline "more" only when truncated, then the photo block, a small muted footer link, and the divider. Any attached photos should render as a full-width social-feed image block.
+- Current public feed cards should show title, muted place/date, a maximum two-line description with inline "more" only when truncated, then the photo block and a clear subtle divider. Do not add footer actions below the gallery. Any attached photos should render as a full-width social-feed image block.
 - Multi-photo feed grids should feel like one substantial content block, not tiny thumbnails. Keep the 2-photo, 3-photo, and 4+ photo layouts visually close to the single-photo block size.
 - The new schema-extension tables and fields are not yet wired into the admin or public UI unless explicitly implemented later.
 

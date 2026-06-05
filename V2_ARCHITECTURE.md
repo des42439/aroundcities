@@ -326,7 +326,7 @@ Sources:
 - Long-description test feeds exist so the `/kch` two-line preview and inline `more` link can be verified.
 - Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.
-- The current `/kch` feed shows items immediately after the city header. Cards should show title, muted place/date, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, a small muted footer link, then the divider.
+- The current `/kch` feed shows items immediately after the city header. Cards should show title, muted place/date, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, then a clear subtle divider with enough breathing room to mark the end of the post. Do not add footer actions below the gallery.
 - Multi-photo grids should occupy a similar visual footprint to a single-photo block: 2 photos side-by-side, 3 photos with one large image and two stacked images, and 4+ photos as 2x2 with a `+N` overlay when needed.
 - Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed when that workflow is implemented.
 - Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
