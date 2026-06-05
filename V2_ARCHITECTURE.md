@@ -440,7 +440,7 @@ Sources may appear as a main admin item because they support the curator's manua
 1. Capture a draft Feed from `/admin/feeds/new` with only photos, title, and description.
 2. Return to `/admin/feeds/drafts` and open the draft when ready to refine it.
 3. Keep the draft editor compact: title, description, photo thumbnails, Add Section, Save Draft, Publish, Delete.
-4. Keep photo upload and photo-detail editing in overlays opened from the thumbnail area so the main editor stays compact.
+4. Keep photo upload and photo-detail editing in overlays opened from the thumbnail area so the main editor stays compact. Photo detail editing should let the curator open the full-size image and delete the photo with confirmation.
 5. Add optional Sources, Places, Schedules, or Parent Feed sections only when the feed needs them.
 6. Optionally assign primary place and multiple feed places with a location note.
 7. Optionally assign photo-level places from the photo thumbnail editor.
@@ -470,6 +470,7 @@ Sources may appear as a main admin item because they support the curator's manua
 - Photo metadata such as captured dates or GPS should be extracted from JPEG EXIF data when available and displayed as curator reference only. It must not automatically assign places.
 - Keep photo-specific Place and Location name hidden in the admin photo editor unless explicitly reintroduced.
 - Save, publish, upload, photo update, and delete actions should show blocking pending overlays and prevent duplicate submissions.
+- Photo delete should remove the photo row and best-effort clean up the Supabase Storage object.
 - Admin write failures should stay on the form and show a clear error instead of redirecting as if successful.
 - Feed deletion must require confirmation, redirect back to `/admin/feeds`, and must not delete unrelated places.
 - Published feed archive must set status to `archived`, keep the row in the database, and hide the feed from public `/kch`.

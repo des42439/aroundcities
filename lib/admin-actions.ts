@@ -26,6 +26,7 @@ import {
 import { createPlace, updatePlace } from "./places";
 import {
   createPhoto,
+  deletePhoto,
   updatePhoto,
 } from "./photos";
 import { slugify } from "./slug";
@@ -1041,6 +1042,32 @@ export async function updateFeedPhotoAction(
     revalidatePath("/kch");
   } catch (error) {
     return await actionError("update_feed_photo", error, {
+      feedId,
+      photoId,
+    });
+  }
+
+  redirect(`/admin/feeds/${feedId}`);
+}
+
+export async function deleteFeedPhotoAction(
+  feedId: string,
+  photoId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await deletePhoto(photoId);
+
+    revalidatePath(`/admin/feeds/${feedId}`);
+    revalidatePath("/admin/feeds");
+    revalidatePath("/admin/feeds/drafts");
+    revalidatePath("/admin/feeds/published");
+    revalidatePath("/kch");
+  } catch (error) {
+    return await actionError("delete_feed_photo", error, {
       feedId,
       photoId,
     });

@@ -108,8 +108,10 @@ The V2 Phase 1 foundation now includes:
 - Published feed editing supports archiving, which sets status to `archived` and hides the feed from public `/kch`.
 - Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
 - Feed photo upload from the editor opens from an Add Photos overlay so the main editor stays thumbnail-first and compact on iPhone.
+- Feed photo editing lets the curator open the full-size image in a new tab by clicking the preview image.
 - Feed photo editing includes a numeric Photo order field backed by `photos.sequence`; public galleries and admin thumbnails display photos from smallest positive sequence to largest.
 - Feed photo editing allows multiple photos to be marked `Show as photo feed`; those photos are shuffled into `/kch` as single-photo cards linked back to the parent feed.
+- Feed photo editing includes confirmed photo deletion; deleting a photo removes the row and best-effort removes the Supabase Storage object.
 - Uploaded photos are not marked `Show as photo feed` automatically; the curator must select that manually while editing a photo.
 - Admin photo uploads now read JPEG EXIF metadata when available and store photo capture datetime, latitude, and longitude. The photo editor shows those metadata fields and an Open Map button for coordinates.
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.

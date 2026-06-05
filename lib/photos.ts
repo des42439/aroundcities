@@ -60,3 +60,51 @@ export async function updatePhoto(
 
   return data;
 }
+
+export async function deletePhoto(
+  photoId: string
+): Promise<Photo> {
+  const { data, error } = await getSupabaseAdmin()
+    .from("photos")
+    .delete()
+    .eq("photo_id", photoId)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`Photo delete failed: ${error.message}`);
+  }
+
+  await deletePhotoStorageObject(data.photo_url);
+
+  return data;
+}
+
+async function deletePhotoStorageObject(photoUrl: string) {
+  const storagePath = getPhotoStoragePath(photoUrl);
+
+  if (!storagePath) {
+    return;
+  }
+
+  const { error } = await getSupabaseAdmin().storage
+    .from("photos")
+    .remove([storagePath]);
+
+  if (error) {
+    console.error("Photo storage delete failed", error);
+  }
+}
+
+function getPhotoStoragePath(photoUrl: string) {
+  const marker = "/storage/v1/object/public/photos/";
+  const markerIndex = photoUrl.indexOf(marker);
+
+  if (markerIndex === -1) {
+    return null;
+  }
+
+  return decodeURIComponent(
+    photoUrl.slice(markerIndex + marker.length)
+  );
+}

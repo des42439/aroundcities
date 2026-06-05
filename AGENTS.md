@@ -136,6 +136,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Uploaded photos must not be auto-marked as `Show as photo feed`; this is a manual admin choice only.
 - Photo uploads extract JPEG EXIF capture datetime, longitude, and latitude when available.
 - Feed photo editing shows capture datetime, longitude, latitude, and an Open Map button when coordinates exist.
+- Feed photo editing lets the curator open the full-size image from the preview and delete a photo with confirmation.
 - Photo-specific Place and Location name fields are hidden in admin photo editing; leave the underlying database columns untouched for now.
 - Optional Sources, Places, Schedules, and Parent Feed sections appear only after the curator adds them or when existing data is present.
 - Places are no longer promoted as a main admin navigation item.
@@ -202,6 +203,7 @@ Feed creation should be photo-first and draft-first:
 - New feed photo uploads should use signed Supabase Storage upload URLs so large photos do not pass through Vercel Server Action request bodies.
 - Keep the feed edit page compact by showing optional feed fields only after the curator explicitly selects them.
 - Keep feed photo editing thumbnail-first; open one photo-specific editor at a time instead of listing every photo edit form inline.
+- Keep photo deletion confirmed and visually separated from ordinary save controls.
 - Keep photo order numeric and curator-controlled through `photos.sequence`; do not let `featured` override sequence ordering for public galleries or admin thumbnails.
 - Allow multiple photos per feed to be marked for Photo feed cards. Do not reintroduce a one-featured-photo-per-feed clearing workflow.
 - Do not auto-select Photo feed candidates during upload. The curator should mark them manually in the photo editor.

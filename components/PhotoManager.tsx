@@ -13,6 +13,7 @@ import {
   AdminSubmitButton,
 } from "./AdminSubmitButton";
 import {
+  deleteFeedPhotoAction,
   updateFeedPhotoAction,
   uploadFeedPhotosAction,
 } from "@/lib/admin-actions";
@@ -186,6 +187,11 @@ function PhotoEditorModal({
     feedId,
     photo.photo_id
   );
+  const deleteAction = deleteFeedPhotoAction.bind(
+    null,
+    feedId,
+    photo.photo_id
+  );
   const hasCoordinates =
     photo.latitude !== null && photo.longitude !== null;
   const mapUrl = hasCoordinates
@@ -214,7 +220,12 @@ function PhotoEditorModal({
         </div>
 
         <div className="grid gap-5 p-4 md:grid-cols-[240px_1fr]">
-          <div className="relative aspect-square overflow-hidden rounded-md bg-neutral-900 md:aspect-[4/5]">
+          <a
+            href={photo.photo_url}
+            target="_blank"
+            rel="noreferrer"
+            className="relative block aspect-square overflow-hidden rounded-md bg-neutral-900 outline-none transition hover:ring-1 hover:ring-neutral-600 focus:ring-1 focus:ring-neutral-500 md:aspect-[4/5]"
+          >
             <Image
               src={photo.photo_url}
               alt={photo.title ?? "Feed photo"}
@@ -223,111 +234,123 @@ function PhotoEditorModal({
               className="object-cover"
               unoptimized
             />
-          </div>
+          </a>
 
-          <AdminActionForm action={action} className="space-y-4">
-            <AdminFormProgress />
+          <div className="space-y-5">
+            <AdminActionForm action={action} className="space-y-4">
+              <AdminFormProgress />
 
-            <Field label="Title">
-              <input
-                name="title"
-                defaultValue={photo.title ?? ""}
-                className={inputClassName}
-              />
-            </Field>
+              <Field label="Title">
+                <input
+                  name="title"
+                  defaultValue={photo.title ?? ""}
+                  className={inputClassName}
+                />
+              </Field>
 
-            <Field label="Description">
-              <textarea
-                name="description"
-                defaultValue={photo.description ?? ""}
-                className={textareaClassName}
-              />
-            </Field>
+              <Field label="Description">
+                <textarea
+                  name="description"
+                  defaultValue={photo.description ?? ""}
+                  className={textareaClassName}
+                />
+              </Field>
 
-            <Field label="Capture datetime">
-              <input
-                name="captured_at"
-                type="datetime-local"
-                defaultValue={toDateTimeInputValue(
-                  photo.captured_at
+              <Field label="Capture datetime">
+                <input
+                  name="captured_at"
+                  type="datetime-local"
+                  defaultValue={toDateTimeInputValue(
+                    photo.captured_at
+                  )}
+                  className={inputClassName}
+                />
+              </Field>
+
+              <Field label="Photo order">
+                <input
+                  name="sequence"
+                  type="number"
+                  min={1}
+                  step={1}
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  defaultValue={
+                    photo.sequence > 0
+                      ? photo.sequence
+                      : fallbackSequence
+                  }
+                  className={inputClassName}
+                />
+              </Field>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <Field label="Longitude">
+                  <input
+                    value={photo.longitude ?? ""}
+                    readOnly
+                    className={inputClassName}
+                  />
+                </Field>
+
+                <Field label="Latitude">
+                  <input
+                    value={photo.latitude ?? ""}
+                    readOnly
+                    className={inputClassName}
+                  />
+                </Field>
+              </div>
+
+              <label className="flex items-center gap-3 text-sm text-neutral-300">
+                <input
+                  type="checkbox"
+                  name="featured"
+                  defaultChecked={photo.featured}
+                  className="h-4 w-4"
+                />
+                Show as photo feed
+              </label>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <AdminSubmitButton
+                  variant="secondary"
+                  pendingLabel="Saving..."
+                >
+                  Save photo
+                </AdminSubmitButton>
+
+                {mapUrl ? (
+                  <a
+                    href={mapUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex min-h-11 items-center rounded-md border border-neutral-800 px-4 py-2 text-sm font-medium text-neutral-300 hover:border-neutral-600 hover:text-neutral-100"
+                  >
+                    Open Map
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    disabled
+                    className="inline-flex min-h-11 cursor-not-allowed items-center rounded-md border border-neutral-900 px-4 py-2 text-sm font-medium text-neutral-600"
+                  >
+                    Open Map
+                  </button>
                 )}
-                className={inputClassName}
-              />
-            </Field>
+              </div>
+            </AdminActionForm>
 
-            <Field label="Photo order">
-              <input
-                name="sequence"
-                type="number"
-                min={1}
-                step={1}
-                inputMode="numeric"
-                pattern="[0-9]*"
-                defaultValue={
-                  photo.sequence > 0
-                    ? photo.sequence
-                    : fallbackSequence
-                }
-                className={inputClassName}
-              />
-            </Field>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Longitude">
-                <input
-                  value={photo.longitude ?? ""}
-                  readOnly
-                  className={inputClassName}
-                />
-              </Field>
-
-              <Field label="Latitude">
-                <input
-                  value={photo.latitude ?? ""}
-                  readOnly
-                  className={inputClassName}
-                />
-              </Field>
-            </div>
-
-            <label className="flex items-center gap-3 text-sm text-neutral-300">
-              <input
-                type="checkbox"
-                name="featured"
-                defaultChecked={photo.featured}
-                className="h-4 w-4"
-              />
-              Show as photo feed
-            </label>
-
-            <div className="flex flex-wrap items-center gap-3">
+            <AdminActionForm action={deleteAction}>
               <AdminSubmitButton
-                variant="secondary"
-                pendingLabel="Saving..."
+                variant="danger"
+                pendingLabel="Deleting..."
+                confirmMessage="Delete this photo? This removes it from the feed."
               >
-                Save photo
+                Delete photo
               </AdminSubmitButton>
-
-              {mapUrl ? (
-                <a
-                  href={mapUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex min-h-11 items-center rounded-md border border-neutral-800 px-4 py-2 text-sm font-medium text-neutral-300 hover:border-neutral-600 hover:text-neutral-100"
-                >
-                  Open Map
-                </a>
-              ) : (
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex min-h-11 cursor-not-allowed items-center rounded-md border border-neutral-900 px-4 py-2 text-sm font-medium text-neutral-600"
-                >
-                  Open Map
-                </button>
-              )}
-            </div>
-          </AdminActionForm>
+            </AdminActionForm>
+          </div>
         </div>
       </div>
     </div>

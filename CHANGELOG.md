@@ -6,6 +6,8 @@ All notable changes to AroundCities should be documented here.
 
 ### Added
 
+- Added admin photo deletion from the feed photo editor, with confirmation.
+- Added full-size image opening from the edit-photo preview image.
 - Added standalone Photo feed cards on `/kch` for photos marked to show as photo feeds, shuffled into the discovery stream.
 - Added admin editing for `photos.sequence` as a numeric Photo order field.
 - Added `supabase/migrations/20260606000000_allow_multiple_featured_photos.sql` to remove the one-featured-photo-per-feed index.
