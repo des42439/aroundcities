@@ -275,7 +275,6 @@ export default function MobileFeedEditor({
       <PhotoManager
         feedId={feed.feed_id}
         photos={photos}
-        places={places}
       />
 
       {hasSection("sources") ? (

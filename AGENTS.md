@@ -130,6 +130,9 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Photo-first draft creation for feeds asks only for photos, title, and description, then returns to Drafted Feeds.
 - Feed editing starts compact with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Feed editor photo uploads open from an Add Photos overlay; keep the main editor thumbnail-first.
+- Photo uploads extract JPEG EXIF capture datetime, longitude, and latitude when available.
+- Feed photo editing shows capture datetime, longitude, latitude, and an Open Map button when coordinates exist.
+- Photo-specific Place and Location name fields are hidden in admin photo editing; leave the underlying database columns untouched for now.
 - Optional Sources, Places, Schedules, and Parent Feed sections appear only after the curator adds them or when existing data is present.
 - Places are no longer promoted as a main admin navigation item.
 - `/admin/places` remains available as a direct maintenance route.
@@ -195,6 +198,7 @@ Feed creation should be photo-first and draft-first:
 - New feed photo uploads should use signed Supabase Storage upload URLs so large photos do not pass through Vercel Server Action request bodies.
 - Keep the feed edit page compact by showing optional feed fields only after the curator explicitly selects them.
 - Keep feed photo editing thumbnail-first; open one photo-specific editor at a time instead of listing every photo edit form inline.
+- Keep photo metadata as curator reference only. Extract EXIF captured datetime/GPS when available, but do not use it to assign places automatically.
 - Use a searchable modal/picker for parent feed selection; do not use a huge plain dropdown.
 - Archive published feeds by setting status to `archived`; archived feeds remain in the database and stay hidden from public `/kch`.
 - Source evidence is feed-specific and admin-only. Source screenshots currently use evidence URL records unless direct private upload is explicitly added later.

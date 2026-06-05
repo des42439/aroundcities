@@ -6,7 +6,6 @@ import AdminActionForm from "./AdminActionForm";
 import {
   Field,
   inputClassName,
-  selectClassName,
   textareaClassName,
 } from "./AdminForm";
 import {
@@ -19,18 +18,16 @@ import {
 } from "@/lib/admin-actions";
 import { toDateTimeInputValue } from "@/lib/format";
 import { ADMIN_UPLOAD_MAX_BYTES } from "@/lib/upload-limits";
-import { Photo, Place } from "@/types/database";
+import { Photo } from "@/types/database";
 
 type Props = {
   feedId: string;
   photos: Photo[];
-  places: Place[];
 };
 
 export default function PhotoManager({
   feedId,
   photos,
-  places,
 }: Props) {
   const [uploadOpen, setUploadOpen] = useState(false);
   const [selectedPhotoId, setSelectedPhotoId] = useState<
@@ -104,7 +101,6 @@ export default function PhotoManager({
         <PhotoEditorModal
           feedId={feedId}
           photo={selectedPhoto}
-          places={places}
           onClose={() => setSelectedPhotoId(null)}
         />
       ) : null}
@@ -177,12 +173,10 @@ function PhotoUploadModal({
 function PhotoEditorModal({
   feedId,
   photo,
-  places,
   onClose,
 }: {
   feedId: string;
   photo: Photo;
-  places: Place[];
   onClose: () => void;
 }) {
   const action = updateFeedPhotoAction.bind(
@@ -190,6 +184,11 @@ function PhotoEditorModal({
     feedId,
     photo.photo_id
   );
+  const hasCoordinates =
+    photo.latitude !== null && photo.longitude !== null;
+  const mapUrl = hasCoordinates
+    ? `https://www.google.com/maps/search/?api=1&query=${photo.latitude},${photo.longitude}`
+    : null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/85 px-4 py-6 backdrop-blur-sm">
@@ -227,38 +226,10 @@ function PhotoEditorModal({
           <AdminActionForm action={action} className="space-y-4">
             <AdminFormProgress />
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <Field label="Title">
-                <input
-                  name="title"
-                  defaultValue={photo.title ?? ""}
-                  className={inputClassName}
-                />
-              </Field>
-
-              <Field label="Photo place">
-                <select
-                  name="place_id"
-                  defaultValue={photo.place_id ?? ""}
-                  className={selectClassName}
-                >
-                  <option value="">No photo-specific place</option>
-                  {places.map((place) => (
-                    <option
-                      key={place.place_id}
-                      value={place.place_id}
-                    >
-                      {place.name}
-                    </option>
-                  ))}
-                </select>
-              </Field>
-            </div>
-
-            <Field label="Location name">
+            <Field label="Title">
               <input
-                name="location_name"
-                defaultValue={photo.location_name ?? ""}
+                name="title"
+                defaultValue={photo.title ?? ""}
                 className={inputClassName}
               />
             </Field>
@@ -271,7 +242,7 @@ function PhotoEditorModal({
               />
             </Field>
 
-            <Field label="Captured at">
+            <Field label="Capture datetime">
               <input
                 name="captured_at"
                 type="datetime-local"
@@ -281,6 +252,24 @@ function PhotoEditorModal({
                 className={inputClassName}
               />
             </Field>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <Field label="Longitude">
+                <input
+                  value={photo.longitude ?? ""}
+                  readOnly
+                  className={inputClassName}
+                />
+              </Field>
+
+              <Field label="Latitude">
+                <input
+                  value={photo.latitude ?? ""}
+                  readOnly
+                  className={inputClassName}
+                />
+              </Field>
+            </div>
 
             <label className="flex items-center gap-3 text-sm text-neutral-300">
               <input
@@ -292,12 +281,33 @@ function PhotoEditorModal({
               Featured photo
             </label>
 
-            <AdminSubmitButton
-              variant="secondary"
-              pendingLabel="Saving..."
-            >
-              Save photo
-            </AdminSubmitButton>
+            <div className="flex flex-wrap items-center gap-3">
+              <AdminSubmitButton
+                variant="secondary"
+                pendingLabel="Saving..."
+              >
+                Save photo
+              </AdminSubmitButton>
+
+              {mapUrl ? (
+                <a
+                  href={mapUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-11 items-center rounded-md border border-neutral-800 px-4 py-2 text-sm font-medium text-neutral-300 hover:border-neutral-600 hover:text-neutral-100"
+                >
+                  Open Map
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex min-h-11 cursor-not-allowed items-center rounded-md border border-neutral-900 px-4 py-2 text-sm font-medium text-neutral-600"
+                >
+                  Open Map
+                </button>
+              )}
+            </div>
           </AdminActionForm>
         </div>
       </div>

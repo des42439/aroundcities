@@ -37,6 +37,7 @@ import {
   markSourceChecked,
   updateSource,
 } from "./sources";
+import { extractPhotoMetadata } from "./photo-metadata";
 import {
   FeedOperatingHourScheduleType,
   FeedStatus,
@@ -581,6 +582,9 @@ export async function createUploadedPhotoRecordAction(input: {
   feedId: string;
   photoUrl: string;
   featured: boolean;
+  capturedAt?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
 }): Promise<AdminActionState> {
   await requireAdmin();
 
@@ -596,7 +600,9 @@ export async function createUploadedPhotoRecordAction(input: {
       description: null,
       photo_url: input.photoUrl,
       location_name: null,
-      captured_at: null,
+      captured_at: input.capturedAt ?? null,
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
       featured: input.featured,
     });
 
@@ -918,6 +924,7 @@ async function uploadPhotosForFeed(
   const supabaseAdmin = getSupabaseAdmin();
 
   for (const [index, file] of files.entries()) {
+    const metadata = await extractPhotoMetadata(file);
     const extension =
       file.name.split(".").pop()?.toLowerCase() ??
       "jpg";
@@ -965,8 +972,10 @@ async function uploadPhotosForFeed(
       captured_at: options.useNewPhotoMetadata
         ? parseDateTime(
             formData.get("new_photo_captured_at")
-          )
-        : null,
+          ) ?? metadata.capturedAt
+        : metadata.capturedAt,
+      latitude: metadata.latitude,
+      longitude: metadata.longitude,
       featured: options.featureFirst && index === 0,
     });
   }
@@ -993,10 +1002,6 @@ export async function updateFeedPhotoAction(
       description: nullableString(
         formData.get("description")
       ),
-      location_name: nullableString(
-        formData.get("location_name")
-      ),
-      place_id: nullableString(formData.get("place_id")),
       captured_at: parseDateTime(
         formData.get("captured_at")
       ),

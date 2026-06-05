@@ -456,7 +456,8 @@ Sources may appear as a main admin item because they support the curator's manua
 - Do not ask for feed type during creation.
 - New feeds should be drafts by default.
 - Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
-- Photo metadata such as captured dates or GPS, if available later, may be displayed only as curator reference. It should not automatically assign places.
+- Photo metadata such as captured dates or GPS should be extracted from JPEG EXIF data when available and displayed as curator reference only. It must not automatically assign places.
+- Keep photo-specific Place and Location name hidden in the admin photo editor unless explicitly reintroduced.
 - Save, publish, upload, photo update, and delete actions should show blocking pending overlays and prevent duplicate submissions.
 - Admin write failures should stay on the form and show a clear error instead of redirecting as if successful.
 - Feed deletion must require confirmation, redirect back to `/admin/feeds`, and must not delete unrelated places.

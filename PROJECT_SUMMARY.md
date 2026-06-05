@@ -106,6 +106,8 @@ The V2 Phase 1 foundation now includes:
 - Published feed editing supports archiving, which sets status to `archived` and hides the feed from public `/kch`.
 - Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
 - Feed photo upload from the editor opens from an Add Photos overlay so the main editor stays thumbnail-first and compact on iPhone.
+- Admin photo uploads now read JPEG EXIF metadata when available and store photo capture datetime, latitude, and longitude. The photo editor shows those metadata fields and an Open Map button for coordinates.
+- The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
 - Sources can be created from `/admin/sources/new`, edited, deleted, opened in a new tab, and manually marked checked. The list is sorted with never checked sources first, then oldest checked first.
 - Existing feed photo uploads are still guarded at roughly 4MB total per submit until that editor flow is also moved to direct uploads.

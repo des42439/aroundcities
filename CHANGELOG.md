@@ -6,6 +6,8 @@ All notable changes to AroundCities should be documented here.
 
 ### Added
 
+- Added EXIF metadata extraction for admin photo uploads so JPEG capture datetime, latitude, and longitude are stored when present.
+- Added capture datetime, longitude, latitude, and a Google Maps shortcut to the admin photo editor.
 - Added mobile-first admin workflow sections for `New Feed`, `Drafted Feeds`, and `Published Feeds`.
 - Added `/admin/feeds/drafts` and `/admin/feeds/published` with thumbnail-first mobile lists.
 - Added a compact feed editor that starts with title, description, photo thumbnails, save/publish/delete controls, and reveals optional Sources, Places, Schedules, and Parent Feed sections only after the curator adds them.
@@ -29,6 +31,7 @@ All notable changes to AroundCities should be documented here.
 
 ### Changed
 
+- Removed the photo-specific Place and Location name fields from the admin photo editor while leaving existing database columns untouched.
 - Typed Supabase clients with the generated schema and switched server-side data helpers to the service-role client so admin draft/source operations continue to work after RLS is enabled.
 - Updated app-facing database types for parent feeds, source evidence, channels, source screenshots, feed schedules, audit fields, feed-place metadata, and photo ordering/coordinates.
 - Reduced the public `/kch` homepage intro from a large hero into a compact feed header so feed content appears sooner.

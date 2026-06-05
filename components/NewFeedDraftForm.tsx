@@ -18,6 +18,7 @@ import {
   ADMIN_PHOTO_MAX_BYTES,
   ADMIN_PHOTO_MAX_DIMENSION,
 } from "@/lib/upload-limits";
+import { extractPhotoMetadata } from "@/lib/photo-metadata";
 
 type SaveState = {
   error: string | null;
@@ -179,6 +180,7 @@ export default function NewFeedDraftForm() {
           message: `Compressing photo ${index + 1} of ${files.length}...`,
         });
 
+        const metadata = await extractPhotoMetadata(file);
         const compressedFile = await compressImage(file);
 
         setState({
@@ -220,6 +222,9 @@ export default function NewFeedDraftForm() {
             feedId: draft.feedId,
             photoUrl: target.publicUrl,
             featured: index === 0,
+            capturedAt: metadata.capturedAt,
+            latitude: metadata.latitude,
+            longitude: metadata.longitude,
           });
         const photoRecordError = errorMessage(photoRecord);
 
