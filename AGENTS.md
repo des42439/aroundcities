@@ -59,6 +59,7 @@ Route proposals for V2:
 - `/` redirects to `/kch`
 - `/kch` shows a discovery-style mixed feed
 - `/feed/[slug]` shows feed detail
+- `/photo/[photoId]` shows a single public photo page
 - `/place/[slug]` shows place detail
 
 Do not implement advanced features during Phase 1.
@@ -124,7 +125,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Project reset away from old V1 Photo/Event-first code.
 - Database migration for `places`, `feeds`, and `photos`.
 - TypeScript types and simple data helpers.
-- Public routes for `/`, `/kch`, `/feed/[slug]`, and `/place/[slug]`.
+- Public routes for `/`, `/kch`, `/feed/[slug]`, `/photo/[photoId]`, and `/place/[slug]`.
 - Minimal admin UI protected by `ADMIN_PASSWORD`.
 - Mobile-first admin workflow is split into `/admin/feeds/new`, `/admin/feeds/drafts`, and `/admin/feeds/published`.
 - The `/admin` workflow hub shows counts for Drafted Feeds, Published Feeds, and Sources.
@@ -134,8 +135,8 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Photos use `photos.sequence` for display order. Smaller positive sequence numbers appear first; unsequenced `0` photos fall behind manually ordered photos.
 - Admin feed thumbnails should use the first photo by sequence, not the featured flag.
 - Photo `featured` is now a multi-photo curator flag surfaced as `Show as photo feed`; marked photos may appear as standalone Photo feed cards on `/kch`.
-- Public feed clicks increment `feeds.click_count`; full-size photo opens increment `photos.click_count`.
-- Standalone Photo feed cards should open the original feed from the title and the full-size photo from the image.
+- Public feed clicks increment `feeds.click_count`; public photo clicks increment `photos.click_count`.
+- Standalone Photo feed cards should open the original feed from the title and the single-photo page from the image.
 - Uploaded photos must not be auto-marked as `Show as photo feed`; this is a manual admin choice only.
 - Photo uploads extract JPEG EXIF capture datetime, longitude, and latitude when available.
 - Feed photo editing shows capture datetime, longitude, latitude, and an Open Map button when coordinates exist.

@@ -50,7 +50,7 @@ export default function PhotoFeedCard({ feed, photo }: Props) {
         </p>
 
         <TrackedPhotoLink
-          href={photo.photo_url}
+          href={`/photo/${photo.photo_id}`}
           photoId={photo.photo_id}
           className="relative block aspect-[4/3] min-w-0 overflow-hidden rounded-md bg-neutral-900"
         >

@@ -40,15 +40,13 @@ export function TrackedPhotoLink({
   photoId,
 }: TrackedPhotoLinkProps) {
   return (
-    <a
+    <Link
       href={href}
-      target="_blank"
-      rel="noreferrer"
       className={className}
       onClick={() => trackClick("/api/click/photo", { photoId })}
     >
       {children}
-    </a>
+    </Link>
   );
 }
 

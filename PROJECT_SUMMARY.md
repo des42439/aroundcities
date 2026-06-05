@@ -33,6 +33,7 @@ No comments, likes, followers, messaging, ratings, reviews, or social-network as
 - `/` redirects to `/kch`
 - `/kch` shows a discovery-style mixed feed
 - `/feed/[slug]` shows feed detail
+- `/photo/[photoId]` shows a single public photo page
 - `/place/[slug]` shows place detail
 
 These public routes are implemented for Phase 1.
@@ -84,7 +85,7 @@ The V2 Phase 1 foundation now includes:
 - Place fields: name, slug, description, optional coordinates, timestamps.
 - TypeScript database types for the V2 schema.
 - Simple data helpers for feeds, places, and photos.
-- Public routes for `/`, `/kch`, `/feed/[slug]`, and `/place/[slug]`.
+- Public routes for `/`, `/kch`, `/feed/[slug]`, `/photo/[photoId]`, and `/place/[slug]`.
 - Shared public shell and feed card components.
 - Formatting helpers for feed type labels, dates, content previews, and photo sequence ordering.
 - Password-protected admin routes for feed, place, and photo management.
@@ -116,8 +117,8 @@ The V2 Phase 1 foundation now includes:
 - Feed photo editing includes confirmed photo deletion; deleting a photo removes the row and best-effort removes the Supabase Storage object.
 - Uploaded photos are not marked `Show as photo feed` automatically; the curator must select that manually while editing a photo.
 - Admin photo uploads now read JPEG EXIF metadata when available and store photo capture datetime, latitude, and longitude. The photo editor shows those metadata fields and an Open Map button for coordinates.
-- Public feed clicks increment `feeds.click_count`; full-size photo opens increment `photos.click_count`.
-- Standalone Photo feed images open only the full-size photo, while the Photo feed title opens the original feed detail.
+- Public feed clicks increment `feeds.click_count`; public photo clicks increment `photos.click_count`.
+- Standalone Photo feed images open the single-photo page, while the Photo feed title opens the original feed detail.
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
 - Sources can be created from `/admin/sources/new`, edited, deleted, opened in a new tab, and manually marked checked. The list is sorted with never checked sources first, then oldest checked first.

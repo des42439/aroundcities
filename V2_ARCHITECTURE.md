@@ -109,7 +109,7 @@ Notes:
 - `featured` is a multi-photo curator flag surfaced as `Show as photo feed`; it makes photos eligible for standalone Photo feed cards on `/kch`.
 - `featured` should not override sequence ordering for feed cards, previews, or galleries.
 - `sequence` controls the photo display order within a feed. Smaller positive numbers appear first; unsequenced `0` values fall behind manually ordered photos.
-- `click_count` tracks public full-size photo opens.
+- `click_count` tracks public photo clicks.
 - `place_id` should be optional on Photo.
 - `location_name` allows a human-readable photo-specific location without requiring a full Place record.
 
@@ -342,8 +342,8 @@ Sources:
 - Public test seed data covered five-photo and six-photo feeds, long descriptions, real sample image URLs, staggered public metadata, and a 100-feed discovery ordering volume set.
 - Seed/test data has since been removed from the linked Supabase project with `supabase/migrations/20260605012000_remove_seed_test_data.sql` and a service-role cleanup. Verification showed 0 seed-marked rows and 0 published feeds remaining.
 - Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
-- Public feed clicks should increment `feeds.click_count`, and full-size photo opens should increment `photos.click_count` without blocking navigation or changing content edit timestamps.
-- Standalone Photo feed cards should split behavior: title opens the original feed detail, image opens only that full-size photo.
+- Public feed clicks should increment `feeds.click_count`, and public photo clicks should increment `photos.click_count` without blocking navigation or changing content edit timestamps.
+- Standalone Photo feed cards should split behavior: title opens the original feed detail, image opens the single-photo page.
 - `/kch` should use discovery-style ordering rather than strict latest-first ordering: randomized recent lead, randomized weekly follow-up slots, latest fallback near slot 6, then latest remaining posts with occasional older rediscovery inserts.
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.
 - The current `/kch` feed shows items immediately after the city header. Cards should show title, muted `Author · Relative Time`, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, then a clear subtle divider with enough breathing room to mark the end of the post. Do not render a place row, pin icon, or footer actions below the gallery.
@@ -404,6 +404,16 @@ Purpose:
 - Shows operating hours / schedule when `operating_hours` is available.
 
 Use `slug` for public feed URLs because slugs are now part of the Phase 1 feed model.
+
+### `/photo/[photoId]`
+
+Photo detail.
+
+Purpose:
+
+- Shows one published photo from a published feed.
+- Displays the photo title, description, capture date when available, and a link back to the original feed.
+- Public feed detail and Photo feed image clicks should route here instead of opening the raw image file in a new tab.
 
 ### `/place/[slug]`
 
@@ -560,6 +570,7 @@ Status: implemented.
 - `/` redirect
 - `/kch` discovery feed
 - `/feed/[slug]` feed detail
+- `/photo/[photoId]` photo detail
 - `/place/[slug]` place detail
 
 Status: implemented.

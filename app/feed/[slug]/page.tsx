@@ -96,7 +96,7 @@ export default async function FeedDetailPage({
             {photos.map((photo) => (
               <figure key={photo.photo_id}>
                 <TrackedPhotoLink
-                  href={photo.photo_url}
+                  href={`/photo/${photo.photo_id}`}
                   photoId={photo.photo_id}
                   className="block"
                 >

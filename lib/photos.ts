@@ -1,10 +1,15 @@
 import { getSupabaseAdmin } from "./supabase-admin";
 import { getOrderedPhotos } from "./format";
 import {
+  Feed,
   NewPhoto,
   Photo,
   PhotoUpdate,
 } from "@/types/database";
+
+export type PhotoWithFeed = Photo & {
+  feed: Feed;
+};
 
 export async function getPhotosByFeedId(
   feedId: string
@@ -22,6 +27,46 @@ export async function getPhotosByFeedId(
   }
 
   return getOrderedPhotos(data ?? []);
+}
+
+export async function getPublishedPhotoById(
+  photoId: string
+): Promise<PhotoWithFeed | null> {
+  const { data: photo, error: photoError } = await getSupabaseAdmin()
+    .from("photos")
+    .select("*")
+    .eq("photo_id", photoId)
+    .maybeSingle();
+
+  if (photoError) {
+    console.error(photoError);
+    return null;
+  }
+
+  if (!photo) {
+    return null;
+  }
+
+  const { data: feed, error: feedError } = await getSupabaseAdmin()
+    .from("feeds")
+    .select("*")
+    .eq("feed_id", photo.feed_id)
+    .eq("status", "published")
+    .maybeSingle();
+
+  if (feedError) {
+    console.error(feedError);
+    return null;
+  }
+
+  if (!feed) {
+    return null;
+  }
+
+  return {
+    ...photo,
+    feed: feed as Feed,
+  };
 }
 
 export async function createPhoto(
