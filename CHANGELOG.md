@@ -43,6 +43,8 @@ All notable changes to AroundCities should be documented here.
 - Changed `/kch` feed metadata to show `Author · Relative Time`, with place shown as a small line below the photo gallery.
 - Added `supabase/migrations/20260605010000_update_seed_feed_discovery_dates.sql` to stagger seeded `published_at` values for testing discovery ordering.
 - Changed `/kch` from strict latest-first ordering to a discovery-style mixed feed with randomized recent slots, a latest fallback slot, chronological remaining posts, and optional older rediscovery inserts.
+- Added `supabase/migrations/20260605011000_seed_100_discovery_timeframe_feeds.sql` with 100 published test feeds across varied timeframes for stress-testing `/kch` discovery ordering.
+- Removed the place row and pin icon from public feed listing cards while keeping place data available on feed and place detail pages.
 
 ## 2026-06-04
 

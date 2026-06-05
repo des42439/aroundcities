@@ -33,8 +33,6 @@ export default function FeedCard({ feed }: Props) {
         {preview && <FeedDescriptionPreview href={feedHref} text={preview} />}
 
         {photos.length > 0 && <FeedPhotoGrid feed={feed} photos={photos} />}
-
-        {feed.place && <FeedPlaceLine feed={feed} />}
       </div>
     </article>
   );
@@ -50,24 +48,6 @@ function FeedMeta({ feed }: Props) {
       <time dateTime={feed.created_at}>
         {formatRelativeTime(feed.created_at)}
       </time>
-    </div>
-  );
-}
-
-function FeedPlaceLine({ feed }: Props) {
-  if (!feed.place) {
-    return null;
-  }
-
-  return (
-    <div className="pt-0.5 text-xs text-neutral-500 sm:text-sm">
-      <Link
-        href={`/place/${feed.place.slug}`}
-        className="inline-flex items-center gap-1.5 hover:text-neutral-300"
-      >
-        <span aria-hidden="true">&#128205;</span>
-        <span>{feed.place.name}</span>
-      </Link>
     </div>
   );
 }

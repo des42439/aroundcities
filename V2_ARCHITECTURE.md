@@ -317,6 +317,7 @@ Sources:
   - `supabase/migrations/20260605008000_seed_long_description_feed_examples.sql`
   - `supabase/migrations/20260605009000_update_seed_feed_public_metadata.sql`
   - `supabase/migrations/20260605010000_update_seed_feed_discovery_dates.sql`
+  - `supabase/migrations/20260605011000_seed_100_discovery_timeframe_feeds.sql`
 - The reviewed final use cases need `feeds.parent_feed_id`, feed-tied source evidence, source screenshots, flexible feed schedules, `feed_places.is_primary`, `feed_places.location_note`, photo sequence/coordinates, and audit user fields.
 - These migrations have been applied to linked Supabase project `fblhoxcdfnxnqzmuczkx`.
 - RLS is enabled on app tables. Anonymous reads are limited to published public feed content and related rows. Admin/server writes use the service-role client.
@@ -328,10 +329,11 @@ Sources:
 - Long-description test feeds exist so the `/kch` two-line preview and inline `more` link can be verified.
 - Seeded public feeds use `created_by` as the public author and `created_at` as the relative-time source, with places populated for the post-gallery place line.
 - Seeded public feeds have staggered `published_at` values so the discovery ordering pools can be tested.
+- A 100-feed discovery ordering volume seed covers minutes, hours, days, weeks, and months of `published_at` ages for browsing and stress-testing the mixed order.
 - Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
 - `/kch` should use discovery-style ordering rather than strict latest-first ordering: randomized recent lead, randomized weekly follow-up slots, latest fallback near slot 6, then latest remaining posts with occasional older rediscovery inserts.
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.
-- The current `/kch` feed shows items immediately after the city header. Cards should show title, muted `Author · Relative Time`, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, optional muted place line, then a clear subtle divider with enough breathing room to mark the end of the post. Do not add footer actions below the gallery.
+- The current `/kch` feed shows items immediately after the city header. Cards should show title, muted `Author · Relative Time`, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, then a clear subtle divider with enough breathing room to mark the end of the post. Do not render a place row, pin icon, or footer actions below the gallery.
 - Multi-photo grids should occupy a similar visual footprint to a single-photo block: 2 photos side-by-side, 3 photos with one large image and two stacked images, and 4+ photos as 2x2 with a `+N` overlay when needed.
 - Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed when that workflow is implemented.
 - Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
@@ -373,7 +375,7 @@ Purpose:
 
 - Main public homepage.
 - Shows published feeds ordered by `published_at desc`.
-- Each feed card should show title, content excerpt, featured photo, place name when available, and published date.
+- Each feed card should show title, author, relative time, content excerpt, and attached photos. Place data should remain hidden from the feed listing.
 
 Phase 1 should avoid complex filtering.
 
@@ -472,7 +474,6 @@ Minimum card content:
 - Feed title
 - Short content preview
 - Published date
-- Place name/link if available
 - Optional tags
 - Optional operating hours / schedule
 

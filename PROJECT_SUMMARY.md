@@ -154,10 +154,11 @@ Phase 2 database status:
 - Every published seed feed now has at least one photo, and older word-only placeholder seed photos have been replaced with external sample image URLs.
 - Two long-description public seed feeds were added so the `/kch` two-line preview and inline `more` link can be tested reliably.
 - The `/kch` public feed now uses a compact header instead of a large hero and adapts feed cards between visual-first local discovery posts and information-first announcement posts.
-- The `/kch` page now shows feed items immediately after the city header. Feed cards use a social-feed order: title, `Author · Relative Time`, a two-line description preview with inline `more` only when truncated, the photo gallery, an optional muted place line, then a clear subtle divider with breathing room before the next post.
+- The `/kch` page now shows feed items immediately after the city header. Feed cards use a social-feed order: title, `Author · Relative Time`, a two-line description preview with inline `more` only when truncated, the photo gallery, then a clear subtle divider with breathing room before the next post. Place data remains available on feed and place detail pages, but is hidden from the feed listing.
 - Seeded public feeds use `created_by = AroundCities`, staggered `created_at` values, and populated places so author, relative-time, and place rendering can be tested.
 - The `/kch` public feed uses discovery-style ordering instead of pure latest-first: a randomized recent lead, randomized weekly posts, a latest fallback around slot 6, latest remaining posts, and occasional older rediscovery inserts when older posts exist.
 - Seeded public feeds have staggered `published_at` values so recent, weekly, latest fallback, and older rediscovery ordering can be tested.
+- A 100-feed discovery ordering volume seed adds published test posts across minutes, hours, days, weeks, and months so the mixed sorting behavior can be felt while browsing.
 - Public feed photo blocks now keep roughly the same large footprint for single and multi-photo feeds, including seeded placeholder image URLs, avoiding tiny thumbnail previews on mobile.
 
 UI and data-helper wiring for the new `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` workflows is not implemented yet.
