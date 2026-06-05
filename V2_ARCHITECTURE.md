@@ -318,18 +318,14 @@ Sources:
   - `supabase/migrations/20260605009000_update_seed_feed_public_metadata.sql`
   - `supabase/migrations/20260605010000_update_seed_feed_discovery_dates.sql`
   - `supabase/migrations/20260605011000_seed_100_discovery_timeframe_feeds.sql`
+  - `supabase/migrations/20260605012000_remove_seed_test_data.sql`
 - The reviewed final use cases need `feeds.parent_feed_id`, feed-tied source evidence, source screenshots, flexible feed schedules, `feed_places.is_primary`, `feed_places.location_note`, photo sequence/coordinates, and audit user fields.
 - These migrations have been applied to linked Supabase project `fblhoxcdfnxnqzmuczkx`.
 - RLS is enabled on app tables. Anonymous reads are limited to published public feed content and related rows. Admin/server writes use the service-role client.
 - Raw generated Supabase types live in `types/supabase.generated.ts`; app-facing aliases remain in `types/database.ts`.
-- Phase 3 seed data has been applied and verified for nine sample feeds covering events, major event parent feeds, sub-events, registration periods, food sharing, multi-place walks, seasonal greetings, and featured photos.
-- Public test seed data includes five-photo and six-photo feeds for verifying the 4+ photo grid and `+N` overlay.
-- The latest multi-photo test feeds use external food/scenery sample image URLs rather than word-only placeholder images.
-- Every published seed feed has at least one photo so the public feed listing can be tested consistently.
-- Long-description test feeds exist so the `/kch` two-line preview and inline `more` link can be verified.
-- Seeded public feeds use `created_by` as the public author and `created_at` as the relative-time source, with places populated for the post-gallery place line.
-- Seeded public feeds have staggered `published_at` values so the discovery ordering pools can be tested.
-- A 100-feed discovery ordering volume seed covers minutes, hours, days, weeks, and months of `published_at` ages for browsing and stress-testing the mixed order.
+- Phase 3 seed data was applied and verified for nine sample feeds covering events, major event parent feeds, sub-events, registration periods, food sharing, multi-place walks, seasonal greetings, and featured photos.
+- Public test seed data covered five-photo and six-photo feeds, long descriptions, real sample image URLs, staggered public metadata, and a 100-feed discovery ordering volume set.
+- Seed/test data has since been removed from the linked Supabase project with `supabase/migrations/20260605012000_remove_seed_test_data.sql` and a service-role cleanup. Verification showed 0 seed-marked rows and 0 published feeds remaining.
 - Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
 - `/kch` should use discovery-style ordering rather than strict latest-first ordering: randomized recent lead, randomized weekly follow-up slots, latest fallback near slot 6, then latest remaining posts with occasional older rediscovery inserts.
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.

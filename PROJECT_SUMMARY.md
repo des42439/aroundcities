@@ -140,6 +140,7 @@ Additive migration scripts were produced and applied to the linked Supabase proj
 - `supabase/migrations/20260605001000_enable_v2_rls_policies.sql`
 - `supabase/migrations/20260605002000_add_remaining_audit_fields.sql`
 - `supabase/migrations/20260605003000_seed_phase3_test_data.sql`
+- `supabase/migrations/20260605012000_remove_seed_test_data.sql`
 
 These scripts keep the current app-facing schema intact while adding the tables and columns needed by the reviewed use cases.
 
@@ -151,20 +152,16 @@ Phase 2 database status:
 - RLS is enabled on V2 app tables. Anonymous reads are limited to published feed content and related public rows. Admin/server writes use the service-role client.
 - Raw generated Supabase types are stored in `types/supabase.generated.ts`.
 - Existing app-facing types in `types/database.ts` were updated for the new schema.
-- Phase 3 seed data is applied and verified for the requested sample feeds: DIY Sape Competition, Kuching Food Festival, Kuching Got Talent, Kuching Marathon, Registration Period, Food Sharing, Waterfront Walk, Seasonal Greeting, and Featured Photo.
-- The seed data includes places, photos, feed-place links, parent-child feed links, schedules, source channels, feed sources, and source screenshots.
-- Additional public-browsing seed data was added for Singing Competition at The Spring, Kuching Marathon Route / Jersey Reveal, Visit to Kuching Food Festival Day 1, and New Kids Playground at Boulevard.
-- Additional multi-photo public test feeds were added for a five-photo Waterfront loop and a six-photo Kopitiam breakfast note so the `/kch` collage and `+N` overlay states can be tested.
-- The multi-photo public test feeds now use external food/scenery sample photos instead of word-only placeholder images.
-- Every published seed feed now has at least one photo, and older word-only placeholder seed photos have been replaced with external sample image URLs.
+- Phase 3 seed data was applied and verified for the requested sample feeds, then removed from the linked Supabase project after testing.
+- The seed data covered places, photos, feed-place links, parent-child feed links, schedules, source channels, feed sources, source screenshots, multi-photo feeds, long descriptions, and discovery-ordering volume.
+- Seed/test cleanup was verified on the linked Supabase project with 0 seed-marked rows remaining across feed/source/photo/place support tables and 0 published feeds.
 - Two long-description public seed feeds were added so the `/kch` two-line preview and inline `more` link can be tested reliably.
 - The `/kch` public feed now uses a compact header instead of a large hero and adapts feed cards between visual-first local discovery posts and information-first announcement posts.
 - The `/kch` page now shows feed items immediately after the city header. Feed cards use a social-feed order: title, `Author · Relative Time`, a two-line description preview with inline `more` only when truncated, the photo gallery, then a clear subtle divider with breathing room before the next post. Place data remains available on feed and place detail pages, but is hidden from the feed listing.
-- Seeded public feeds use `created_by = AroundCities`, staggered `created_at` values, and populated places so author, relative-time, and place rendering can be tested.
+- Seeded public feeds previously used `created_by = AroundCities`, staggered `created_at` values, and populated places for author, relative-time, and place rendering tests before cleanup.
 - The `/kch` public feed uses discovery-style ordering instead of pure latest-first: a randomized recent lead, randomized weekly posts, a latest fallback around slot 6, latest remaining posts, and occasional older rediscovery inserts when older posts exist.
-- Seeded public feeds have staggered `published_at` values so recent, weekly, latest fallback, and older rediscovery ordering can be tested.
-- A 100-feed discovery ordering volume seed adds published test posts across minutes, hours, days, weeks, and months so the mixed sorting behavior can be felt while browsing.
-- Public feed photo blocks now keep roughly the same large footprint for single and multi-photo feeds, including seeded placeholder image URLs, avoiding tiny thumbnail previews on mobile.
+- Seeded public feeds previously had staggered `published_at` values and a 100-feed discovery ordering volume set for testing before cleanup.
+- Public feed photo blocks keep roughly the same large footprint for single and multi-photo feeds, avoiding tiny thumbnail previews on mobile.
 
 Admin UI and data-helper wiring now exists for `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` as compact optional refinement sections. Source screenshots currently accept screenshot URLs as evidence records rather than direct private file uploads.
 

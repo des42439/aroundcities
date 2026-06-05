@@ -158,6 +158,8 @@ V2 Phase 1 Steps 1-5 are implemented:
 - `supabase/migrations/20260605009000_update_seed_feed_public_metadata.sql` normalizes seeded feed authors, created timestamps, and missing places for public metadata testing.
 - `supabase/migrations/20260605010000_update_seed_feed_discovery_dates.sql` staggers seeded `published_at` values so recent, weekly, latest fallback, and older rediscovery feed ordering can be tested.
 - `supabase/migrations/20260605011000_seed_100_discovery_timeframe_feeds.sql` adds 100 published test feeds across varied timeframes for stress-testing `/kch` discovery ordering.
+- `supabase/migrations/20260605012000_remove_seed_test_data.sql` removes rows marked with the seed audit marker after test-data review.
+- Live Supabase seed/test data has been deleted and verified: 0 seed-marked rows remain and there are currently 0 published feeds.
 - Public `/kch` should stay compact and feed-first. Avoid large formal hero sections, official listing tone, and category-heavy card layouts.
 - Public `/kch` ordering should feel like discovery, not a strict latest-first timeline: randomized recent slots first, latest fallback near slot 6, then latest remaining feeds with occasional older rediscovery when available.
 - Feed cards should feel like relaxed local notes. Use simple display heuristics for visual-first versus information-first feeds; do not add a complex feed type system unless explicitly requested.

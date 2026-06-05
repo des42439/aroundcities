@@ -17,12 +17,14 @@ All notable changes to AroundCities should be documented here.
 - Added `supabase/migrations/20260605002000_add_remaining_audit_fields.sql` so older support tables also have created/updated audit user fields.
 - Added `supabase/migrations/20260605003000_seed_phase3_test_data.sql` with Phase 3 sample records for DIY Sape Competition, Kuching Food Festival, Kuching Got Talent, Kuching Marathon, Registration Period, Food Sharing, Waterfront Walk, Seasonal Greeting, and Featured Photo.
 - Added `supabase/migrations/20260605004000_seed_more_public_feed_styles.sql` with additional public browsing seed data for Singing Competition at The Spring, Kuching Marathon Route / Jersey Reveal, Kuching Food Festival Day 1 visit, and New Kids Playground at Boulevard.
+- Added `supabase/migrations/20260605012000_remove_seed_test_data.sql` to remove rows marked with the seed audit marker after test-data review.
 - Generated raw Supabase TypeScript schema types in `types/supabase.generated.ts`.
 
 ### Notes
 
 - The Phase 2 database migrations were applied to the linked Supabase project `fblhoxcdfnxnqzmuczkx`.
 - The Phase 3 seed migration was applied to the linked Supabase project and verified with 9 seeded feeds, 7 places, 9 photos, 9 feed-place links, 7 schedule rows, 5 feed sources, and 5 source screenshots.
+- Seed/test rows were later removed from the linked Supabase project; verification showed 0 seed-marked rows and 0 published feeds remaining.
 - The new admin source evidence field currently accepts screenshot URLs as private evidence records; direct private screenshot file upload can be added later if needed.
 
 ### Changed
