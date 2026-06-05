@@ -115,6 +115,7 @@ Keep documentation practical and current.
 - Do not add compatibility layers unless explicitly requested.
 - Avoid unrelated refactors.
 - Do not revert user changes unless explicitly asked.
+- When the user asks for a project change, deploy after making and verifying the change unless the user explicitly says not to deploy.
 
 ## Current Implementation State
 
