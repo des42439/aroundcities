@@ -311,6 +311,10 @@ Sources:
   - `supabase/migrations/20260605002000_add_remaining_audit_fields.sql`
   - `supabase/migrations/20260605003000_seed_phase3_test_data.sql`
   - `supabase/migrations/20260605004000_seed_more_public_feed_styles.sql`
+  - `supabase/migrations/20260605005000_seed_multi_photo_feed_examples.sql`
+  - `supabase/migrations/20260605006000_update_multi_photo_seed_image_urls.sql`
+  - `supabase/migrations/20260605007000_seed_real_sample_images_for_all_public_feeds.sql`
+  - `supabase/migrations/20260605008000_seed_long_description_feed_examples.sql`
 - The reviewed final use cases need `feeds.parent_feed_id`, feed-tied source evidence, source screenshots, flexible feed schedules, `feed_places.is_primary`, `feed_places.location_note`, photo sequence/coordinates, and audit user fields.
 - These migrations have been applied to linked Supabase project `fblhoxcdfnxnqzmuczkx`.
 - RLS is enabled on app tables. Anonymous reads are limited to published public feed content and related rows. Admin/server writes use the service-role client.
@@ -319,6 +323,7 @@ Sources:
 - Public test seed data includes five-photo and six-photo feeds for verifying the 4+ photo grid and `+N` overlay.
 - The latest multi-photo test feeds use external food/scenery sample image URLs rather than word-only placeholder images.
 - Every published seed feed has at least one photo so the public feed listing can be tested consistently.
+- Long-description test feeds exist so the `/kch` two-line preview and inline `more` link can be verified.
 - Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.
 - The current `/kch` feed shows items immediately after the city header. Cards should show title, muted place/date, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, a small muted footer link, then the divider.
