@@ -151,6 +151,7 @@ Phase 2 database status:
 - Additional public-browsing seed data was added for Singing Competition at The Spring, Kuching Marathon Route / Jersey Reveal, Visit to Kuching Food Festival Day 1, and New Kids Playground at Boulevard.
 - Additional multi-photo public test feeds were added for a five-photo Waterfront loop and a six-photo Kopitiam breakfast note so the `/kch` collage and `+N` overlay states can be tested.
 - The multi-photo public test feeds now use external food/scenery sample photos instead of word-only placeholder images.
+- Every published seed feed now has at least one photo, and older word-only placeholder seed photos have been replaced with external sample image URLs.
 - The `/kch` public feed now uses a compact header instead of a large hero and adapts feed cards between visual-first local discovery posts and information-first announcement posts.
 - The `/kch` page now shows feed items immediately after the city header. Feed cards show place/date, title, photo block, a two-line description, and "See more".
 - Public feed photo blocks now keep roughly the same large footprint for single and multi-photo feeds, including seeded placeholder image URLs, avoiding tiny thumbnail previews on mobile.

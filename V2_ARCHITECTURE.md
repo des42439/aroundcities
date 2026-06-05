@@ -318,6 +318,7 @@ Sources:
 - Phase 3 seed data has been applied and verified for nine sample feeds covering events, major event parent feeds, sub-events, registration periods, food sharing, multi-place walks, seasonal greetings, and featured photos.
 - Public test seed data includes five-photo and six-photo feeds for verifying the 4+ photo grid and `+N` overlay.
 - The latest multi-photo test feeds use external food/scenery sample image URLs rather than word-only placeholder images.
+- Every published seed feed has at least one photo so the public feed listing can be tested consistently.
 - Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.
 - The current `/kch` feed shows items immediately after the city header. Cards should show place/date, title, photos as the primary block, a two-line description, and then "See more".

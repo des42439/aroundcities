@@ -148,6 +148,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - `supabase/migrations/20260605004000_seed_more_public_feed_styles.sql` adds richer public feed examples for browsing different feed styles.
 - `supabase/migrations/20260605005000_seed_multi_photo_feed_examples.sql` adds public test feeds with five and six photos for multi-photo collage testing.
 - `supabase/migrations/20260605006000_update_multi_photo_seed_image_urls.sql` replaces those multi-photo test feed placeholders with external food/scenery sample image URLs.
+- `supabase/migrations/20260605007000_seed_real_sample_images_for_all_public_feeds.sql` gives every published seed feed at least one photo and replaces older word-only placeholders with external sample image URLs.
 - Public `/kch` should stay compact and feed-first. Avoid large formal hero sections, official listing tone, and category-heavy card layouts.
 - Feed cards should feel like relaxed local notes. Use simple display heuristics for visual-first versus information-first feeds; do not add a complex feed type system unless explicitly requested.
 - Current public feed cards should show place/date, title, photo block, a maximum two-line description, and then "See more". Any attached photos should render as a full-width social-feed image block.

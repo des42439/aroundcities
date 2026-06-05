@@ -34,6 +34,7 @@ All notable changes to AroundCities should be documented here.
 - Added `supabase/migrations/20260605005000_seed_multi_photo_feed_examples.sql` with two published public test feeds containing five and six photos for collage and `+N` overlay testing.
 - Changed the public feed listing order to place/date, title, photo block, two-line description, "See more", then divider.
 - Added `supabase/migrations/20260605006000_update_multi_photo_seed_image_urls.sql` to replace the multi-photo test feeds' text-only placeholder images with external food/scenery sample photos.
+- Added `supabase/migrations/20260605007000_seed_real_sample_images_for_all_public_feeds.sql` so every published seed feed has at least one photo and older word-only placeholders use external sample images.
 
 ## 2026-06-04
 
