@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PublicShell from "@/components/PublicShell";
+import { TrackedPhotoLink } from "@/components/TrackedLinks";
 import { getFeedBySlug } from "@/lib/feeds";
 import { getPhotosByFeedId } from "@/lib/photos";
 import {
@@ -94,11 +95,17 @@ export default async function FeedDetailPage({
           <div className="mt-10 space-y-8">
             {photos.map((photo) => (
               <figure key={photo.photo_id}>
-                <img
-                  src={photo.photo_url}
-                  alt={photo.title ?? feed.title}
-                  className="w-full rounded-lg bg-neutral-900 object-cover"
-                />
+                <TrackedPhotoLink
+                  href={photo.photo_url}
+                  photoId={photo.photo_id}
+                  className="block"
+                >
+                  <img
+                    src={photo.photo_url}
+                    alt={photo.title ?? feed.title}
+                    className="w-full rounded-lg bg-neutral-900 object-cover"
+                  />
+                </TrackedPhotoLink>
 
                 {(photo.title || photo.description) && (
                   <figcaption className="mt-3 text-sm leading-6 text-neutral-500">

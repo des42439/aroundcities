@@ -1,7 +1,10 @@
 import Image from "next/image";
-import Link from "next/link";
 import { formatRelativeTime } from "@/lib/format";
 import { FeedWithPlaceAndPhotos, Photo } from "@/types/database";
+import {
+  TrackedFeedLink,
+  TrackedPhotoLink,
+} from "./TrackedLinks";
 
 type Props = {
   feed: FeedWithPlaceAndPhotos;
@@ -10,9 +13,9 @@ type Props = {
 
 export default function PhotoFeedCard({ feed, photo }: Props) {
   const feedHref = `/feed/${feed.slug}`;
-  const title = photo.title?.trim() || feed.title;
   const description =
     photo.description?.trim() ||
+    photo.title?.trim() ||
     `From ${feed.title}`;
   const timestamp = photo.captured_at ?? feed.created_at;
 
@@ -24,12 +27,13 @@ export default function PhotoFeedCard({ feed, photo }: Props) {
             Photo feed
           </p>
           <h2 className="text-lg font-semibold leading-snug sm:text-xl">
-            <Link
+            <TrackedFeedLink
               href={feedHref}
+              feedId={feed.feed_id}
               className="hover:text-neutral-300"
             >
-              {title}
-            </Link>
+              {feed.title}
+            </TrackedFeedLink>
           </h2>
 
           <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-neutral-500 sm:text-sm">
@@ -45,8 +49,9 @@ export default function PhotoFeedCard({ feed, photo }: Props) {
           {description}
         </p>
 
-        <Link
-          href={feedHref}
+        <TrackedPhotoLink
+          href={photo.photo_url}
+          photoId={photo.photo_id}
           className="relative block aspect-[4/3] min-w-0 overflow-hidden rounded-md bg-neutral-900"
         >
           <Image
@@ -57,7 +62,7 @@ export default function PhotoFeedCard({ feed, photo }: Props) {
             className="object-cover"
             unoptimized
           />
-        </Link>
+        </TrackedPhotoLink>
       </div>
     </article>
   );

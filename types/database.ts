@@ -55,6 +55,7 @@ export interface Feed {
   tags: string[];
   published_at: string | null;
   status: FeedStatus;
+  click_count: number;
   created_by: string | null;
   created_at: string;
   updated_by: string | null;
@@ -74,6 +75,7 @@ export interface Photo {
   longitude: number | null;
   featured: boolean;
   sequence: number;
+  click_count: number;
   created_by: string | null;
   created_at: string;
   updated_by: string | null;
@@ -273,6 +275,7 @@ export interface Database {
           tags?: string[];
           published_at?: string | null;
           status?: FeedStatus;
+          click_count?: number;
           created_by?: string | null;
           created_at?: string;
           updated_by?: string | null;
@@ -292,6 +295,7 @@ export interface Database {
           tags?: string[];
           published_at?: string | null;
           status?: FeedStatus;
+          click_count?: number;
           created_by?: string | null;
           created_at?: string;
           updated_by?: string | null;
@@ -327,6 +331,7 @@ export interface Database {
           longitude?: number | null;
           featured?: boolean;
           sequence?: number;
+          click_count?: number;
           created_by?: string | null;
           created_at?: string;
           updated_by?: string | null;
@@ -345,6 +350,7 @@ export interface Database {
           longitude?: number | null;
           featured?: boolean;
           sequence?: number;
+          click_count?: number;
           created_by?: string | null;
           created_at?: string;
           updated_by?: string | null;

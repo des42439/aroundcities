@@ -1,5 +1,5 @@
-import Link from "next/link";
 import FeedDescriptionPreview from "@/components/FeedDescriptionPreview";
+import { TrackedFeedLink } from "@/components/TrackedLinks";
 import { FeedWithPlaceAndPhotos } from "@/types/database";
 import {
   formatRelativeTime,
@@ -22,18 +22,25 @@ export default function FeedCard({ feed }: Props) {
       <div className="space-y-2.5">
         <div className="min-w-0">
           <h2 className="text-lg font-semibold leading-snug sm:text-xl">
-            <Link
+            <TrackedFeedLink
               href={feedHref}
+              feedId={feed.feed_id}
               className="hover:text-neutral-300"
             >
               {feed.title}
-            </Link>
+            </TrackedFeedLink>
           </h2>
 
           <FeedMeta feed={feed} />
         </div>
 
-        {preview && <FeedDescriptionPreview href={feedHref} text={preview} />}
+        {preview && (
+          <FeedDescriptionPreview
+            feedId={feed.feed_id}
+            href={feedHref}
+            text={preview}
+          />
+        )}
 
         {photos.length > 0 && <FeedPhotoGrid feed={feed} photos={photos} />}
       </div>
@@ -141,8 +148,9 @@ function FeedImageLink({
   overlay?: string;
 }) {
   return (
-    <Link
+    <TrackedFeedLink
       href={`/feed/${feed.slug}`}
+      feedId={feed.feed_id}
       className={`relative block min-w-0 overflow-hidden bg-neutral-900 ${className}`}
     >
       <img
@@ -156,7 +164,7 @@ function FeedImageLink({
           {overlay}
         </span>
       )}
-    </Link>
+    </TrackedFeedLink>
   );
 }
 

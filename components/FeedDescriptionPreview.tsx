@@ -2,15 +2,21 @@
 
 import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
+import { TrackedFeedLink } from "./TrackedLinks";
 
 type Props = {
+  feedId?: string;
   href: string;
   text: string;
 };
 
 const ELLIPSIS = "...";
 
-export default function FeedDescriptionPreview({ href, text }: Props) {
+export default function FeedDescriptionPreview({
+  feedId,
+  href,
+  text,
+}: Props) {
   const previewRef = useRef<HTMLParagraphElement>(null);
   const [previewText, setPreviewText] = useState(text);
   const [isTruncated, setIsTruncated] = useState(false);
@@ -99,10 +105,21 @@ export default function FeedDescriptionPreview({ href, text }: Props) {
     >
       <span>{previewText}</span>
       {isTruncated && (
-        <Link href={href} className="text-neutral-500 hover:text-neutral-200">
-          {" "}
-          more
-        </Link>
+        feedId ? (
+          <TrackedFeedLink
+            href={href}
+            feedId={feedId}
+            className="text-neutral-500 hover:text-neutral-200"
+          >
+            {" "}
+            more
+          </TrackedFeedLink>
+        ) : (
+          <Link href={href} className="text-neutral-500 hover:text-neutral-200">
+            {" "}
+            more
+          </Link>
+        )
       )}
     </p>
   );

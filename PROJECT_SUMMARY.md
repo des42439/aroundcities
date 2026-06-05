@@ -79,7 +79,8 @@ The V2 Phase 1 foundation now includes:
 - Project reset removing old V1 public/admin routes, V1 components, and V1 Photo/Event helpers.
 - Database migration for `places`, `feeds`, and `photos`.
 - Feed fields: `feed_type`, `slug`, `title`, `content`, nullable `place_id`, nullable `source_url`, nullable `operating_hours`, `tags`, `published_at`, `status`, timestamps.
-- Photo fields: `feed_id`, nullable `place_id`, title, description, URL, location name, captured timestamp, latitude, longitude, featured flag, numeric sequence, timestamps.
+- Feed fields also include `click_count` for public feed click tracking.
+- Photo fields: `feed_id`, nullable `place_id`, title, description, URL, location name, captured timestamp, latitude, longitude, featured flag, numeric sequence, click count, timestamps.
 - Place fields: name, slug, description, optional coordinates, timestamps.
 - TypeScript database types for the V2 schema.
 - Simple data helpers for feeds, places, and photos.
@@ -115,6 +116,8 @@ The V2 Phase 1 foundation now includes:
 - Feed photo editing includes confirmed photo deletion; deleting a photo removes the row and best-effort removes the Supabase Storage object.
 - Uploaded photos are not marked `Show as photo feed` automatically; the curator must select that manually while editing a photo.
 - Admin photo uploads now read JPEG EXIF metadata when available and store photo capture datetime, latitude, and longitude. The photo editor shows those metadata fields and an Open Map button for coordinates.
+- Public feed clicks increment `feeds.click_count`; full-size photo opens increment `photos.click_count`.
+- Standalone Photo feed images open only the full-size photo, while the Photo feed title opens the original feed detail.
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
 - Sources can be created from `/admin/sources/new`, edited, deleted, opened in a new tab, and manually marked checked. The list is sorted with never checked sources first, then oldest checked first.
@@ -151,6 +154,8 @@ Additive migration scripts were produced and applied to the linked Supabase proj
 - `supabase/migrations/20260605002000_add_remaining_audit_fields.sql`
 - `supabase/migrations/20260605003000_seed_phase3_test_data.sql`
 - `supabase/migrations/20260605012000_remove_seed_test_data.sql`
+- `supabase/migrations/20260606001000_add_feed_photo_click_counts.sql`
+- `supabase/migrations/20260606002000_keep_click_counts_from_touching_updated_at.sql`
 
 These scripts keep the current app-facing schema intact while adding the tables and columns needed by the reviewed use cases.
 

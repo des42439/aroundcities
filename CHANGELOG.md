@@ -6,6 +6,9 @@ All notable changes to AroundCities should be documented here.
 
 ### Added
 
+- Added `click_count` tracking for feeds and photos, with public click endpoints and a migration for atomic counter increments.
+- Added a follow-up click-count migration so counter increments do not change feed/photo edit timestamps.
+- Added full-size image links for public feed detail photos and standalone Photo feed images.
 - Added total counts to the admin hub cards for Drafted Feeds, Published Feeds, and Sources.
 - Added admin photo deletion from the feed photo editor, with confirmation.
 - Added full-size image opening from the edit-photo preview image.
@@ -15,6 +18,7 @@ All notable changes to AroundCities should be documented here.
 
 ### Changed
 
+- Changed standalone Photo feed cards so the feed title opens the original feed while the image opens only that photo.
 - Changed the admin photo featured checkbox label to `Show as photo feed` and allowed multiple photos in one feed to be selected.
 - Changed photo uploads so newly uploaded photos are never auto-marked as Photo feed candidates; admins must select `Show as photo feed` manually.
 - Changed public feed photo galleries and admin feed thumbnails to use photo sequence ordering from smallest to largest, with unsequenced `0` photos falling behind manually ordered photos.

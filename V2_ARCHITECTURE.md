@@ -65,6 +65,7 @@ Fields:
 - `tags`
 - `published_at`
 - `status`
+- `click_count`
 - `created_at`
 - `updated_at`
 
@@ -98,6 +99,7 @@ Fields:
 - `longitude`
 - `featured`
 - `sequence`
+- `click_count`
 - `created_at`
 - `updated_at`
 
@@ -107,6 +109,7 @@ Notes:
 - `featured` is a multi-photo curator flag surfaced as `Show as photo feed`; it makes photos eligible for standalone Photo feed cards on `/kch`.
 - `featured` should not override sequence ordering for feed cards, previews, or galleries.
 - `sequence` controls the photo display order within a feed. Smaller positive numbers appear first; unsequenced `0` values fall behind manually ordered photos.
+- `click_count` tracks public full-size photo opens.
 - `place_id` should be optional on Photo.
 - `location_name` allows a human-readable photo-specific location without requiring a full Place record.
 
@@ -182,6 +185,7 @@ create table public.feeds (
   published_at timestamptz,
   status text not null default 'draft'
     check (status in ('draft', 'published', 'archived')),
+  click_count integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -199,6 +203,7 @@ create table public.photos (
   longitude double precision,
   featured boolean not null default false,
   sequence integer not null default 0,
+  click_count integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -327,6 +332,8 @@ Sources:
   - `supabase/migrations/20260605010000_update_seed_feed_discovery_dates.sql`
   - `supabase/migrations/20260605011000_seed_100_discovery_timeframe_feeds.sql`
   - `supabase/migrations/20260605012000_remove_seed_test_data.sql`
+  - `supabase/migrations/20260606001000_add_feed_photo_click_counts.sql`
+  - `supabase/migrations/20260606002000_keep_click_counts_from_touching_updated_at.sql`
 - The reviewed final use cases need `feeds.parent_feed_id`, feed-tied source evidence, source screenshots, flexible feed schedules, `feed_places.is_primary`, `feed_places.location_note`, photo sequence/coordinates, and audit user fields.
 - These migrations have been applied to linked Supabase project `fblhoxcdfnxnqzmuczkx`.
 - RLS is enabled on app tables. Anonymous reads are limited to published public feed content and related rows. Admin/server writes use the service-role client.
@@ -335,6 +342,8 @@ Sources:
 - Public test seed data covered five-photo and six-photo feeds, long descriptions, real sample image URLs, staggered public metadata, and a 100-feed discovery ordering volume set.
 - Seed/test data has since been removed from the linked Supabase project with `supabase/migrations/20260605012000_remove_seed_test_data.sql` and a service-role cleanup. Verification showed 0 seed-marked rows and 0 published feeds remaining.
 - Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
+- Public feed clicks should increment `feeds.click_count`, and full-size photo opens should increment `photos.click_count` without blocking navigation or changing content edit timestamps.
+- Standalone Photo feed cards should split behavior: title opens the original feed detail, image opens only that full-size photo.
 - `/kch` should use discovery-style ordering rather than strict latest-first ordering: randomized recent lead, randomized weekly follow-up slots, latest fallback near slot 6, then latest remaining posts with occasional older rediscovery inserts.
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.
 - The current `/kch` feed shows items immediately after the city header. Cards should show title, muted `Author · Relative Time`, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, then a clear subtle divider with enough breathing room to mark the end of the post. Do not render a place row, pin icon, or footer actions below the gallery.

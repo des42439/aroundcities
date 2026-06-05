@@ -134,6 +134,8 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Photos use `photos.sequence` for display order. Smaller positive sequence numbers appear first; unsequenced `0` photos fall behind manually ordered photos.
 - Admin feed thumbnails should use the first photo by sequence, not the featured flag.
 - Photo `featured` is now a multi-photo curator flag surfaced as `Show as photo feed`; marked photos may appear as standalone Photo feed cards on `/kch`.
+- Public feed clicks increment `feeds.click_count`; full-size photo opens increment `photos.click_count`.
+- Standalone Photo feed cards should open the original feed from the title and the full-size photo from the image.
 - Uploaded photos must not be auto-marked as `Show as photo feed`; this is a manual admin choice only.
 - Photo uploads extract JPEG EXIF capture datetime, longitude, and latitude when available.
 - Feed photo editing shows capture datetime, longitude, latitude, and an Open Map button when coordinates exist.
@@ -168,6 +170,8 @@ V2 Phase 1 Steps 1-5 are implemented:
 - `supabase/migrations/20260605010000_update_seed_feed_discovery_dates.sql` staggers seeded `published_at` values so recent, weekly, latest fallback, and older rediscovery feed ordering can be tested.
 - `supabase/migrations/20260605011000_seed_100_discovery_timeframe_feeds.sql` adds 100 published test feeds across varied timeframes for stress-testing `/kch` discovery ordering.
 - `supabase/migrations/20260605012000_remove_seed_test_data.sql` removes rows marked with the seed audit marker after test-data review.
+- `supabase/migrations/20260606001000_add_feed_photo_click_counts.sql` adds feed/photo click counters and atomic increment functions.
+- `supabase/migrations/20260606002000_keep_click_counts_from_touching_updated_at.sql` keeps click counter increments from changing edit timestamps.
 - Live Supabase seed/test data has been deleted and verified: 0 seed-marked rows remain and there are currently 0 published feeds.
 - Public `/kch` should stay compact and feed-first. Avoid large formal hero sections, official listing tone, and category-heavy card layouts.
 - Public `/kch` ordering should feel like discovery, not a strict latest-first timeline: randomized recent slots first, latest fallback near slot 6, then latest remaining feeds with occasional older rediscovery when available.
@@ -207,6 +211,7 @@ Feed creation should be photo-first and draft-first:
 - Keep photo deletion confirmed and visually separated from ordinary save controls.
 - Keep photo order numeric and curator-controlled through `photos.sequence`; do not let `featured` override sequence ordering for public galleries or admin thumbnails.
 - Allow multiple photos per feed to be marked for Photo feed cards. Do not reintroduce a one-featured-photo-per-feed clearing workflow.
+- Keep feed/photo click tracking lightweight and non-blocking for public navigation.
 - Do not auto-select Photo feed candidates during upload. The curator should mark them manually in the photo editor.
 - Keep photo metadata as curator reference only. Extract EXIF captured datetime/GPS when available, but do not use it to assign places automatically.
 - Use a searchable modal/picker for parent feed selection; do not use a huge plain dropdown.

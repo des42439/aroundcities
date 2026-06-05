@@ -311,6 +311,7 @@ export type Database = {
       }
       feeds: {
         Row: {
+          click_count: number
           content: string | null
           created_at: string
           created_by: string | null
@@ -330,6 +331,7 @@ export type Database = {
           updated_by: string | null
         }
         Insert: {
+          click_count?: number
           content?: string | null
           created_at?: string
           created_by?: string | null
@@ -349,6 +351,7 @@ export type Database = {
           updated_by?: string | null
         }
         Update: {
+          click_count?: number
           content?: string | null
           created_at?: string
           created_by?: string | null
@@ -387,6 +390,7 @@ export type Database = {
       photos: {
         Row: {
           captured_at: string | null
+          click_count: number
           created_at: string
           created_by: string | null
           description: string | null
@@ -405,6 +409,7 @@ export type Database = {
         }
         Insert: {
           captured_at?: string | null
+          click_count?: number
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -423,6 +428,7 @@ export type Database = {
         }
         Update: {
           captured_at?: string | null
+          click_count?: number
           created_at?: string
           created_by?: string | null
           description?: string | null
@@ -580,7 +586,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_feed_click_count: {
+        Args: { p_feed_id: string }
+        Returns: undefined
+      }
+      increment_photo_click_count: {
+        Args: { p_photo_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never
