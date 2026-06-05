@@ -2,7 +2,7 @@
 
 Last updated: 5 June 2026
 
-Implementation status: Steps 1-5 are implemented, plus a simple manual admin Sources checklist. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, but the new source evidence, channel, screenshot, and feed schedule UI/data-helper wiring is not implemented yet.
+Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, screenshot URL records, feed schedules, and feed-place metadata as compact optional sections.
 
 ## 1. Objective
 
@@ -335,7 +335,7 @@ Sources:
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.
 - The current `/kch` feed shows items immediately after the city header. Cards should show title, muted `Author · Relative Time`, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, then a clear subtle divider with enough breathing room to mark the end of the post. Do not render a place row, pin icon, or footer actions below the gallery.
 - Multi-photo grids should occupy a similar visual footprint to a single-photo block: 2 photos side-by-side, 3 photos with one large image and two stacked images, and 4+ photos as 2x2 with a `+N` overlay when needed.
-- Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed when that workflow is implemented.
+- Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed inside the optional admin Sources section.
 - Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
 
 ### Schema Rules
@@ -416,6 +416,8 @@ Suggested minimal routes:
 - `/admin`
 - `/admin/feeds`
 - `/admin/feeds/new`
+- `/admin/feeds/drafts`
+- `/admin/feeds/published`
 - `/admin/feeds/[feedId]`
 - `/admin/places` maintenance route
 - `/admin/places/new` maintenance route
@@ -424,28 +426,32 @@ Suggested minimal routes:
 - `/admin/sources/new`
 - `/admin/sources/[sourceId]`
 
+`/admin/feeds` is a small workflow hub. Daily feed work should move through New Feed, Drafted Feeds, and Published Feeds rather than a desktop-style all-feeds table.
 Photo management can live inside the feed editor during Phase 1.
 Place management routes should remain available directly for maintenance, but Places should not appear as a main admin navigation item.
 Sources may appear as a main admin item because they support the curator's manual discovery workflow.
 
 ### Curator Workflow
 
-1. Create a draft Feed with title, content, and one or more Photos.
-2. Post-process the draft later.
-3. Optionally assign primary place and multiple feed places.
-4. Optionally assign photo-level places.
-5. Create a missing place inline from the feed editor when needed.
-6. Optionally edit slug, tags, source URL, operating hours / schedule, and published time.
-7. Add structured operating-hour rows only when the feed needs date/time querying later.
-8. Choose a featured photo.
-9. Publish when ready.
-10. Delete the feed only from the separated delete area when it is no longer needed.
-11. Review saved Sources manually, open useful pages in a new tab, and click `Mark Checked` only after review.
+1. Capture a draft Feed from `/admin/feeds/new` with only photos, title, and description.
+2. Return to `/admin/feeds/drafts` and open the draft when ready to refine it.
+3. Keep the draft editor compact: title, description, photo thumbnails, Add Section, Save Draft, Publish, Delete.
+4. Keep photo upload and photo-detail editing in overlays opened from the thumbnail area so the main editor stays compact.
+5. Add optional Sources, Places, Schedules, or Parent Feed sections only when the feed needs them.
+6. Optionally assign primary place and multiple feed places with a location note.
+7. Optionally assign photo-level places from the photo thumbnail editor.
+8. Add source URL/channel/note and screenshot URL evidence as admin-only feed evidence.
+9. Add simple schedule rows when the feed needs dated schedule data.
+10. Use a searchable picker for parent feed selection and exclude the current feed.
+11. Publish when ready, or archive a published feed from `/admin/feeds/published` when it should leave public `/kch`.
+12. Review saved Sources manually, open useful pages in a new tab, and click `Mark Checked` only after review.
 
 ### Admin Principles
 
 - Optimize for fast solo publishing.
+- Admin must be mobile-first and usable on iPhone.
 - Keep forms short.
+- Show required fields first and hide optional sections until the curator adds them or existing data is present.
 - Auto-generate slug from title, but allow manual editing.
 - Default photo place to the selected feed place.
 - Do not promote Places as a daily admin section. The normal admin workflow should be feed-first and photo-first.
@@ -458,6 +464,7 @@ Sources may appear as a main admin item because they support the curator's manua
 - Save, publish, upload, photo update, and delete actions should show blocking pending overlays and prevent duplicate submissions.
 - Admin write failures should stay on the form and show a clear error instead of redirecting as if successful.
 - Feed deletion must require confirmation, redirect back to `/admin/feeds`, and must not delete unrelated places.
+- Published feed archive must set status to `archived`, keep the row in the database, and hide the feed from public `/kch`.
 - Avoid separate complex modules for events, registrations, or programs.
 - Avoid dashboard analytics in Phase 1.
 - Keep Sources compact and manual. Do not add source crawling, scraping, bot browsing, Facebook login, scheduled checking, priority, or frequency fields.

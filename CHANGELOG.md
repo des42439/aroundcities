@@ -6,6 +6,10 @@ All notable changes to AroundCities should be documented here.
 
 ### Added
 
+- Added mobile-first admin workflow sections for `New Feed`, `Drafted Feeds`, and `Published Feeds`.
+- Added `/admin/feeds/drafts` and `/admin/feeds/published` with thumbnail-first mobile lists.
+- Added a compact feed editor that starts with title, description, photo thumbnails, save/publish/delete controls, and reveals optional Sources, Places, Schedules, and Parent Feed sections only after the curator adds them.
+- Added admin UI/actions for feed source evidence rows, source screenshot URL evidence, simple feed schedule rows, parent feed selection, and published feed archiving.
 - Added `20260605_schema_review_erd.md` reviewing the final table design against the final V2 feed use cases.
 - Added an ERD covering feeds, photos, places, feed places, schedules, channels, feed sources, and source screenshots.
 - Added `supabase/migrations/20260605000000_v2_use_case_schema_extensions.sql` as an additive migration script for parent feeds, source evidence, schedule windows, feed-place metadata, photo ordering, photo coordinates, and audit fields.
@@ -19,7 +23,7 @@ All notable changes to AroundCities should be documented here.
 
 - The Phase 2 database migrations were applied to the linked Supabase project `fblhoxcdfnxnqzmuczkx`.
 - The Phase 3 seed migration was applied to the linked Supabase project and verified with 9 seeded feeds, 7 places, 9 photos, 9 feed-place links, 7 schedule rows, 5 feed sources, and 5 source screenshots.
-- The new migration scripts are additive and keep the current Phase 1 app schema intact. UI/data helper wiring for the new source evidence, channel, and feed schedule tables is not implemented yet.
+- The new admin source evidence field currently accepts screenshot URLs as private evidence records; direct private screenshot file upload can be added later if needed.
 
 ### Changed
 
@@ -45,6 +49,10 @@ All notable changes to AroundCities should be documented here.
 - Changed `/kch` from strict latest-first ordering to a discovery-style mixed feed with randomized recent slots, a latest fallback slot, chronological remaining posts, and optional older rediscovery inserts.
 - Added `supabase/migrations/20260605011000_seed_100_discovery_timeframe_feeds.sql` with 100 published test feeds across varied timeframes for stress-testing `/kch` discovery ordering.
 - Removed the place row and pin icon from public feed listing cards while keeping place data available on feed and place detail pages.
+- Changed new feed creation to return to `/admin/feeds/drafts` after successful draft capture.
+- Changed `/admin/feeds` into a simple mobile workflow hub instead of an all-feeds management list.
+- Changed published feed management so `Archive` sets status to `archived`, leaving rows in the database and hiding them from public `/kch`.
+- Changed feed photo management so the main editor shows compact thumbnails first, with add-photo upload and photo-detail editing opened from mobile-friendly overlays.
 
 ## 2026-06-04
 

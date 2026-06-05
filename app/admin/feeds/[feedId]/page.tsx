@@ -1,15 +1,18 @@
 import Link from "next/link";
 import AdminShell from "@/components/AdminShell";
-import DeleteFeedForm from "@/components/DeleteFeedForm";
-import FeedForm from "@/components/FeedForm";
-import FeedOperatingHoursForm from "@/components/FeedOperatingHoursForm";
-import InlinePlaceCreateForm from "@/components/InlinePlaceCreateForm";
-import PhotoManager from "@/components/PhotoManager";
+import MobileFeedEditor from "@/components/MobileFeedEditor";
 import { updateFeedAction } from "@/lib/admin-actions";
 import { requireAdmin } from "@/lib/admin-auth";
-import { getFeedOperatingHours } from "@/lib/feed-operating-hours";
 import { getFeedPlaces } from "@/lib/feed-places";
-import { getFeedById } from "@/lib/feeds";
+import { getFeedSchedules } from "@/lib/feed-schedules";
+import {
+  getChannels,
+  getFeedSources,
+} from "@/lib/feed-sources";
+import {
+  getFeedById,
+  getParentFeedCandidates,
+} from "@/lib/feeds";
 import { getPhotosByFeedId } from "@/lib/photos";
 import { getPlaces } from "@/lib/places";
 
@@ -32,13 +35,19 @@ export default async function EditFeedPage({
     places,
     photos,
     feedPlaces,
-    operatingHours,
+    feedSources,
+    channels,
+    schedules,
+    parentCandidates,
   ] = await Promise.all([
     getFeedById(feedId),
     getPlaces(),
     getPhotosByFeedId(feedId),
     getFeedPlaces(feedId),
-    getFeedOperatingHours(feedId),
+    getFeedSources(feedId),
+    getChannels(),
+    getFeedSchedules(feedId),
+    getParentFeedCandidates(feedId),
   ]);
 
   if (!feed) {
@@ -48,10 +57,10 @@ export default async function EditFeedPage({
           This feed does not exist.
         </p>
         <Link
-          href="/admin/feeds"
+          href="/admin/feeds/drafts"
           className="mt-6 inline-flex text-sm text-neutral-300 hover:text-white"
         >
-          Back to feeds
+          Back to drafts
         </Link>
       </AdminShell>
     );
@@ -60,30 +69,24 @@ export default async function EditFeedPage({
   const action = updateFeedAction.bind(null, feed.feed_id);
 
   return (
-    <AdminShell title="Edit Feed">
-      <div className="space-y-12">
-        <FeedForm
-          feed={feed}
-          feedPlaces={feedPlaces}
-          places={places}
-          action={action}
-        />
-
-        <InlinePlaceCreateForm feedId={feed.feed_id} />
-
-        <FeedOperatingHoursForm
-          feedId={feed.feed_id}
-          rows={operatingHours}
-        />
-
-        <PhotoManager
-          feedId={feed.feed_id}
-          photos={photos}
-          places={places}
-        />
-
-        <DeleteFeedForm feedId={feed.feed_id} />
-      </div>
+    <AdminShell
+      title={
+        feed.status === "published"
+          ? "Edit Published Feed"
+          : "Edit Draft Feed"
+      }
+    >
+      <MobileFeedEditor
+        feed={feed}
+        photos={photos}
+        places={places}
+        feedPlaces={feedPlaces}
+        feedSources={feedSources}
+        channels={channels}
+        schedules={schedules}
+        parentCandidates={parentCandidates}
+        action={action}
+      />
     </AdminShell>
   );
 }

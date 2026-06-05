@@ -37,18 +37,19 @@ No comments, likes, followers, messaging, ratings, reviews, or social-network as
 
 These public routes are implemented for Phase 1.
 
-## Planned Admin Direction
+## Admin Direction
 
 Admin should be optimized for a single curator.
 
-Minimum workflow:
+Implemented mobile-first workflow:
 
-- Create or edit feeds
-- Attach photos to feeds
-- Assign or create places while editing feeds/photos
-- Mark one photo as featured
-- Manually check saved sources for possible content leads
-- Save draft or publish
+- `/admin/feeds/new` is the fast capture screen. It asks only for photos, title, and description, then creates a draft.
+- `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
+- `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
+- The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
+- Optional Sources, Places, Schedules, and Parent Feed sections appear only when added or when existing data is present.
+- Source evidence, feed schedules, parent feed selection, and feed-place metadata are wired into admin as compact refinement sections.
+- Published feeds can be archived without deleting their database rows.
 
 Admin must be protected before public launch.
 
@@ -97,10 +98,14 @@ The V2 Phase 1 foundation now includes:
 - Admin action failures are logged with an Error ID. Logs are written to `admin_error_logs` in Supabase when available, printed to server logs, and appended to `.logs/admin-errors.jsonl` locally when the filesystem allows it.
 - New feed photo creation uploads directly from the browser to Supabase Storage using signed upload URLs, avoiding Vercel Server Action body limits for initial feed creation.
 - New feed photos are compressed in the browser before upload, targeting less than 1MB per photo with a 1600px longest-side resize.
-- New feed creation returns to `/admin/feeds` after save.
-- Admin feed list shows the featured photo or first attached photo as a thumbnail.
-- Feed editing uses an optional-field picker so slug, places, publishing time, source URL, operating hours / schedule, and tags can be added only when needed.
+- New feed creation returns to `/admin/feeds/drafts` after save.
+- Admin feed management is split into New Feed, Drafted Feeds, and Published Feeds instead of one desktop-style all-feeds list.
+- Drafted and published feed lists show the featured photo or first attached photo as a thumbnail.
+- Feed editing is mobile-first and keeps optional refinement sections hidden until the curator explicitly adds Sources, Places, Schedules, or Parent Feed.
+- Feed sources, source screenshot URL evidence, simple schedule rows, feed-place metadata, and parent feeds are wired into the admin editor.
+- Published feed editing supports archiving, which sets status to `archived` and hides the feed from public `/kch`.
 - Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
+- Feed photo upload from the editor opens from an Add Photos overlay so the main editor stays thumbnail-first and compact on iPhone.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
 - Sources can be created from `/admin/sources/new`, edited, deleted, opened in a new tab, and manually marked checked. The list is sorted with never checked sources first, then oldest checked first.
 - Existing feed photo uploads are still guarded at roughly 4MB total per submit until that editor flow is also moved to direct uploads.
@@ -161,7 +166,7 @@ Phase 2 database status:
 - A 100-feed discovery ordering volume seed adds published test posts across minutes, hours, days, weeks, and months so the mixed sorting behavior can be felt while browsing.
 - Public feed photo blocks now keep roughly the same large footprint for single and multi-photo feeds, including seeded placeholder image URLs, avoiding tiny thumbnail previews on mobile.
 
-UI and data-helper wiring for the new `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` workflows is not implemented yet.
+Admin UI and data-helper wiring now exists for `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` as compact optional refinement sections. Source screenshots currently accept screenshot URLs as evidence records rather than direct private file uploads.
 
 ## Current Repo Note
 

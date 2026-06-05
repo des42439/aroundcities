@@ -20,7 +20,11 @@ export async function getFeedPlaces(
 
 export async function replaceFeedPlaces(
   feedId: string,
-  placeIds: string[]
+  placeIds: string[],
+  options: {
+    primaryPlaceId?: string | null;
+    locationNote?: string | null;
+  } = {}
 ): Promise<void> {
   const { error: deleteError } = await getSupabaseAdmin()
     .from("feed_places")
@@ -37,6 +41,8 @@ export async function replaceFeedPlaces(
     .map((placeId) => ({
       feed_id: feedId,
       place_id: placeId,
+      is_primary: options.primaryPlaceId === placeId,
+      location_note: options.locationNote,
     }));
 
   if (!rows.length) {

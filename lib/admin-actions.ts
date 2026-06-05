@@ -11,6 +11,15 @@ import {
 } from "./feeds";
 import { replaceFeedPlaces } from "./feed-places";
 import {
+  createFeedSchedule,
+  deleteFeedSchedule,
+} from "./feed-schedules";
+import {
+  createFeedSource,
+  createSourceScreenshot,
+  deleteFeedSource,
+} from "./feed-sources";
+import {
   FeedOperatingHourInput,
   replaceFeedOperatingHours,
 } from "./feed-operating-hours";
@@ -134,10 +143,19 @@ function parseFeedType(
 }
 
 function selectedPlaceIds(formData: FormData) {
-  return formData
+  const placeIds = formData
     .getAll("feed_place_ids")
     .map((value) => value.toString())
     .filter(Boolean);
+  const primaryPlaceId = nullableString(
+    formData.get("primary_feed_place_id")
+  );
+
+  if (primaryPlaceId) {
+    placeIds.push(primaryPlaceId);
+  }
+
+  return Array.from(new Set(placeIds));
 }
 
 function normalizePublishedAt(
@@ -628,15 +646,28 @@ export async function updateFeedAction(
         status,
         formData.get("published_at")
       ),
+      parent_feed_id: nullableString(
+        formData.get("parent_feed_id")
+      ),
       status,
     });
 
     await replaceFeedPlaces(
       feedId,
-      selectedPlaceIds(formData)
+      selectedPlaceIds(formData),
+      {
+        primaryPlaceId: nullableString(
+          formData.get("primary_feed_place_id")
+        ),
+        locationNote: nullableString(
+          formData.get("feed_place_location_note")
+        ),
+      }
     );
 
     revalidatePath("/admin/feeds");
+    revalidatePath("/admin/feeds/drafts");
+    revalidatePath("/admin/feeds/published");
     revalidatePath(`/admin/feeds/${feedId}`);
     revalidatePath("/kch");
   } catch (error) {
@@ -646,6 +677,32 @@ export async function updateFeedAction(
   }
 
   redirect(`/admin/feeds/${feedId}`);
+}
+
+export async function archiveFeedAction(
+  feedId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await updateFeed(feedId, {
+      status: "archived",
+      published_at: null,
+    });
+
+    revalidatePath("/admin/feeds");
+    revalidatePath("/admin/feeds/published");
+    revalidatePath(`/admin/feeds/${feedId}`);
+    revalidatePath("/kch");
+  } catch (error) {
+    return await actionError("archive_feed", error, {
+      feedId,
+    });
+  }
+
+  redirect("/admin/feeds/published");
 }
 
 export async function deleteFeedAction(
@@ -659,6 +716,8 @@ export async function deleteFeedAction(
     await deleteFeed(feedId);
 
     revalidatePath("/admin/feeds");
+    revalidatePath("/admin/feeds/drafts");
+    revalidatePath("/admin/feeds/published");
     revalidatePath("/kch");
   } catch (error) {
     return await actionError("delete_feed", error, {
@@ -667,6 +726,117 @@ export async function deleteFeedAction(
   }
 
   redirect("/admin/feeds");
+}
+
+export async function createFeedSourceAction(
+  feedId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  try {
+    const source = await createFeedSource({
+      feed_id: feedId,
+      source_url: nullableString(formData.get("source_url")),
+      channel_id: nullableString(formData.get("channel_id")),
+      source_note: nullableString(formData.get("source_note")),
+    });
+
+    const screenshotUrl = nullableString(
+      formData.get("screenshot_url")
+    );
+
+    if (screenshotUrl) {
+      await createSourceScreenshot({
+        source_id: source.source_id,
+        screenshot_url: screenshotUrl,
+        remarks: nullableString(
+          formData.get("screenshot_remarks")
+        ),
+        sequence: 0,
+      });
+    }
+
+    revalidatePath(`/admin/feeds/${feedId}`);
+  } catch (error) {
+    return await actionError("create_feed_source", error, {
+      feedId,
+    });
+  }
+
+  redirect(`/admin/feeds/${feedId}`);
+}
+
+export async function deleteFeedSourceAction(
+  feedId: string,
+  sourceId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await deleteFeedSource(sourceId);
+    revalidatePath(`/admin/feeds/${feedId}`);
+  } catch (error) {
+    return await actionError("delete_feed_source", error, {
+      feedId,
+      sourceId,
+    });
+  }
+
+  redirect(`/admin/feeds/${feedId}`);
+}
+
+export async function createFeedScheduleAction(
+  feedId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  try {
+    await createFeedSchedule({
+      feed_id: feedId,
+      schedule_type: "occurrence",
+      schedule_date: requiredString(formData, "schedule_date"),
+      start_time: parseTime(formData.get("start_time")),
+      end_time: parseTime(formData.get("end_time")),
+      remarks: nullableString(formData.get("remarks")),
+    });
+
+    revalidatePath(`/admin/feeds/${feedId}`);
+    revalidatePath("/kch");
+  } catch (error) {
+    return await actionError("create_feed_schedule", error, {
+      feedId,
+    });
+  }
+
+  redirect(`/admin/feeds/${feedId}`);
+}
+
+export async function deleteFeedScheduleAction(
+  feedId: string,
+  scheduleId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await deleteFeedSchedule(scheduleId);
+    revalidatePath(`/admin/feeds/${feedId}`);
+    revalidatePath("/kch");
+  } catch (error) {
+    return await actionError("delete_feed_schedule", error, {
+      feedId,
+      scheduleId,
+    });
+  }
+
+  redirect(`/admin/feeds/${feedId}`);
 }
 
 export async function replaceFeedOperatingHoursAction(

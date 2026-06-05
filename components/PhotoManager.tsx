@@ -32,6 +32,7 @@ export default function PhotoManager({
   photos,
   places,
 }: Props) {
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [selectedPhotoId, setSelectedPhotoId] = useState<
     string | null
   >(null);
@@ -43,52 +44,11 @@ export default function PhotoManager({
     ) ?? null;
 
   return (
-    <section className="space-y-6">
-      <div>
-        <h2 className="text-xl font-semibold">
-          Photos
-        </h2>
-        <p className="mt-2 text-sm text-neutral-500">
-          Upload photos here. Edit each photo from its thumbnail.
-        </p>
-      </div>
-
-      <AdminActionForm
-        action={uploadAction}
-        className="space-y-4 rounded-lg border border-neutral-900 p-4"
-        maxFileBytes={ADMIN_UPLOAD_MAX_BYTES}
-        maxFileBytesMessage="Selected photos are too large for this upload. Please upload smaller or compressed photos, or upload one photo at a time."
-      >
-        <AdminFormProgress />
-
-        <Field label="Upload photos">
-          <input
-            name="photos"
-            type="file"
-            multiple
-            accept="image/*"
-            className={inputClassName}
-          />
-        </Field>
-
-        <label className="flex items-center gap-3 text-sm text-neutral-300">
-          <input
-            type="checkbox"
-            name="feature_first_photo"
-            className="h-4 w-4"
-          />
-          Mark first uploaded photo as featured
-        </label>
-
-        <AdminSubmitButton pendingLabel="Uploading...">
-          Upload photos
-        </AdminSubmitButton>
-      </AdminActionForm>
-
+    <section className="space-y-4">
       {photos.length === 0 ? (
-        <p className="text-sm text-neutral-500">
+        <div className="rounded-lg border border-neutral-900 p-4 text-sm text-neutral-500">
           No photos attached yet.
-        </p>
+        </div>
       ) : (
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-6">
           {photos.map((photo, index) => (
@@ -125,6 +85,21 @@ export default function PhotoManager({
         </div>
       )}
 
+      <button
+        type="button"
+        onClick={() => setUploadOpen(true)}
+        className="min-h-11 rounded-md border border-neutral-800 px-4 py-2 text-sm font-medium text-neutral-300 hover:border-neutral-600 hover:text-neutral-100"
+      >
+        Add Photos
+      </button>
+
+      {uploadOpen ? (
+        <PhotoUploadModal
+          action={uploadAction}
+          onClose={() => setUploadOpen(false)}
+        />
+      ) : null}
+
       {selectedPhoto ? (
         <PhotoEditorModal
           feedId={feedId}
@@ -134,6 +109,68 @@ export default function PhotoManager({
         />
       ) : null}
     </section>
+  );
+}
+
+function PhotoUploadModal({
+  action,
+  onClose,
+}: {
+  action: (
+    state: { error?: string | null; errorId?: string | null },
+    formData: FormData
+  ) => Promise<{ error?: string | null; errorId?: string | null }>;
+  onClose: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-end bg-neutral-950/85 px-3 py-4 backdrop-blur-sm sm:items-center sm:justify-center">
+      <div className="max-h-full w-full max-w-lg overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-950 p-4 shadow-2xl">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <h3 className="font-semibold text-neutral-100">
+            Add Photos
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-neutral-800 px-3 py-2 text-sm text-neutral-300 hover:border-neutral-600"
+          >
+            Close
+          </button>
+        </div>
+
+        <AdminActionForm
+          action={action}
+          className="space-y-4"
+          maxFileBytes={ADMIN_UPLOAD_MAX_BYTES}
+          maxFileBytesMessage="Selected photos are too large for this upload. Please upload smaller or compressed photos, or upload one photo at a time."
+        >
+          <AdminFormProgress />
+
+          <Field label="Photos">
+            <input
+              name="photos"
+              type="file"
+              multiple
+              accept="image/*"
+              className={inputClassName}
+            />
+          </Field>
+
+          <label className="flex items-center gap-3 text-sm text-neutral-300">
+            <input
+              type="checkbox"
+              name="feature_first_photo"
+              className="h-4 w-4"
+            />
+            Mark first uploaded photo as featured
+          </label>
+
+          <AdminSubmitButton pendingLabel="Uploading...">
+            Upload photos
+          </AdminSubmitButton>
+        </AdminActionForm>
+      </div>
+    </div>
   );
 }
 

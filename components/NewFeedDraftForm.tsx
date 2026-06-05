@@ -233,7 +233,7 @@ export default function NewFeedDraftForm() {
         pending: true,
         message: "Opening feeds...",
       });
-      router.push("/admin/feeds");
+      router.push("/admin/feeds/drafts");
       router.refresh();
     } catch (error) {
       setState({
@@ -270,6 +270,17 @@ export default function NewFeedDraftForm() {
         </div>
       ) : null}
 
+      <Field label="Photos">
+        <input
+          name="photos"
+          type="file"
+          multiple
+          accept="image/*"
+          disabled={state.pending}
+          className={inputClassName}
+        />
+      </Field>
+
       <Field label="Title">
         <input
           name="title"
@@ -287,23 +298,12 @@ export default function NewFeedDraftForm() {
         />
       </Field>
 
-      <Field label="Photos">
-        <input
-          name="photos"
-          type="file"
-          multiple
-          accept="image/*"
-          disabled={state.pending}
-          className={inputClassName}
-        />
-      </Field>
-
       <button
         type="submit"
         disabled={state.pending}
         className={primaryButtonClassName}
       >
-        Save draft
+        Create Draft
       </button>
     </form>
   );

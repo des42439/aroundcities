@@ -28,6 +28,50 @@ export async function getFeeds(): Promise<
   return (data ?? []) as FeedWithPlaceAndPhotos[];
 }
 
+export async function getFeedsByStatus(
+  status: Feed["status"]
+): Promise<FeedWithPlaceAndPhotos[]> {
+  const { data, error } = await getSupabaseAdmin()
+    .from("feeds")
+    .select(
+      "*, place:places!feeds_place_id_fkey(*), photos(*)"
+    )
+    .eq("status", status)
+    .order(status === "published" ? "published_at" : "updated_at", {
+      ascending: false,
+      nullsFirst: false,
+    })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return (data ?? []) as FeedWithPlaceAndPhotos[];
+}
+
+export async function getParentFeedCandidates(
+  currentFeedId: string
+): Promise<Feed[]> {
+  const { data, error } = await getSupabaseAdmin()
+    .from("feeds")
+    .select("*")
+    .neq("feed_id", currentFeedId)
+    .order("updated_at", {
+      ascending: false,
+      nullsFirst: false,
+    })
+    .limit(100);
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return (data ?? []) as Feed[];
+}
+
 export async function getLatestPublishedFeeds(): Promise<
   FeedWithPlaceAndPhotos[]
 > {
