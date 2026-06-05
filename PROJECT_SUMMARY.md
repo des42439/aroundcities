@@ -31,7 +31,7 @@ No comments, likes, followers, messaging, ratings, reviews, or social-network as
 ## Public Routes
 
 - `/` redirects to `/kch`
-- `/kch` shows the latest feed
+- `/kch` shows a discovery-style mixed feed
 - `/feed/[slug]` shows feed detail
 - `/place/[slug]` shows place detail
 
@@ -156,6 +156,8 @@ Phase 2 database status:
 - The `/kch` public feed now uses a compact header instead of a large hero and adapts feed cards between visual-first local discovery posts and information-first announcement posts.
 - The `/kch` page now shows feed items immediately after the city header. Feed cards use a social-feed order: title, `Author · Relative Time`, a two-line description preview with inline `more` only when truncated, the photo gallery, an optional muted place line, then a clear subtle divider with breathing room before the next post.
 - Seeded public feeds use `created_by = AroundCities`, staggered `created_at` values, and populated places so author, relative-time, and place rendering can be tested.
+- The `/kch` public feed uses discovery-style ordering instead of pure latest-first: a randomized recent lead, randomized weekly posts, a latest fallback around slot 6, latest remaining posts, and occasional older rediscovery inserts when older posts exist.
+- Seeded public feeds have staggered `published_at` values so recent, weekly, latest fallback, and older rediscovery ordering can be tested.
 - Public feed photo blocks now keep roughly the same large footprint for single and multi-photo feeds, including seeded placeholder image URLs, avoiding tiny thumbnail previews on mobile.
 
 UI and data-helper wiring for the new `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` workflows is not implemented yet.

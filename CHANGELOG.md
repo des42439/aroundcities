@@ -41,6 +41,8 @@ All notable changes to AroundCities should be documented here.
 - Removed the `/kch` feed footer action row and made the post divider brighter, thicker, and roomier so one post ends clearly before the next begins.
 - Added `supabase/migrations/20260605009000_update_seed_feed_public_metadata.sql` to normalize seeded feed authors, created timestamps, and missing places for public metadata testing.
 - Changed `/kch` feed metadata to show `Author · Relative Time`, with place shown as a small line below the photo gallery.
+- Added `supabase/migrations/20260605010000_update_seed_feed_discovery_dates.sql` to stagger seeded `published_at` values for testing discovery ordering.
+- Changed `/kch` from strict latest-first ordering to a discovery-style mixed feed with randomized recent slots, a latest fallback slot, chronological remaining posts, and optional older rediscovery inserts.
 
 ## 2026-06-04
 

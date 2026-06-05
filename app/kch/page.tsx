@@ -1,11 +1,11 @@
 import FeedCard from "@/components/FeedCard";
 import PublicShell from "@/components/PublicShell";
-import { getLatestPublishedFeeds } from "@/lib/feeds";
+import { getDiscoveryPublishedFeeds } from "@/lib/feeds";
 
 export const dynamic = "force-dynamic";
 
 export default async function KuchingPage() {
-  const feeds = await getLatestPublishedFeeds();
+  const feeds = await getDiscoveryPublishedFeeds();
 
   return (
     <PublicShell>
