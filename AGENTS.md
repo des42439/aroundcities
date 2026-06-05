@@ -150,9 +150,10 @@ V2 Phase 1 Steps 1-5 are implemented:
 - `supabase/migrations/20260605006000_update_multi_photo_seed_image_urls.sql` replaces those multi-photo test feed placeholders with external food/scenery sample image URLs.
 - `supabase/migrations/20260605007000_seed_real_sample_images_for_all_public_feeds.sql` gives every published seed feed at least one photo and replaces older word-only placeholders with external sample image URLs.
 - `supabase/migrations/20260605008000_seed_long_description_feed_examples.sql` adds two published long-description feeds for testing the inline `more` link on `/kch`.
+- `supabase/migrations/20260605009000_update_seed_feed_public_metadata.sql` normalizes seeded feed authors, created timestamps, and missing places for public metadata testing.
 - Public `/kch` should stay compact and feed-first. Avoid large formal hero sections, official listing tone, and category-heavy card layouts.
 - Feed cards should feel like relaxed local notes. Use simple display heuristics for visual-first versus information-first feeds; do not add a complex feed type system unless explicitly requested.
-- Current public feed cards should show title, muted place/date, a maximum two-line description with inline "more" only when truncated, then the photo block and a clear subtle divider. Do not add footer actions below the gallery. Any attached photos should render as a full-width social-feed image block.
+- Current public feed cards should show title, muted `Author · Relative Time`, a maximum two-line description with inline "more" only when truncated, then the photo block, optional muted place line, and a clear subtle divider. Do not add footer actions below the gallery. Any attached photos should render as a full-width social-feed image block.
 - Multi-photo feed grids should feel like one substantial content block, not tiny thumbnails. Keep the 2-photo, 3-photo, and 4+ photo layouts visually close to the single-photo block size.
 - The new schema-extension tables and fields are not yet wired into the admin or public UI unless explicitly implemented later.
 

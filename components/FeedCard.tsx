@@ -1,7 +1,7 @@
 import Link from "next/link";
 import FeedDescriptionPreview from "@/components/FeedDescriptionPreview";
 import { FeedWithPlaceAndPhotos } from "@/types/database";
-import { formatDate } from "@/lib/format";
+import { formatRelativeTime } from "@/lib/format";
 
 type Props = {
   feed: FeedWithPlaceAndPhotos;
@@ -33,28 +33,41 @@ export default function FeedCard({ feed }: Props) {
         {preview && <FeedDescriptionPreview href={feedHref} text={preview} />}
 
         {photos.length > 0 && <FeedPhotoGrid feed={feed} photos={photos} />}
+
+        {feed.place && <FeedPlaceLine feed={feed} />}
       </div>
     </article>
   );
 }
 
 function FeedMeta({ feed }: Props) {
+  const authorName = getFeedAuthorName(feed);
+
   return (
     <div className="mt-0.5 flex flex-wrap items-center gap-1.5 text-xs text-neutral-500 sm:text-sm">
-      {feed.place && (
-        <>
-          <Link
-            href={`/place/${feed.place.slug}`}
-            className="hover:text-neutral-300"
-          >
-            {feed.place.name}
-          </Link>
-          <span aria-hidden="true">·</span>
-        </>
-      )}
-      <time dateTime={feed.published_at ?? undefined}>
-        {formatDate(feed.published_at)}
+      <span>{authorName}</span>
+      <span aria-hidden="true">&middot;</span>
+      <time dateTime={feed.created_at}>
+        {formatRelativeTime(feed.created_at)}
       </time>
+    </div>
+  );
+}
+
+function FeedPlaceLine({ feed }: Props) {
+  if (!feed.place) {
+    return null;
+  }
+
+  return (
+    <div className="pt-0.5 text-xs text-neutral-500 sm:text-sm">
+      <Link
+        href={`/place/${feed.place.slug}`}
+        className="inline-flex items-center gap-1.5 hover:text-neutral-300"
+      >
+        <span aria-hidden="true">&#128205;</span>
+        <span>{feed.place.name}</span>
+      </Link>
     </div>
   );
 }
@@ -162,6 +175,16 @@ function FeedImageLink({
       )}
     </Link>
   );
+}
+
+function getFeedAuthorName(feed: FeedWithPlaceAndPhotos): string {
+  const createdBy = feed.created_by?.trim();
+
+  if (!createdBy || createdBy.toLowerCase() === "seed") {
+    return "AroundCities";
+  }
+
+  return createdBy;
 }
 
 function getDisplayPhotos(

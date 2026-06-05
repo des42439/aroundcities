@@ -315,6 +315,7 @@ Sources:
   - `supabase/migrations/20260605006000_update_multi_photo_seed_image_urls.sql`
   - `supabase/migrations/20260605007000_seed_real_sample_images_for_all_public_feeds.sql`
   - `supabase/migrations/20260605008000_seed_long_description_feed_examples.sql`
+  - `supabase/migrations/20260605009000_update_seed_feed_public_metadata.sql`
 - The reviewed final use cases need `feeds.parent_feed_id`, feed-tied source evidence, source screenshots, flexible feed schedules, `feed_places.is_primary`, `feed_places.location_note`, photo sequence/coordinates, and audit user fields.
 - These migrations have been applied to linked Supabase project `fblhoxcdfnxnqzmuczkx`.
 - RLS is enabled on app tables. Anonymous reads are limited to published public feed content and related rows. Admin/server writes use the service-role client.
@@ -324,9 +325,10 @@ Sources:
 - The latest multi-photo test feeds use external food/scenery sample image URLs rather than word-only placeholder images.
 - Every published seed feed has at least one photo so the public feed listing can be tested consistently.
 - Long-description test feeds exist so the `/kch` two-line preview and inline `more` link can be verified.
+- Seeded public feeds use `created_by` as the public author and `created_at` as the relative-time source, with places populated for the post-gallery place line.
 - Public feed browsing should feel compact, relaxed, and local. The `/kch` page avoids a large hero and feed cards should read like local notes, not official listings.
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.
-- The current `/kch` feed shows items immediately after the city header. Cards should show title, muted place/date, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, then a clear subtle divider with enough breathing room to mark the end of the post. Do not add footer actions below the gallery.
+- The current `/kch` feed shows items immediately after the city header. Cards should show title, muted `Author · Relative Time`, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, optional muted place line, then a clear subtle divider with enough breathing room to mark the end of the post. Do not add footer actions below the gallery.
 - Multi-photo grids should occupy a similar visual footprint to a single-photo block: 2 photos side-by-side, 3 photos with one large image and two stacked images, and 4+ photos as 2x2 with a `+N` overlay when needed.
 - Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed when that workflow is implemented.
 - Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.

@@ -39,6 +39,8 @@ All notable changes to AroundCities should be documented here.
 - Refined `/kch` feed cards into a clearer social-feed order: title, muted place/date, two-line description with inline `more`, photo gallery, small footer link, then the divider.
 - Added `supabase/migrations/20260605008000_seed_long_description_feed_examples.sql` with two published long-description feeds for testing the inline `more` link on `/kch`.
 - Removed the `/kch` feed footer action row and made the post divider brighter, thicker, and roomier so one post ends clearly before the next begins.
+- Added `supabase/migrations/20260605009000_update_seed_feed_public_metadata.sql` to normalize seeded feed authors, created timestamps, and missing places for public metadata testing.
+- Changed `/kch` feed metadata to show `Author · Relative Time`, with place shown as a small line below the photo gallery.
 
 ## 2026-06-04
 
