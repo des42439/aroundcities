@@ -1,6 +1,6 @@
 # AroundCities V2 Phase 1 Architecture
 
-Last updated: 5 June 2026
+Last updated: 6 June 2026
 
 Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, screenshot URL records, feed schedules, and feed-place metadata as compact optional sections.
 
@@ -94,14 +94,18 @@ Fields:
 - `photo_url`
 - `location_name`
 - `captured_at`
+- `latitude`
+- `longitude`
 - `featured`
+- `sequence`
 - `created_at`
 - `updated_at`
 
 Notes:
 
 - A feed can contain multiple photos.
-- `featured` marks the preferred image for feed cards and previews.
+- `featured` is a curator flag only; it should not override sequence ordering for feed cards, previews, or galleries.
+- `sequence` controls the photo display order within a feed. Smaller positive numbers appear first; unsequenced `0` values fall behind manually ordered photos.
 - `place_id` should be optional on Photo.
 - `location_name` allows a human-readable photo-specific location without requiring a full Place record.
 
@@ -190,7 +194,10 @@ create table public.photos (
   photo_url text not null,
   location_name text,
   captured_at timestamptz,
+  latitude double precision,
+  longitude double precision,
   featured boolean not null default false,
+  sequence integer not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -456,6 +463,7 @@ Sources may appear as a main admin item because they support the curator's manua
 - Do not ask for feed type during creation.
 - New feeds should be drafts by default.
 - Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
+- Photo order should stay numeric and curator-controlled through `photos.sequence`; do not let the featured flag override sequence ordering for public galleries or admin thumbnails.
 - Photo metadata such as captured dates or GPS should be extracted from JPEG EXIF data when available and displayed as curator reference only. It must not automatically assign places.
 - Keep photo-specific Place and Location name hidden in the admin photo editor unless explicitly reintroduced.
 - Save, publish, upload, photo update, and delete actions should show blocking pending overlays and prevent duplicate submissions.
@@ -473,7 +481,7 @@ Sources may appear as a main admin item because they support the curator's manua
 
 Minimum card content:
 
-- Featured photo if available
+- First photo by sequence if available
 - Feed type label
 - Feed title
 - Short content preview

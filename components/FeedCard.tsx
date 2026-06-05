@@ -1,7 +1,10 @@
 import Link from "next/link";
 import FeedDescriptionPreview from "@/components/FeedDescriptionPreview";
 import { FeedWithPlaceAndPhotos } from "@/types/database";
-import { formatRelativeTime } from "@/lib/format";
+import {
+  formatRelativeTime,
+  getOrderedPhotos,
+} from "@/lib/format";
 
 type Props = {
   feed: FeedWithPlaceAndPhotos;
@@ -170,15 +173,5 @@ function getFeedAuthorName(feed: FeedWithPlaceAndPhotos): string {
 function getDisplayPhotos(
   photos?: FeedWithPlaceAndPhotos["photos"] | null
 ): FeedPhoto[] {
-  if (!photos?.length) {
-    return [];
-  }
-
-  return [...photos].sort((a, b) => {
-    if (a.featured !== b.featured) {
-      return a.featured ? -1 : 1;
-    }
-
-    return a.sequence - b.sequence;
-  });
+  return getOrderedPhotos(photos);
 }

@@ -2,6 +2,17 @@
 
 All notable changes to AroundCities should be documented here.
 
+## 2026-06-06
+
+### Added
+
+- Added admin editing for `photos.sequence` as a numeric Photo order field.
+
+### Changed
+
+- Changed public feed photo galleries and admin feed thumbnails to use photo sequence ordering from smallest to largest, with unsequenced `0` photos falling behind manually ordered photos.
+- Changed new photo uploads to assign default sequence values in upload order.
+
 ## 2026-06-05
 
 ### Added

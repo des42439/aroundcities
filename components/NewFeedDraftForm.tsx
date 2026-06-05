@@ -222,6 +222,7 @@ export default function NewFeedDraftForm() {
             feedId: draft.feedId,
             photoUrl: target.publicUrl,
             featured: index === 0,
+            sequence: index + 1,
             capturedAt: metadata.capturedAt,
             latitude: metadata.latitude,
             longitude: metadata.longitude,

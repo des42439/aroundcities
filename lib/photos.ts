@@ -1,4 +1,5 @@
 import { getSupabaseAdmin } from "./supabase-admin";
+import { getOrderedPhotos } from "./format";
 import {
   NewPhoto,
   Photo,
@@ -12,18 +13,15 @@ export async function getPhotosByFeedId(
     .from("photos")
     .select("*")
     .eq("feed_id", feedId)
-    .order("featured", { ascending: false })
-    .order("captured_at", {
-      ascending: true,
-      nullsFirst: false,
-    });
+    .order("sequence", { ascending: true })
+    .order("created_at", { ascending: true });
 
   if (error) {
     console.error(error);
     return [];
   }
 
-  return data ?? [];
+  return getOrderedPhotos(data ?? []);
 }
 
 export async function createPhoto(

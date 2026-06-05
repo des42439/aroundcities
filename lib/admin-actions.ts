@@ -91,6 +91,26 @@ function optionalNumber(value: FormDataEntryValue | null) {
   return Number.isFinite(number) ? number : null;
 }
 
+function parsePhotoSequence(value: FormDataEntryValue | null) {
+  const text = value?.toString().trim() ?? "";
+
+  if (!text) {
+    return 0;
+  }
+
+  if (!/^\d+$/.test(text)) {
+    throw new Error("Photo order must be a whole number.");
+  }
+
+  const sequence = Number(text);
+
+  if (!Number.isSafeInteger(sequence) || sequence < 1) {
+    throw new Error("Photo order must be 1 or higher.");
+  }
+
+  return sequence;
+}
+
 function parseTags(value: FormDataEntryValue | null) {
   const text = value?.toString() ?? "";
 
@@ -582,6 +602,7 @@ export async function createUploadedPhotoRecordAction(input: {
   feedId: string;
   photoUrl: string;
   featured: boolean;
+  sequence?: number;
   capturedAt?: string | null;
   latitude?: number | null;
   longitude?: number | null;
@@ -604,6 +625,7 @@ export async function createUploadedPhotoRecordAction(input: {
       latitude: input.latitude ?? null,
       longitude: input.longitude ?? null,
       featured: input.featured,
+      sequence: input.sequence ?? 0,
     });
 
     revalidatePath(`/admin/feeds/${input.feedId}`);
@@ -922,6 +944,7 @@ async function uploadPhotosForFeed(
   }
 
   const supabaseAdmin = getSupabaseAdmin();
+  const firstSequence = await getNextPhotoSequence(feedId);
 
   for (const [index, file] of files.entries()) {
     const metadata = await extractPhotoMetadata(file);
@@ -977,8 +1000,30 @@ async function uploadPhotosForFeed(
       latitude: metadata.latitude,
       longitude: metadata.longitude,
       featured: options.featureFirst && index === 0,
+      sequence: firstSequence + index,
     });
   }
+}
+
+async function getNextPhotoSequence(feedId: string) {
+  const { data, error } = await getSupabaseAdmin()
+    .from("photos")
+    .select("sequence")
+    .eq("feed_id", feedId);
+
+  if (error) {
+    throw new Error(
+      `Photo sequence lookup failed: ${error.message}`
+    );
+  }
+
+  const sequences = (data ?? []).map((photo) =>
+    Number(photo.sequence)
+  );
+  const highestSequence = Math.max(0, ...sequences);
+  const existingCount = sequences.length;
+
+  return Math.max(highestSequence, existingCount) + 1;
 }
 
 export async function updateFeedPhotoAction(
@@ -1005,6 +1050,7 @@ export async function updateFeedPhotoAction(
       captured_at: parseDateTime(
         formData.get("captured_at")
       ),
+      sequence: parsePhotoSequence(formData.get("sequence")),
       featured: isFeatured,
     });
 

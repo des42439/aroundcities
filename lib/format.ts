@@ -104,15 +104,42 @@ export function getContentPreview(
 export function getFeaturedPhoto(
   photos?: Photo[] | null
 ): Photo | null {
+  return getOrderedPhotos(photos)[0] ?? null;
+}
+
+export function getOrderedPhotos(
+  photos?: Photo[] | null
+): Photo[] {
   if (!photos?.length) {
-    return null;
+    return [];
   }
 
-  return (
-    photos.find((photo) => photo.featured) ??
-    photos[0] ??
-    null
-  );
+  return [...photos].sort(comparePhotosBySequence);
+}
+
+export function comparePhotosBySequence(
+  firstPhoto: Photo,
+  secondPhoto: Photo
+): number {
+  const firstSequence = normalizedSequence(firstPhoto.sequence);
+  const secondSequence = normalizedSequence(secondPhoto.sequence);
+
+  if (firstSequence !== secondSequence) {
+    return firstSequence - secondSequence;
+  }
+
+  const firstCreatedAt = new Date(firstPhoto.created_at).getTime();
+  const secondCreatedAt = new Date(secondPhoto.created_at).getTime();
+
+  if (firstCreatedAt !== secondCreatedAt) {
+    return firstCreatedAt - secondCreatedAt;
+  }
+
+  return firstPhoto.photo_id.localeCompare(secondPhoto.photo_id);
+}
+
+function normalizedSequence(sequence: number): number {
+  return sequence > 0 ? sequence : Number.MAX_SAFE_INTEGER;
 }
 
 export function isPlaceholderPhoto(photo?: Photo | null): boolean {

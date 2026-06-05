@@ -39,6 +39,11 @@ export default function PhotoManager({
     photos.find(
       (photo) => photo.photo_id === selectedPhotoId
     ) ?? null;
+  const selectedPhotoIndex = selectedPhoto
+    ? photos.findIndex(
+        (photo) => photo.photo_id === selectedPhoto.photo_id
+      )
+    : -1;
 
   return (
     <section className="space-y-4">
@@ -76,6 +81,9 @@ export default function PhotoManager({
                     Featured
                   </p>
                 ) : null}
+                <p className="mt-1 text-xs text-neutral-500">
+                  Order {photo.sequence > 0 ? photo.sequence : index + 1}
+                </p>
               </div>
             </button>
           ))}
@@ -101,6 +109,7 @@ export default function PhotoManager({
         <PhotoEditorModal
           feedId={feedId}
           photo={selectedPhoto}
+          fallbackSequence={selectedPhotoIndex + 1}
           onClose={() => setSelectedPhotoId(null)}
         />
       ) : null}
@@ -173,10 +182,12 @@ function PhotoUploadModal({
 function PhotoEditorModal({
   feedId,
   photo,
+  fallbackSequence,
   onClose,
 }: {
   feedId: string;
   photo: Photo;
+  fallbackSequence: number;
   onClose: () => void;
 }) {
   const action = updateFeedPhotoAction.bind(
@@ -249,6 +260,23 @@ function PhotoEditorModal({
                 defaultValue={toDateTimeInputValue(
                   photo.captured_at
                 )}
+                className={inputClassName}
+              />
+            </Field>
+
+            <Field label="Photo order">
+              <input
+                name="sequence"
+                type="number"
+                min={1}
+                step={1}
+                inputMode="numeric"
+                pattern="[0-9]*"
+                defaultValue={
+                  photo.sequence > 0
+                    ? photo.sequence
+                    : fallbackSequence
+                }
                 className={inputClassName}
               />
             </Field>

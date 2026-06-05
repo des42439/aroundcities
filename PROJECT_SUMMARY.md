@@ -1,6 +1,6 @@
 # AroundCities Project Summary
 
-Last updated: 5 June 2026
+Last updated: 6 June 2026
 
 ## Current Direction
 
@@ -47,6 +47,7 @@ Implemented mobile-first workflow:
 - `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
 - The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
+- Photo order is controlled by `photos.sequence`, with smaller positive numbers displayed first.
 - Optional Sources, Places, Schedules, and Parent Feed sections appear only when added or when existing data is present.
 - Source evidence, feed schedules, parent feed selection, and feed-place metadata are wired into admin as compact refinement sections.
 - Published feeds can be archived without deleting their database rows.
@@ -76,16 +77,16 @@ The V2 Phase 1 foundation now includes:
 - Project reset removing old V1 public/admin routes, V1 components, and V1 Photo/Event helpers.
 - Database migration for `places`, `feeds`, and `photos`.
 - Feed fields: `feed_type`, `slug`, `title`, `content`, nullable `place_id`, nullable `source_url`, nullable `operating_hours`, `tags`, `published_at`, `status`, timestamps.
-- Photo fields: `feed_id`, nullable `place_id`, title, description, URL, location name, captured timestamp, featured flag, timestamps.
+- Photo fields: `feed_id`, nullable `place_id`, title, description, URL, location name, captured timestamp, latitude, longitude, featured flag, numeric sequence, timestamps.
 - Place fields: name, slug, description, optional coordinates, timestamps.
 - TypeScript database types for the V2 schema.
 - Simple data helpers for feeds, places, and photos.
 - Public routes for `/`, `/kch`, `/feed/[slug]`, and `/place/[slug]`.
 - Shared public shell and feed card components.
-- Formatting helpers for feed type labels, dates, content previews, and featured photo selection.
+- Formatting helpers for feed type labels, dates, content previews, and photo sequence ordering.
 - Password-protected admin routes for feed, place, and photo management.
 - Photo-first feed creation: title, content, multiple photos, save draft.
-- Post-processing feed edit flow for slug, tags, source URL, operating hours / schedule, places, featured photo, and publishing.
+- Post-processing feed edit flow for slug, tags, source URL, operating hours / schedule, places, photo order, featured flag, and publishing.
 - Places are no longer promoted as a main admin navigation item. `/admin/places` remains available directly as a maintenance route.
 - Inline place creation from the feed editor so missing places can be added without leaving the draft.
 - Multiple feed places are supported in code through the proposed `feed_places` join table migration while keeping `feeds.place_id` as an optional primary place.
@@ -100,12 +101,13 @@ The V2 Phase 1 foundation now includes:
 - New feed photos are compressed in the browser before upload, targeting less than 1MB per photo with a 1600px longest-side resize.
 - New feed creation returns to `/admin/feeds/drafts` after save.
 - Admin feed management is split into New Feed, Drafted Feeds, and Published Feeds instead of one desktop-style all-feeds list.
-- Drafted and published feed lists show the featured photo or first attached photo as a thumbnail.
+- Drafted and published feed lists show the first sequenced photo as a thumbnail.
 - Feed editing is mobile-first and keeps optional refinement sections hidden until the curator explicitly adds Sources, Places, Schedules, or Parent Feed.
 - Feed sources, source screenshot URL evidence, simple schedule rows, feed-place metadata, and parent feeds are wired into the admin editor.
 - Published feed editing supports archiving, which sets status to `archived` and hides the feed from public `/kch`.
 - Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
 - Feed photo upload from the editor opens from an Add Photos overlay so the main editor stays thumbnail-first and compact on iPhone.
+- Feed photo editing includes a numeric Photo order field backed by `photos.sequence`; public galleries and admin thumbnails display photos from smallest positive sequence to largest.
 - Admin photo uploads now read JPEG EXIF metadata when available and store photo capture datetime, latitude, and longitude. The photo editor shows those metadata fields and an Open Map button for coordinates.
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
