@@ -55,6 +55,7 @@ All notable changes to AroundCities should be documented here.
 - Changed `/admin/feeds` into a simple mobile workflow hub instead of an all-feeds management list.
 - Changed published feed management so `Archive` sets status to `archived`, leaving rows in the database and hiding them from public `/kch`.
 - Changed feed photo management so the main editor shows compact thumbnails first, with add-photo upload and photo-detail editing opened from mobile-friendly overlays.
+- Fixed the `/admin` workflow hub cards so they render as separate full-width blocks in desktop browsers.
 
 ## 2026-06-04
 
