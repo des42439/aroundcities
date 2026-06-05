@@ -1,9 +1,7 @@
 import Link from "next/link";
+import FeedDescriptionPreview from "@/components/FeedDescriptionPreview";
 import { FeedWithPlaceAndPhotos } from "@/types/database";
-import {
-  formatDate,
-  getContentPreview,
-} from "@/lib/format";
+import { formatDate } from "@/lib/format";
 
 type Props = {
   feed: FeedWithPlaceAndPhotos;
@@ -13,7 +11,8 @@ type FeedPhoto = FeedWithPlaceAndPhotos["photos"][number];
 
 export default function FeedCard({ feed }: Props) {
   const photos = getDisplayPhotos(feed.photos);
-  const preview = getContentPreview(feed.description ?? feed.content, 180);
+  const preview = (feed.description ?? feed.content ?? "").trim();
+  const feedHref = `/feed/${feed.slug}`;
 
   return (
     <article className="border-b border-neutral-900 py-5 sm:py-6">
@@ -23,7 +22,7 @@ export default function FeedCard({ feed }: Props) {
 
           <h2 className="text-lg font-semibold leading-snug sm:text-xl">
             <Link
-              href={`/feed/${feed.slug}`}
+              href={feedHref}
               className="hover:text-neutral-300"
             >
               {feed.title}
@@ -31,22 +30,9 @@ export default function FeedCard({ feed }: Props) {
           </h2>
         </div>
 
+        {preview && <FeedDescriptionPreview href={feedHref} text={preview} />}
+
         {photos.length > 0 && <FeedPhotoGrid feed={feed} photos={photos} />}
-
-        <div className="space-y-1">
-          {preview && (
-            <p className="overflow-hidden text-[15px] leading-6 text-neutral-300 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2] sm:text-base">
-              {preview}
-            </p>
-          )}
-
-          <Link
-            href={`/feed/${feed.slug}`}
-            className="inline-flex text-sm text-neutral-500 hover:text-neutral-200"
-          >
-            See more
-          </Link>
-        </div>
       </div>
     </article>
   );

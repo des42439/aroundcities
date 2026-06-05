@@ -153,7 +153,7 @@ Phase 2 database status:
 - The multi-photo public test feeds now use external food/scenery sample photos instead of word-only placeholder images.
 - Every published seed feed now has at least one photo, and older word-only placeholder seed photos have been replaced with external sample image URLs.
 - The `/kch` public feed now uses a compact header instead of a large hero and adapts feed cards between visual-first local discovery posts and information-first announcement posts.
-- The `/kch` page now shows feed items immediately after the city header. Feed cards show place/date, title, photo block, a two-line description, and "See more".
+- The `/kch` page now shows feed items immediately after the city header. Feed cards show place/date, title, a two-line description preview with inline `See more` only when truncated, then the photo block.
 - Public feed photo blocks now keep roughly the same large footprint for single and multi-photo feeds, including seeded placeholder image URLs, avoiding tiny thumbnail previews on mobile.
 
 UI and data-helper wiring for the new `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` workflows is not implemented yet.
