@@ -131,6 +131,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - The `/admin` workflow hub shows counts for Drafted Feeds, Published Feeds, and Sources.
 - `/admin/stats` shows feed and photo click counts sorted from highest to lowest.
 - Photo-first draft creation for feeds asks only for photos, title, and description, then returns to Drafted Feeds.
+- Event JSON import is available from `/admin/feeds/import-events`; it previews `aroundcities_event_import_v1` JSON and saves imported items as draft event observation feeds without photos or screenshot uploads.
 - Feed editing starts compact with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Feed editor photo uploads open from an Add Photos overlay; keep the main editor thumbnail-first.
 - Photos use `photos.sequence` for display order. Smaller positive sequence numbers appear first; unsequenced `0` photos fall behind manually ordered photos.
@@ -208,6 +209,7 @@ Feed creation should be photo-first and draft-first:
 - Admin photo uploads should use the server-side service-role Supabase client, not the public anon client.
 - Error logs should avoid secrets and use minimal context such as action area, feed ID, or photo ID.
 - New feed photo uploads should use signed Supabase Storage upload URLs so large photos do not pass through Vercel Server Action request bodies.
+- Event JSON imports must force draft status, create no photos, upload no screenshots, and preserve the pasted textarea content when preview validation fails.
 - Keep the feed edit page compact by showing optional feed fields only after the curator explicitly selects them.
 - Keep feed photo editing thumbnail-first; open one photo-specific editor at a time instead of listing every photo edit form inline.
 - Keep photo deletion confirmed and visually separated from ordinary save controls.

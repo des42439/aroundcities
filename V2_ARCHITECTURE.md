@@ -2,7 +2,7 @@
 
 Last updated: 6 June 2026
 
-Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, screenshot URL records, feed schedules, and feed-place metadata as compact optional sections.
+Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, screenshot URL records, feed schedules, and feed-place metadata as compact optional sections.
 
 ## 1. Objective
 
@@ -439,6 +439,7 @@ Suggested minimal routes:
 - `/admin`
 - `/admin/feeds`
 - `/admin/feeds/new`
+- `/admin/feeds/import-events`
 - `/admin/feeds/drafts`
 - `/admin/feeds/published`
 - `/admin/feeds/[feedId]`
@@ -451,6 +452,7 @@ Suggested minimal routes:
 - `/admin/stats`
 
 `/admin/feeds` is a small workflow hub. Daily feed work should move through New Feed, Drafted Feeds, and Published Feeds rather than a desktop-style all-feeds table.
+`/admin/feeds/import-events` supports pasting ChatGPT-generated `aroundcities_event_import_v1` JSON, previewing multiple event observations, and saving them as draft feeds without photos or screenshot uploads.
 Photo management can live inside the feed editor during Phase 1.
 Place management routes should remain available directly for maintenance, but Places should not appear as a main admin navigation item.
 Sources may appear as a main admin item because they support the curator's manual discovery workflow.
@@ -459,17 +461,18 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 ### Curator Workflow
 
 1. Capture a draft Feed from `/admin/feeds/new` with only photos, title, and description.
-2. Return to `/admin/feeds/drafts` and open the draft when ready to refine it.
-3. Keep the draft editor compact: title, description, photo thumbnails, Add Section, Save Draft, Publish, Delete.
-4. Keep photo upload and photo-detail editing in overlays opened from the thumbnail area so the main editor stays compact. Photo detail editing should let the curator open the full-size image and delete the photo with confirmation.
-5. Add optional Sources, Places, Schedules, or Parent Feed sections only when the feed needs them.
-6. Optionally assign primary place and multiple feed places with a location note.
-7. Optionally assign photo-level places from the photo thumbnail editor.
-8. Add source URL/channel/note and screenshot URL evidence as admin-only feed evidence.
-9. Add simple schedule rows when the feed needs dated schedule data.
-10. Use a searchable picker for parent feed selection and exclude the current feed.
-11. Publish when ready, or archive a published feed from `/admin/feeds/published` when it should leave public `/kch`.
-12. Review saved Sources manually, open useful pages in a new tab, and click `Mark Checked` only after review.
+2. For batches of external event leads, paste reviewed JSON into `/admin/feeds/import-events`, preview it, and save it as draft event observation feeds. Imported events must never publish automatically.
+3. Return to `/admin/feeds/drafts` and open the draft when ready to refine it.
+4. Keep the draft editor compact: title, description, photo thumbnails, Add Section, Save Draft, Publish, Delete.
+5. Keep photo upload and photo-detail editing in overlays opened from the thumbnail area so the main editor stays compact. Photo detail editing should let the curator open the full-size image and delete the photo with confirmation.
+6. Add optional Sources, Places, Schedules, or Parent Feed sections only when the feed needs them.
+7. Optionally assign primary place and multiple feed places with a location note.
+8. Optionally assign photo-level places from the photo thumbnail editor.
+9. Add source URL/channel/note and screenshot URL evidence as admin-only feed evidence.
+10. Add simple schedule rows when the feed needs dated schedule data.
+11. Use a searchable picker for parent feed selection and exclude the current feed.
+12. Publish when ready, or archive a published feed from `/admin/feeds/published` when it should leave public `/kch`.
+13. Review saved Sources manually, open useful pages in a new tab, and click `Mark Checked` only after review.
 
 ### Admin Principles
 
@@ -484,6 +487,7 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 - Keep `/admin/places` available as a maintenance route for cleanup and corrections.
 - Do not ask for feed type during creation.
 - New feeds should be drafts by default.
+- Event JSON imports should create draft feeds only. They may create/reuse places, feed-place links, schedules, channels, and feed source rows, but should not create photos, upload screenshots, or introduce a separate event entity.
 - Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
 - Photo order should stay numeric and curator-controlled through `photos.sequence`; do not let the featured flag override sequence ordering for public galleries or admin thumbnails.
 - Multiple photos in one feed may be marked as Photo feed candidates. Do not enforce one featured photo per feed.

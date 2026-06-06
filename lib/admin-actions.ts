@@ -49,6 +49,43 @@ type AdminActionState = {
   errorId?: string | null;
 };
 
+export type EventImportResult = {
+  createdCount: number;
+  results: {
+    index: number;
+    title: string;
+    feedId?: string;
+    error?: string;
+  }[];
+};
+
+type EventImportPayload = {
+  version?: unknown;
+  events?: unknown;
+};
+
+type ParsedImportEvent = {
+  feed: {
+    title: string;
+    description: string | null;
+  };
+  places: {
+    name: string;
+    location_note: string | null;
+  }[];
+  schedules: {
+    schedule_date: string;
+    start_time: string | null;
+    end_time: string | null;
+    remarks: string | null;
+  }[];
+  source: {
+    source_url: string | null;
+    source_channel_name: string | null;
+    source_note: string | null;
+  } | null;
+};
+
 async function actionError(
   area: string,
   error: unknown,
@@ -214,6 +251,231 @@ function parseDate(value: FormDataEntryValue | null) {
   const text = value?.toString().trim() ?? "";
 
   return text || null;
+}
+
+function textFromUnknown(value: unknown) {
+  return typeof value === "string" && value.trim()
+    ? value.trim()
+    : null;
+}
+
+function objectFromUnknown(value: unknown) {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function parseEventImportJson(jsonText: string): ParsedImportEvent[] {
+  let payload: EventImportPayload;
+
+  try {
+    payload = JSON.parse(jsonText) as EventImportPayload;
+  } catch {
+    throw new Error("JSON could not be parsed.");
+  }
+
+  if (payload.version !== "aroundcities_event_import_v1") {
+    throw new Error(
+      "Import version must be aroundcities_event_import_v1."
+    );
+  }
+
+  if (!Array.isArray(payload.events)) {
+    throw new Error("JSON must include an events array.");
+  }
+
+  return payload.events.map((item, index) => {
+    const event = objectFromUnknown(item);
+    const feed = objectFromUnknown(event?.feed);
+    const title = textFromUnknown(feed?.title);
+
+    if (!title) {
+      throw new Error(`Event ${index + 1} is missing feed.title.`);
+    }
+
+    const places = Array.isArray(event?.places)
+      ? event.places
+          .map((place) => {
+            const placeObject = objectFromUnknown(place);
+            const name = textFromUnknown(placeObject?.name);
+
+            if (!name) {
+              return null;
+            }
+
+            return {
+              name,
+              location_note: textFromUnknown(
+                placeObject?.location_note
+              ),
+            };
+          })
+          .filter(
+            (
+              place
+            ): place is {
+              name: string;
+              location_note: string | null;
+            } => place !== null
+          )
+      : [];
+
+    const schedules = Array.isArray(event?.schedules)
+      ? event.schedules
+          .map((schedule) => {
+            const scheduleObject = objectFromUnknown(schedule);
+            const scheduleDate = textFromUnknown(
+              scheduleObject?.schedule_date
+            );
+
+            if (!scheduleDate) {
+              return null;
+            }
+
+            return {
+              schedule_date: scheduleDate,
+              start_time: textFromUnknown(
+                scheduleObject?.start_time
+              ),
+              end_time: textFromUnknown(scheduleObject?.end_time),
+              remarks: textFromUnknown(scheduleObject?.remarks),
+            };
+          })
+          .filter(
+            (
+              schedule
+            ): schedule is {
+              schedule_date: string;
+              start_time: string | null;
+              end_time: string | null;
+              remarks: string | null;
+            } => schedule !== null
+          )
+      : [];
+
+    const sourceObject = objectFromUnknown(event?.source);
+    const source = sourceObject
+      ? {
+          source_url: textFromUnknown(sourceObject.source_url),
+          source_channel_name: textFromUnknown(
+            sourceObject.source_channel_name
+          ),
+          source_note: textFromUnknown(sourceObject.source_note),
+        }
+      : null;
+
+    return {
+      feed: {
+        title,
+        description: textFromUnknown(feed?.description),
+      },
+      places,
+      schedules,
+      source,
+    };
+  });
+}
+
+async function findOrCreatePlaceByName(name: string) {
+  const supabaseAdmin = getSupabaseAdmin();
+  const { data: existingByName, error: nameError } =
+    await supabaseAdmin
+      .from("places")
+      .select("*")
+      .eq("name", name)
+      .limit(1)
+      .maybeSingle();
+
+  if (nameError) {
+    throw new Error(`Place lookup failed: ${nameError.message}`);
+  }
+
+  if (existingByName) {
+    return existingByName;
+  }
+
+  const baseSlug = slugify(name);
+  const { data: existingBySlug, error: slugError } =
+    await supabaseAdmin
+      .from("places")
+      .select("*")
+      .eq("slug", baseSlug)
+      .limit(1)
+      .maybeSingle();
+
+  if (slugError) {
+    throw new Error(`Place slug lookup failed: ${slugError.message}`);
+  }
+
+  if (existingBySlug) {
+    return existingBySlug;
+  }
+
+  return await createPlace({
+    name,
+    slug: baseSlug,
+    description: null,
+    latitude: null,
+    longitude: null,
+  });
+}
+
+async function findOrCreateChannelByName(
+  name: string,
+  sourceUrl: string | null
+) {
+  const supabaseAdmin = getSupabaseAdmin();
+  const { data: existingByName, error: nameError } =
+    await supabaseAdmin
+      .from("channels")
+      .select("*")
+      .eq("name", name)
+      .limit(1)
+      .maybeSingle();
+
+  if (nameError) {
+    throw new Error(`Channel lookup failed: ${nameError.message}`);
+  }
+
+  if (existingByName) {
+    return existingByName;
+  }
+
+  const channelUrl = sourceUrl ?? `manual:${slugify(name)}`;
+
+  const { data: existingByUrl, error: urlError } =
+    await supabaseAdmin
+      .from("channels")
+      .select("*")
+      .eq("url", channelUrl)
+      .limit(1)
+      .maybeSingle();
+
+  if (urlError) {
+    throw new Error(`Channel URL lookup failed: ${urlError.message}`);
+  }
+
+  if (existingByUrl) {
+    return existingByUrl;
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from("channels")
+    .insert({
+      name,
+      url: channelUrl,
+      screenshot_url: null,
+      remarks: null,
+      last_checked_at: null,
+    })
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`Channel create failed: ${error.message}`);
+  }
+
+  return data;
 }
 
 function parseOperatingHourRows(
@@ -546,6 +808,151 @@ export async function createDraftFeedOnlyAction(input: {
   } catch (error) {
     return await actionError("create_draft_feed_only", error);
   }
+}
+
+export async function importEventFeedsAction(input: {
+  jsonText: string;
+}): Promise<EventImportResult | AdminActionState> {
+  await requireAdmin();
+
+  let events: ParsedImportEvent[];
+
+  try {
+    events = parseEventImportJson(input.jsonText);
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Import JSON is invalid.",
+    };
+  }
+
+  const results: EventImportResult["results"] = [];
+
+  for (const [index, event] of events.entries()) {
+    let feedId: string | null = null;
+
+    try {
+      const uniquePlaces = event.places.filter(
+        (place, placeIndex, places) =>
+          places.findIndex(
+            (candidate) => candidate.name === place.name
+          ) === placeIndex
+      );
+      const places = [];
+
+      for (const place of uniquePlaces) {
+        places.push({
+          place: await findOrCreatePlaceByName(place.name),
+          locationNote: place.location_note,
+        });
+      }
+
+      const feed = await createFeed({
+        feed_type: "event_observation",
+        slug: `${slugify(event.feed.title)}-${Date.now().toString(
+          36
+        )}-${index + 1}`,
+        title: event.feed.title,
+        content: event.feed.description,
+        description: event.feed.description,
+        place_id: places[0]?.place.place_id ?? null,
+        source_url: event.source?.source_url ?? null,
+        operating_hours: null,
+        tags: [],
+        published_at: null,
+        status: "draft",
+      });
+
+      feedId = feed.feed_id;
+
+      if (places.length) {
+        const { error } = await getSupabaseAdmin()
+          .from("feed_places")
+          .insert(
+            places.map(({ place, locationNote }, placeIndex) => ({
+              feed_id: feed.feed_id,
+              place_id: place.place_id,
+              is_primary: placeIndex === 0,
+              location_note: locationNote,
+            }))
+          );
+
+        if (error) {
+          throw new Error(
+            `Feed place link failed: ${error.message}`
+          );
+        }
+      }
+
+      for (const schedule of event.schedules) {
+        await createFeedSchedule({
+          feed_id: feed.feed_id,
+          schedule_type: "occurrence",
+          schedule_date: schedule.schedule_date,
+          start_time: schedule.start_time,
+          end_time: schedule.end_time,
+          remarks: schedule.remarks,
+        });
+      }
+
+      if (
+        event.source?.source_url ||
+        event.source?.source_channel_name ||
+        event.source?.source_note
+      ) {
+        const channel = event.source.source_channel_name
+          ? await findOrCreateChannelByName(
+              event.source.source_channel_name,
+              event.source.source_url
+            )
+          : null;
+
+        await createFeedSource({
+          feed_id: feed.feed_id,
+          source_url: event.source.source_url,
+          channel_id: channel?.channel_id ?? null,
+          source_note: event.source.source_note,
+        });
+      }
+
+      results.push({
+        index,
+        title: event.feed.title,
+        feedId: feed.feed_id,
+      });
+    } catch (error) {
+      if (feedId) {
+        try {
+          await deleteFeed(feedId);
+        } catch (deleteError) {
+          console.error(deleteError);
+        }
+      }
+
+      const loggedError = await logAdminError("import_event_feed", error, {
+        eventIndex: index,
+        title: event.feed.title,
+        feedId,
+      });
+
+      results.push({
+        index,
+        title: event.feed.title,
+        error: `${loggedError.message} (Error ID: ${loggedError.errorId})`,
+      });
+    }
+  }
+
+  revalidatePath("/admin/feeds");
+  revalidatePath("/admin/feeds/drafts");
+  revalidatePath("/admin/feeds/import-events");
+
+  return {
+    createdCount: results.filter((result) => !result.error).length,
+    results,
+  };
 }
 
 export async function createPhotoUploadTargetAction(input: {

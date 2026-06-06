@@ -45,6 +45,7 @@ Admin should be optimized for a single curator.
 Implemented mobile-first workflow:
 
 - `/admin/feeds/new` is the fast capture screen. It asks only for photos, title, and description, then creates a draft.
+- `/admin/feeds/import-events` accepts pasted `aroundcities_event_import_v1` JSON, previews event feed drafts, and saves valid imports as draft feeds without requiring photos.
 - `/admin` shows total counts for Drafted Feeds, Published Feeds, and Sources on the workflow cards.
 - `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
@@ -105,6 +106,7 @@ The V2 Phase 1 foundation now includes:
 - New feed photo creation uploads directly from the browser to Supabase Storage using signed upload URLs, avoiding Vercel Server Action body limits for initial feed creation.
 - New feed photos are compressed in the browser before upload, targeting less than 1MB per photo with a 1600px longest-side resize.
 - New feed creation returns to `/admin/feeds/drafts` after save.
+- Event JSON import is available from New Feed through `/admin/feeds/import-events`. It validates pasted JSON, forces all imported feeds to `draft`, creates or reuses places and source channels, links feed places with location notes, creates simple feed schedule rows, and stores feed source evidence without creating photos or uploading screenshots.
 - Admin feed management is split into New Feed, Drafted Feeds, and Published Feeds instead of one desktop-style all-feeds list.
 - Drafted and published feed lists show the first sequenced photo as a thumbnail.
 - Feed editing is mobile-first and keeps optional refinement sections hidden until the curator explicitly adds Sources, Places, Schedules, or Parent Feed.
