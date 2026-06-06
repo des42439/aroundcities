@@ -215,6 +215,7 @@ Feed creation should be photo-first and draft-first:
 - Error logs should avoid secrets and use minimal context such as action area, feed ID, or photo ID.
 - New feed photo uploads should use signed Supabase Storage upload URLs so large photos do not pass through Vercel Server Action request bodies.
 - Event JSON imports must force draft status, create no photos, upload no screenshots, and preserve the pasted textarea content when preview validation fails.
+- Event JSON import should reset the textarea and preview after a fully successful save, while preserving pasted content for validation or per-event save errors.
 - Event JSON imports may include optional `event_details`; save it to `feed_event_details` and keep imported descriptions as curator/editorial wording without forcing an official tone.
 - Keep the feed edit page compact by showing optional feed fields only after the curator explicitly selects them.
 - Keep feed photo editing thumbnail-first; open one photo-specific editor at a time instead of listing every photo edit form inline.

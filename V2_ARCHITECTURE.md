@@ -469,6 +469,7 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 
 1. Capture a draft Feed from `/admin/feeds/new` with only photos, title, and description.
 2. For batches of external event leads, paste reviewed JSON into `/admin/feeds/import-events`, preview it, and save it as draft event observation feeds. Imported events must never publish automatically.
+   Fully successful saves should reset the import textarea and preview; validation or per-event save errors should keep the pasted JSON available for correction.
 3. Return to `/admin/feeds/drafts` and open the draft when ready to refine it.
 4. Keep the draft editor compact: title, description, photo thumbnails, Add Section, Save Draft, Publish, Delete.
 5. Keep photo upload and photo-detail editing in overlays opened from the thumbnail area so the main editor stays compact. Photo detail editing should let the curator open the full-size image and delete the photo with confirmation.
@@ -496,6 +497,7 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 - Do not ask for feed type during creation.
 - New feeds should be drafts by default.
 - Event JSON imports should create draft feeds only. They may create/reuse places, feed-place links, schedules, channels, and feed source rows, but should not create photos, upload screenshots, or introduce a separate event entity.
+- Event JSON import should reset to a fresh input state after a fully successful save, but preserve pasted content when preview validation or per-event save errors occur.
 - Event JSON imports may include an optional `event_details` object. Imported titles must stay timeless; strip dynamic prefixes like `Happening Today:` before storing the feed title.
 - Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
 - Photo order should stay numeric and curator-controlled through `photos.sequence`; do not let the featured flag override sequence ordering for public galleries or admin thumbnails.

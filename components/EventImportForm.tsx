@@ -240,7 +240,16 @@ export default function EventImportForm() {
         return;
       }
 
-      setSaveResult(result as EventImportResult);
+      const importResult = result as EventImportResult;
+
+      if (importResult.results.some((eventResult) => eventResult.error)) {
+        setSaveResult(importResult);
+        return;
+      }
+
+      setJsonText("");
+      setPreview(null);
+      setSaveResult(importResult);
     } catch (saveError) {
       setError(
         saveError instanceof Error

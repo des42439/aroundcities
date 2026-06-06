@@ -109,6 +109,7 @@ The V2 Phase 1 foundation now includes:
 - New feed photos are compressed in the browser before upload, targeting less than 1MB per photo with a 1600px longest-side resize.
 - New feed creation returns to `/admin/feeds/drafts` after save.
 - Event JSON import is available from New Feed through `/admin/feeds/import-events`. It validates pasted JSON, forces all imported feeds to `draft`, creates or reuses places and source channels, links feed places with location notes, creates simple feed schedule rows, and stores feed source evidence without creating photos or uploading screenshots.
+- After a fully successful event import save, the import textarea and preview reset so the page is ready for a new paste. Validation and per-event save errors keep the pasted content available for correction.
 - Event JSON import accepts optional `event_details` objects and strips dynamic timing prefixes such as `Happening Today:` from stored feed titles.
 - Admin feed management is split into New Feed, Drafted Feeds, and Published Feeds instead of one desktop-style all-feeds list.
 - Drafted and published feed lists show the first sequenced photo as a thumbnail.
