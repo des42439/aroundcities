@@ -45,7 +45,7 @@ Admin should be optimized for a single curator.
 Implemented mobile-first workflow:
 
 - `/admin/feeds/new` is the fast capture screen. It asks only for photos, title, and description, then creates a draft.
-- `/admin/feeds/import-events` accepts pasted `aroundcities_event_import_v1` JSON, previews event feed drafts, and saves valid imports as draft feeds without requiring photos.
+- `/admin/feeds/import-events` accepts pasted `aroundcities_event_import_v2` JSON, keeps v1 JSON compatible, previews event feed drafts, and saves valid imports as draft feeds without requiring photos.
 - `/admin` shows total counts for Drafted Feeds, Published Feeds, and Sources on the workflow cards.
 - `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.

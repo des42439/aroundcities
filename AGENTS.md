@@ -131,7 +131,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - The `/admin` workflow hub shows counts for Drafted Feeds, Published Feeds, and Sources.
 - `/admin/stats` shows feed and photo click counts sorted from highest to lowest.
 - Photo-first draft creation for feeds asks only for photos, title, and description, then returns to Drafted Feeds.
-- Event JSON import is available from `/admin/feeds/import-events`; it previews `aroundcities_event_import_v1` JSON and saves imported items as draft event observation feeds without photos or screenshot uploads.
+- Event JSON import is available from `/admin/feeds/import-events`; it previews `aroundcities_event_import_v2` JSON, keeps v1 JSON compatible, and saves imported items as draft event observation feeds without photos or screenshot uploads.
 - Event imports and feed saves keep titles timeless by stripping dynamic prefixes such as `Happening Today:`; public timing labels are computed from schedules.
 - Optional structured event details are stored on `feed_event_details` as support metadata attached to Feed, not as a separate Event entity.
 - Feed editing starts compact with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.

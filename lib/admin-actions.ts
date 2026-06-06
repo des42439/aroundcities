@@ -70,6 +70,11 @@ type EventImportPayload = {
   events?: unknown;
 };
 
+const SUPPORTED_EVENT_IMPORT_VERSIONS = [
+  "aroundcities_event_import_v1",
+  "aroundcities_event_import_v2",
+];
+
 type ParsedImportEvent = {
   feed: {
     title: string;
@@ -387,9 +392,13 @@ function parseEventImportJson(jsonText: string): ParsedImportEvent[] {
     throw new Error("JSON could not be parsed.");
   }
 
-  if (payload.version !== "aroundcities_event_import_v1") {
+  if (
+    !SUPPORTED_EVENT_IMPORT_VERSIONS.includes(
+      String(payload.version ?? "")
+    )
+  ) {
     throw new Error(
-      "Import version must be aroundcities_event_import_v1."
+      "Import version must be aroundcities_event_import_v1 or aroundcities_event_import_v2."
     );
   }
 

@@ -27,6 +27,11 @@ type PreviewEvent = {
 
 type SaveResult = EventImportResult | null;
 
+const SUPPORTED_EVENT_IMPORT_VERSIONS = [
+  "aroundcities_event_import_v1",
+  "aroundcities_event_import_v2",
+];
+
 function text(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -92,10 +97,18 @@ function parsePreview(jsonText: string): PreviewEvent[] {
 
   const importObject = object(payload);
 
-  if (importObject?.version !== "aroundcities_event_import_v1") {
+  if (
+    !SUPPORTED_EVENT_IMPORT_VERSIONS.includes(
+      String(importObject?.version ?? "")
+    )
+  ) {
     throw new Error(
-      "Import version must be aroundcities_event_import_v1."
+      "Import version must be aroundcities_event_import_v1 or aroundcities_event_import_v2."
     );
+  }
+
+  if (!importObject) {
+    throw new Error("JSON must be an object.");
   }
 
   if (!Array.isArray(importObject.events)) {
@@ -254,7 +267,7 @@ export default function EventImportForm() {
           setSaveResult(null);
           setError(null);
         }}
-        placeholder='{"version":"aroundcities_event_import_v1","events":[]}'
+        placeholder='{"version":"aroundcities_event_import_v2","events":[]}'
         className={`${textareaClassName} min-h-80 font-mono text-sm`}
       />
 

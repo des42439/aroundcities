@@ -10,6 +10,7 @@ All notable changes to AroundCities should be documented here.
 - Added dynamic public event timing labels based on feed schedule rows, such as `Happening Now`, `Happening Today`, `Happening Tomorrow`, weekend labels, and next-month labels.
 - Added an `Event Details` section to the admin feed editor.
 - Added optional `event_details` support to `/admin/feeds/import-events`.
+- Added `aroundcities_event_import_v2` as the current event import version while keeping v1 imports supported.
 - Added `supabase/migrations/20260606003000_add_feed_event_details.sql` for event details and title cleanup of stored timing prefixes.
 - Added `/admin/feeds/import-events` for pasting ChatGPT-generated event JSON, previewing multiple events, and saving them as draft feeds without photos or screenshot uploads.
 - Added an `Import Events` link under the normal New Feed form.

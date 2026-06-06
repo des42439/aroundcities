@@ -455,7 +455,7 @@ Suggested minimal routes:
 - `/admin/stats`
 
 `/admin/feeds` is a small workflow hub. Daily feed work should move through New Feed, Drafted Feeds, and Published Feeds rather than a desktop-style all-feeds table.
-`/admin/feeds/import-events` supports pasting ChatGPT-generated `aroundcities_event_import_v1` JSON, previewing multiple event observations, and saving them as draft feeds without photos or screenshot uploads.
+`/admin/feeds/import-events` supports pasting ChatGPT-generated `aroundcities_event_import_v2` JSON, keeps v1 JSON compatible, previews multiple event observations, and saves them as draft feeds without photos or screenshot uploads.
 Photo management can live inside the feed editor during Phase 1.
 Place management routes should remain available directly for maintenance, but Places should not appear as a main admin navigation item.
 Sources may appear as a main admin item because they support the curator's manual discovery workflow.
