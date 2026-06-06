@@ -28,6 +28,7 @@ All notable changes to AroundCities should be documented here.
 
 ### Changed
 
+- Changed `/admin/sources` to default to a `Pending` view that shows sources never checked or not checked in the past 3 days, with a `Show all` filter option for the full list.
 - Changed event schedule display so events with only a start time use a 1-hour inferred duration for `Happening Now`, and expired event observation feeds are hidden from the public `/kch` discovery stream.
 - Changed `/kch` discovery ordering so event observations happening today are promoted into the first one to three feed slots before ordinary visit/photo-style posts.
 - Changed public feed card `more` behavior to expand the description inline and show a separate `More details` link for navigation.

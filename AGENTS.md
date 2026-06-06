@@ -156,7 +156,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Feed delete support from the edit page with confirmation.
 - Blocking admin form loading states for save, publish, upload, photo update, and delete actions.
 - Inline admin action errors when feed/place/photo writes fail.
-- `/admin/sources` is available as a simple manual curator checklist sorted by never checked first, then oldest checked first.
+- `/admin/sources` is available as a simple manual curator checklist. It defaults to Pending, showing sources never checked or not checked in the past 3 days; `Show all` reveals the full list.
 - Source creation uses `/admin/sources/new`; keep the main Sources page focused on the checklist list.
 - Supabase Storage `photos` bucket is required for feed photo uploads.
 - Admin action failures should be logged with an Error ID for troubleshooting.
@@ -230,4 +230,5 @@ Feed creation should be photo-first and draft-first:
 - Source evidence is feed-specific and admin-only. Source screenshots are saved as URL records after the admin picker uploads the selected image to Supabase Storage.
 - Feed source evidence screenshots should use the admin picker/upload flow, not manual URL entry: compress the selected image client-side, upload it to Supabase Storage, and save the generated URL in `source_screenshots`.
 - Keep Sources manual-only: opening a source must not mark it checked, and marking checked should happen only when the curator clicks `Mark Checked`.
+- Keep `/admin/sources` defaulted to the Pending filter so daily review focuses on sources that are stale or never checked.
 - Do not add source crawling, scraping, bot browsing, scheduled checking, Facebook login, priority, or frequency fields unless the user explicitly expands scope.

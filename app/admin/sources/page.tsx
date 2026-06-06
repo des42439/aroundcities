@@ -11,9 +11,15 @@ import {
   markSourceCheckedAction,
 } from "@/lib/admin-actions";
 import { requireAdmin } from "@/lib/admin-auth";
-import { getSources } from "@/lib/sources";
+import { getSources, type SourceListView } from "@/lib/sources";
 
 export const dynamic = "force-dynamic";
+
+type AdminSourcesPageProps = {
+  searchParams?: Promise<{
+    view?: string | string[];
+  }>;
+};
 
 function formatLastChecked(value?: string | null) {
   if (!value) {
@@ -30,25 +36,61 @@ function formatLastChecked(value?: string | null) {
   }).format(new Date(value));
 }
 
-export default async function AdminSourcesPage() {
+function getViewParam(value?: string | string[]): SourceListView {
+  const view = Array.isArray(value) ? value[0] : value;
+
+  return view === "all" ? "all" : "pending";
+}
+
+function filterLinkClassName(active: boolean) {
+  return [
+    "rounded-md border px-3 py-2 text-sm",
+    active
+      ? "border-white bg-white text-black"
+      : "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:text-white",
+  ].join(" ");
+}
+
+export default async function AdminSourcesPage({
+  searchParams,
+}: AdminSourcesPageProps) {
   await requireAdmin();
-  const sources = await getSources();
+  const params = await searchParams;
+  const view = getViewParam(params?.view);
+  const sources = await getSources(view);
 
   return (
     <AdminShell title="Sources">
       <div className="space-y-6">
-        <div>
+        <div className="space-y-4">
           <Link
             href="/admin/sources/new"
             className={primaryButtonClassName}
           >
             New source
           </Link>
+
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/sources"
+              className={filterLinkClassName(view === "pending")}
+            >
+              Pending
+            </Link>
+            <Link
+              href="/admin/sources?view=all"
+              className={filterLinkClassName(view === "all")}
+            >
+              Show all
+            </Link>
+          </div>
         </div>
 
         {sources.length === 0 ? (
           <p className="text-neutral-500">
-            No sources yet.
+            {view === "pending"
+              ? "No pending sources. Everything has been checked in the past 3 days."
+              : "No sources yet."}
           </p>
         ) : (
           <div className="space-y-3">

@@ -5,8 +5,15 @@ import {
   SourceUpdate,
 } from "@/types/database";
 
-export async function getSources(): Promise<Source[]> {
-  const { data, error } = await getSupabaseAdmin()
+export type SourceListView = "pending" | "all";
+
+const PENDING_SOURCE_DAYS = 3;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export async function getSources(
+  view: SourceListView = "pending"
+): Promise<Source[]> {
+  const query = getSupabaseAdmin()
     .from("sources")
     .select("*")
     .order("last_checked_at", {
@@ -15,12 +22,26 @@ export async function getSources(): Promise<Source[]> {
     })
     .order("created_at", { ascending: true });
 
+  if (view === "pending") {
+    query.or(
+      `last_checked_at.is.null,last_checked_at.lt.${getPendingSourceCutoff()}`
+    );
+  }
+
+  const { data, error } = await query;
+
   if (error) {
     console.error(error);
     return [];
   }
 
   return data ?? [];
+}
+
+function getPendingSourceCutoff() {
+  return new Date(
+    Date.now() - PENDING_SOURCE_DAYS * DAY_MS
+  ).toISOString();
 }
 
 export async function getSourceCount(): Promise<number> {
