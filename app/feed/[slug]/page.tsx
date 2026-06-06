@@ -1,16 +1,14 @@
 import Link from "next/link";
 import PublicShell from "@/components/PublicShell";
 import { TrackedPhotoLink } from "@/components/TrackedLinks";
+import { getFeedSources } from "@/lib/feed-sources";
 import { getFeedBySlug } from "@/lib/feeds";
 import { getPhotosByFeedId } from "@/lib/photos";
 import {
   formatDate,
   formatFeedType,
 } from "@/lib/format";
-import {
-  getEventDetailLabels,
-  getEventTimingLabel,
-} from "@/lib/event-display";
+import { getEventTimingLabel } from "@/lib/event-display";
 
 export const dynamic = "force-dynamic";
 
@@ -50,9 +48,20 @@ export default async function FeedDetailPage({
     );
   }
 
-  const photos = await getPhotosByFeedId(feed.feed_id);
+  const [photos, feedSources] = await Promise.all([
+    getPhotosByFeedId(feed.feed_id),
+    getFeedSources(feed.feed_id),
+  ]);
   const eventTimingLabel = getEventTimingLabel(feed.schedules);
-  const eventDetailLabels = getEventDetailLabels(feed.event_details);
+  const sourceUrl =
+    feed.source_url ??
+    feedSources.find((source) => source.source_url)?.source_url ??
+    null;
+  const rawChannelUrl =
+    feedSources.find((source) => source.channel?.url)?.channel?.url ??
+    null;
+  const channelUrl =
+    rawChannelUrl && rawChannelUrl !== sourceUrl ? rawChannelUrl : null;
 
   return (
     <PublicShell>
@@ -103,24 +112,6 @@ export default async function FeedDetailPage({
           </section>
         )}
 
-        {eventDetailLabels.length ? (
-          <section className="mt-8 border-y border-neutral-900 py-5">
-            <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-              Event details
-            </h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {eventDetailLabels.map((label) => (
-                <span
-                  key={label}
-                  className="rounded border border-neutral-800 px-2.5 py-1.5 text-sm text-neutral-300"
-                >
-                  {label}
-                </span>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
         {photos.length > 0 && (
           <div className="mt-10 space-y-8">
             {photos.map((photo) => (
@@ -153,16 +144,29 @@ export default async function FeedDetailPage({
           </div>
         )}
 
-        {feed.source_url && (
-          <div className="mt-10 border-t border-neutral-900 pt-6">
-            <a
-              href={feed.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-neutral-300 hover:text-white"
-            >
-              Source
-            </a>
+        {(sourceUrl || channelUrl) && (
+          <div className="mt-10 flex gap-4 border-t border-neutral-900 pt-6">
+            {sourceUrl ? (
+              <a
+                href={sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-neutral-300 hover:text-white"
+              >
+                Source
+              </a>
+            ) : null}
+
+            {channelUrl ? (
+              <a
+                href={channelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-neutral-300 hover:text-white"
+              >
+                Channel
+              </a>
+            ) : null}
           </div>
         )}
       </article>

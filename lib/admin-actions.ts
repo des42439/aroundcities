@@ -93,6 +93,7 @@ type ParsedImportEvent = {
   source: {
     source_url: string | null;
     source_channel_name: string | null;
+    source_channel_url: string | null;
     source_note: string | null;
   } | null;
   event_details: FeedEventDetailsInput | null;
@@ -485,6 +486,9 @@ function parseEventImportJson(jsonText: string): ParsedImportEvent[] {
           source_channel_name: textFromUnknown(
             sourceObject.source_channel_name
           ),
+          source_channel_url: textFromUnknown(
+            sourceObject.source_channel_url
+          ),
           source_note: textFromUnknown(sourceObject.source_note),
         }
       : null;
@@ -550,7 +554,7 @@ async function findOrCreatePlaceByName(name: string) {
 
 async function findOrCreateChannelByName(
   name: string,
-  sourceUrl: string | null
+  channelUrl: string | null
 ) {
   const supabaseAdmin = getSupabaseAdmin();
   const { data: existingByName, error: nameError } =
@@ -569,13 +573,13 @@ async function findOrCreateChannelByName(
     return existingByName;
   }
 
-  const channelUrl = sourceUrl ?? `manual:${slugify(name)}`;
+  const normalizedChannelUrl = channelUrl ?? `manual:${slugify(name)}`;
 
   const { data: existingByUrl, error: urlError } =
     await supabaseAdmin
       .from("channels")
       .select("*")
-      .eq("url", channelUrl)
+      .eq("url", normalizedChannelUrl)
       .limit(1)
       .maybeSingle();
 
@@ -591,7 +595,7 @@ async function findOrCreateChannelByName(
     .from("channels")
     .insert({
       name,
-      url: channelUrl,
+      url: normalizedChannelUrl,
       screenshot_url: null,
       remarks: null,
       last_checked_at: null,
@@ -1035,11 +1039,11 @@ export async function importEventFeedsAction(input: {
         event.source?.source_note
       ) {
         const channel = event.source.source_channel_name
-          ? await findOrCreateChannelByName(
-              event.source.source_channel_name,
-              event.source.source_url
-            )
-          : null;
+            ? await findOrCreateChannelByName(
+                event.source.source_channel_name,
+                event.source.source_channel_url
+              )
+            : null;
 
         await createFeedSource({
           feed_id: feed.feed_id,

@@ -61,6 +61,7 @@ export default function FeedCard({ feed }: Props) {
 
         {preview && (
           <FeedDescriptionPreview
+            key={preview}
             feedId={feed.feed_id}
             href={feedHref}
             text={preview}

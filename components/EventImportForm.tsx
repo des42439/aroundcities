@@ -18,6 +18,7 @@ type PreviewEvent = {
   places: string[];
   schedules: string[];
   sourceChannel: string;
+  sourceChannelUrl: string;
   sourceUrl: string;
   sourceNote: string;
   eventDetails: string[];
@@ -172,6 +173,7 @@ function parsePreview(jsonText: string): PreviewEvent[] {
       places,
       schedules,
       sourceChannel: text(source?.source_channel_name),
+      sourceChannelUrl: text(source?.source_channel_url),
       sourceUrl: text(source?.source_url),
       sourceNote: text(source?.source_note),
       eventDetails: eventDetailsPreview(event?.event_details),
@@ -343,6 +345,7 @@ export default function EventImportForm() {
                   ["Places", event.places.join(", ")],
                   ["Schedules", event.schedules.join("; ")],
                   ["Source channel", event.sourceChannel],
+                  ["Source channel URL", event.sourceChannelUrl],
                   ["Source URL", event.sourceUrl],
                   ["Source note", event.sourceNote],
                   ["Event details", event.eventDetails.join("; ")],

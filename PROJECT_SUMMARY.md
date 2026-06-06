@@ -115,7 +115,10 @@ The V2 Phase 1 foundation now includes:
 - Feed editing is mobile-first and keeps optional refinement sections hidden until the curator explicitly adds Sources, Places, Schedules, or Parent Feed.
 - Feed sources, source screenshot URL evidence, simple schedule rows, feed-place metadata, and parent feeds are wired into the admin editor.
 - Feed source screenshot evidence uses a picker/upload flow instead of manual URL entry: the selected image is compressed client-side, uploaded to the `photos` Supabase Storage bucket under `source-screenshots/`, and the generated public URL is saved in `source_screenshots`.
-- Public feed cards and feed detail pages show dynamic event timing labels from `feed_schedules` and subtle structured event detail labels when `feed_event_details` is present.
+- Public feed cards and feed detail pages show dynamic event timing labels from `feed_schedules`. Public feed cards can show subtle structured event detail labels, but feed detail pages currently keep event details hidden.
+- Public feed card descriptions expand inline from the `more` control; only the separate `More details` link navigates to the feed detail page.
+- Public feed detail pages show separate external `Source` and `Channel` links when feed source data is available.
+- Event imports may include `source.source_channel_url`; this is used for the Channel link while `source.source_url` remains the original post/source link.
 - Published feed editing supports archiving, which sets status to `archived` and hides the feed from public `/kch`.
 - Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
 - Feed photo upload from the editor opens from an Add Photos overlay so the main editor stays thumbnail-first and compact on iPhone.

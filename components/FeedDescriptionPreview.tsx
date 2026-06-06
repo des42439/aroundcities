@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import { TrackedFeedLink } from "./TrackedLinks";
 
@@ -20,6 +19,7 @@ export default function FeedDescriptionPreview({
   const previewRef = useRef<HTMLParagraphElement>(null);
   const [previewText, setPreviewText] = useState(text);
   const [isTruncated, setIsTruncated] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   useLayoutEffect(() => {
     const paragraph = previewRef.current;
@@ -98,6 +98,32 @@ export default function FeedDescriptionPreview({
     };
   }, [text]);
 
+  if (expanded) {
+    return (
+      <div className="space-y-1.5">
+        <p className="whitespace-pre-wrap text-sm leading-5 text-neutral-300 sm:text-[15px]">
+          {text.trim()}
+        </p>
+        {feedId ? (
+          <TrackedFeedLink
+            href={href}
+            feedId={feedId}
+            className="inline-flex text-sm text-neutral-500 hover:text-neutral-200"
+          >
+            More details
+          </TrackedFeedLink>
+        ) : (
+          <a
+            href={href}
+            className="inline-flex text-sm text-neutral-500 hover:text-neutral-200"
+          >
+            More details
+          </a>
+        )}
+      </div>
+    );
+  }
+
   return (
     <p
       ref={previewRef}
@@ -105,21 +131,14 @@ export default function FeedDescriptionPreview({
     >
       <span>{previewText}</span>
       {isTruncated && (
-        feedId ? (
-          <TrackedFeedLink
-            href={href}
-            feedId={feedId}
-            className="text-neutral-500 hover:text-neutral-200"
-          >
-            {" "}
-            more
-          </TrackedFeedLink>
-        ) : (
-          <Link href={href} className="text-neutral-500 hover:text-neutral-200">
-            {" "}
-            more
-          </Link>
-        )
+        <button
+          type="button"
+          onClick={() => setExpanded(true)}
+          className="text-neutral-500 hover:text-neutral-200"
+        >
+          {" "}
+          more
+        </button>
       )}
     </p>
   );

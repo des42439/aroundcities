@@ -28,6 +28,10 @@ All notable changes to AroundCities should be documented here.
 
 ### Changed
 
+- Changed public feed card `more` behavior to expand the description inline and show a separate `More details` link for navigation.
+- Changed public feed detail pages to hide structured event details while keeping dynamic event timing labels.
+- Changed public feed detail source links to show separate `Source` and `Channel` external links when feed source data is available.
+- Changed event import channel creation to use optional `source_channel_url` instead of treating the source post URL as the channel URL.
 - Changed event import and feed save handling to strip timing prefixes such as `Happening Today:` from stored feed titles.
 - Changed standalone Photo feed cards so the feed title opens the original feed while the image opens only that photo.
 - Changed public photo clicks from opening the raw full-size image in a new tab to opening the single-photo page.
