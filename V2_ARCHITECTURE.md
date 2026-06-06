@@ -448,11 +448,13 @@ Suggested minimal routes:
 - `/admin/sources`
 - `/admin/sources/new`
 - `/admin/sources/[sourceId]`
+- `/admin/stats`
 
 `/admin/feeds` is a small workflow hub. Daily feed work should move through New Feed, Drafted Feeds, and Published Feeds rather than a desktop-style all-feeds table.
 Photo management can live inside the feed editor during Phase 1.
 Place management routes should remain available directly for maintenance, but Places should not appear as a main admin navigation item.
 Sources may appear as a main admin item because they support the curator's manual discovery workflow.
+Stats may appear as a main admin item for lightweight feed and photo click-count review.
 
 ### Curator Workflow
 

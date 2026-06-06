@@ -48,6 +48,12 @@ export default function AdminShell({
             >
               Sources
             </Link>
+            <Link
+              href="/admin/stats"
+              className="rounded-md border border-neutral-800 px-3 py-2 text-neutral-300 hover:border-neutral-600"
+            >
+              Stats
+            </Link>
             <form action={logoutAdmin}>
               <button
                 type="submit"

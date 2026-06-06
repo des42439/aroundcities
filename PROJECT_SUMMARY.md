@@ -48,6 +48,7 @@ Implemented mobile-first workflow:
 - `/admin` shows total counts for Drafted Feeds, Published Feeds, and Sources on the workflow cards.
 - `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
+- `/admin/stats` lists feed and photo click counts from highest to lowest.
 - The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Photo order is controlled by `photos.sequence`, with smaller positive numbers displayed first.
 - Photos marked `Show as photo feed` can appear as standalone Photo feed cards in the public `/kch` discovery stream.
@@ -119,6 +120,7 @@ The V2 Phase 1 foundation now includes:
 - Admin photo uploads now read JPEG EXIF metadata when available and store photo capture datetime, latitude, and longitude. The photo editor shows those metadata fields and an Open Map button for coordinates.
 - Public feed clicks increment `feeds.click_count`; public photo clicks increment `photos.click_count`.
 - Standalone Photo feed images open the single-photo page, while the Photo feed title opens the original feed detail.
+- Admin can review feed and photo click counts from `/admin/stats`.
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
 - Sources can be created from `/admin/sources/new`, edited, deleted, opened in a new tab, and manually marked checked. The list is sorted with never checked sources first, then oldest checked first.

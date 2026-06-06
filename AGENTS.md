@@ -129,6 +129,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Minimal admin UI protected by `ADMIN_PASSWORD`.
 - Mobile-first admin workflow is split into `/admin/feeds/new`, `/admin/feeds/drafts`, and `/admin/feeds/published`.
 - The `/admin` workflow hub shows counts for Drafted Feeds, Published Feeds, and Sources.
+- `/admin/stats` shows feed and photo click counts sorted from highest to lowest.
 - Photo-first draft creation for feeds asks only for photos, title, and description, then returns to Drafted Feeds.
 - Feed editing starts compact with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Feed editor photo uploads open from an Add Photos overlay; keep the main editor thumbnail-first.

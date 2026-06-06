@@ -9,6 +9,7 @@ All notable changes to AroundCities should be documented here.
 - Added `click_count` tracking for feeds and photos, with public click endpoints and a migration for atomic counter increments.
 - Added a follow-up click-count migration so counter increments do not change feed/photo edit timestamps.
 - Added `/photo/[photoId]` as a public single-photo page showing one photo with its title, description, and original feed link.
+- Added `/admin/stats` with feed and photo click-count lists, linked from the admin navigation and admin hub.
 - Added total counts to the admin hub cards for Drafted Feeds, Published Feeds, and Sources.
 - Added admin photo deletion from the feed photo editor, with confirmation.
 - Added full-size image opening from the edit-photo preview image.

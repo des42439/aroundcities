@@ -63,6 +63,18 @@ export default async function AdminPage() {
             Manually check useful pages and websites.
           </p>
         </Link>
+
+        <Link
+          href="/admin/stats"
+          className="block rounded-lg border border-neutral-900 p-5 hover:border-neutral-700"
+        >
+          <h2 className="text-xl font-semibold">
+            Stats
+          </h2>
+          <p className="mt-2 text-sm text-neutral-500">
+            Review feed and photo click counts.
+          </p>
+        </Link>
       </div>
     </AdminShell>
   );
