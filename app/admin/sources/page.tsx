@@ -6,6 +6,7 @@ import {
 } from "@/components/AdminForm";
 import AdminShell from "@/components/AdminShell";
 import { AdminSubmitButton } from "@/components/AdminSubmitButton";
+import SourceViewFilter from "@/components/SourceViewFilter";
 import {
   deleteSourceAction,
   markSourceCheckedAction,
@@ -42,15 +43,6 @@ function getViewParam(value?: string | string[]): SourceListView {
   return view === "all" ? "all" : "pending";
 }
 
-function filterLinkClassName(active: boolean) {
-  return [
-    "rounded-md border px-3 py-2 text-sm",
-    active
-      ? "border-white bg-white text-black"
-      : "border-neutral-700 text-neutral-300 hover:border-neutral-500 hover:text-white",
-  ].join(" ");
-}
-
 export default async function AdminSourcesPage({
   searchParams,
 }: AdminSourcesPageProps) {
@@ -62,28 +54,15 @@ export default async function AdminSourcesPage({
   return (
     <AdminShell title="Sources">
       <div className="space-y-6">
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4 border-b border-neutral-900 pb-5">
           <Link
             href="/admin/sources/new"
-            className={primaryButtonClassName}
+            className={`${primaryButtonClassName} w-fit`}
           >
             New source
           </Link>
 
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/admin/sources"
-              className={filterLinkClassName(view === "pending")}
-            >
-              Pending
-            </Link>
-            <Link
-              href="/admin/sources?view=all"
-              className={filterLinkClassName(view === "all")}
-            >
-              Show all
-            </Link>
-          </div>
+          <SourceViewFilter view={view} />
         </div>
 
         {sources.length === 0 ? (
@@ -119,8 +98,8 @@ export default async function AdminSourcesPage({
                       <a
                         href={source.url}
                         target="_blank"
-                        rel="noreferrer"
-                        className="mt-1 block break-all text-sm text-neutral-400 hover:text-white"
+                        rel="noopener noreferrer"
+                        className="mt-1 block break-all text-sm text-sky-300 underline underline-offset-4 hover:text-sky-100"
                       >
                         {source.url}
                       </a>
@@ -140,7 +119,7 @@ export default async function AdminSourcesPage({
                       <a
                         href={source.url}
                         target="_blank"
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         className={secondaryButtonClassName}
                       >
                         Open

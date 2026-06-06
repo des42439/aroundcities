@@ -136,7 +136,7 @@ The V2 Phase 1 foundation now includes:
 - Admin can review feed and photo click counts from `/admin/stats`.
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
-- Sources can be created from `/admin/sources/new`, edited, deleted, opened in a new tab, and manually marked checked. `/admin/sources` defaults to a Pending view showing sources never checked or not checked in the past 3 days, with a `Show all` filter for the full list.
+- Sources can be created from `/admin/sources/new`, edited, deleted, opened in a new tab, and manually marked checked. `/admin/sources` defaults to a Pending view showing sources never checked or not checked in the past 3 days, with a dropdown `Show all` filter for the full list.
 - Existing feed photo uploads are still guarded at roughly 4MB total per submit until that editor flow is also moved to direct uploads.
 - Supabase CLI schema-change access was verified by creating and then removing temporary table `codex_dummy_schema_test` with dedicated migrations.
 

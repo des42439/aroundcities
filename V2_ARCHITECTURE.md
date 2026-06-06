@@ -312,7 +312,7 @@ Admin error logging:
 Sources:
 
 - `sources` stores a simple manual checklist of useful Facebook pages, groups, and websites for content discovery.
-- `/admin/sources` defaults to a Pending view that shows sources never checked or not checked in the past 3 days, with a `Show all` filter for the full list.
+- `/admin/sources` defaults to a Pending view that shows sources never checked or not checked in the past 3 days, with a dropdown `Show all` filter for the full list.
 - Sources are sorted by `last_checked_at asc nulls first`, then `created_at asc`, so never checked and oldest checked items rise to the top in whichever view is active.
 - Opening a source should not mark it checked. The curator manually clicks `Mark Checked` after review.
 - Sources must not become a crawler, scraper, scheduled checker, Facebook automation system, priority queue, or frequency system during Phase 1.
