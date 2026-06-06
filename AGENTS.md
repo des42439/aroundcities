@@ -151,6 +151,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Places are no longer promoted as a main admin navigation item.
 - `/admin/places` remains available as a direct maintenance route.
 - Inline place creation is available from the feed editor.
+- Feed linked places are managed with a searchable add/remove picker, not a full checkbox list.
 - Multiple feed places supported in code through the proposed `feed_places` migration.
 - Structured operating hours supported through `feed_operating_hours`.
 - Feed delete support from the edit page with confirmation.
@@ -205,6 +206,7 @@ Feed creation should be photo-first and draft-first:
 - Keep place assignment human-controlled only.
 - Keep Places out of the main admin workflow; treat place routes as maintenance tools.
 - Create missing places inline or nearby while editing a feed/photo.
+- Use a searchable add/remove picker for feed linked places; do not render every place as a checkbox in the editor.
 - Do not add GPS-to-place automation or reverse geocoding.
 - Keep `feed_type` hidden/defaulted unless the user explicitly reintroduces it as a curator-facing field.
 - Treat `feeds.place_id` as the optional primary place and `feed_places` as the multiple-place path once its migration is applied.

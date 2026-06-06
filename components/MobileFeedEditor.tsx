@@ -332,6 +332,46 @@ function PlacesSection({
   primaryPlaceId: string;
   locationNote: string;
 }) {
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [selectedPlaceIds, setSelectedPlaceIds] = useState(
+    () => new Set(selectedFeedPlaceIds)
+  );
+  const [selectedPrimaryPlaceId, setSelectedPrimaryPlaceId] =
+    useState(primaryPlaceId);
+  const normalizedQuery = query.trim().toLowerCase();
+  const selectedPlaces = places.filter((place) =>
+    selectedPlaceIds.has(place.place_id)
+  );
+  const availablePlaces = places.filter(
+    (place) =>
+      !selectedPlaceIds.has(place.place_id) &&
+      (!normalizedQuery ||
+        place.name.toLowerCase().includes(normalizedQuery))
+  );
+
+  function addPlace(placeId: string) {
+    setSelectedPlaceIds((current) => {
+      const next = new Set(current);
+      next.add(placeId);
+      return next;
+    });
+    setQuery("");
+    setPickerOpen(false);
+  }
+
+  function removePlace(placeId: string) {
+    setSelectedPlaceIds((current) => {
+      const next = new Set(current);
+      next.delete(placeId);
+      return next;
+    });
+
+    if (selectedPrimaryPlaceId === placeId) {
+      setSelectedPrimaryPlaceId("");
+    }
+  }
+
   return (
     <section className="space-y-4 rounded-lg border border-neutral-900 p-4">
       <h2 className="font-semibold">Places</h2>
@@ -352,41 +392,63 @@ function PlacesSection({
       </Field>
 
       <Field label="Linked places">
-        <div className="space-y-2">
-          {places.length === 0 ? (
+        <div className="space-y-3">
+          {[...selectedPlaceIds].map((placeId) => (
+            <input
+              key={placeId}
+              type="hidden"
+              name="feed_place_ids"
+              value={placeId}
+            />
+          ))}
+
+          {selectedPlaces.length === 0 ? (
             <p className="text-sm text-neutral-500">
-              No places available yet.
+              No linked places yet.
             </p>
           ) : (
-            places.map((place) => (
-              <label
-                key={place.place_id}
-                className="flex min-h-11 items-center gap-3 rounded-md border border-neutral-900 px-3 py-2 text-sm text-neutral-300"
-              >
-                <input
-                  type="checkbox"
-                  name="feed_place_ids"
-                  value={place.place_id}
-                  defaultChecked={selectedFeedPlaceIds.has(
-                    place.place_id
-                  )}
-                  className="h-4 w-4"
-                />
-                <span>{place.name}</span>
-              </label>
-            ))
+            <div className="space-y-2">
+              {selectedPlaces.map((place) => (
+                <div
+                  key={place.place_id}
+                  className="flex items-center justify-between gap-3 rounded-md border border-neutral-900 px-3 py-2 text-sm"
+                >
+                  <span className="min-w-0 text-neutral-200">
+                    {place.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removePlace(place.place_id)}
+                    className="shrink-0 text-sm text-red-200 hover:text-red-100"
+                  >
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
           )}
+
+          <button
+            type="button"
+            onClick={() => setPickerOpen(true)}
+            className={secondaryButtonClassName}
+          >
+            Add linked place
+          </button>
         </div>
       </Field>
 
       <Field label="Primary linked place">
         <select
           name="primary_feed_place_id"
-          defaultValue={primaryPlaceId}
+          value={selectedPrimaryPlaceId}
+          onChange={(event) =>
+            setSelectedPrimaryPlaceId(event.target.value)
+          }
           className={selectClassName}
         >
           <option value="">No linked primary</option>
-          {places.map((place) => (
+          {selectedPlaces.map((place) => (
             <option key={place.place_id} value={place.place_id}>
               {place.name}
             </option>
@@ -401,6 +463,46 @@ function PlacesSection({
           className={inputClassName}
         />
       </Field>
+
+      {pickerOpen ? (
+        <div className="fixed inset-0 z-50 flex items-end bg-neutral-950/85 px-3 py-4 backdrop-blur-sm sm:items-center sm:justify-center">
+          <div className="max-h-full w-full max-w-lg overflow-y-auto rounded-lg border border-neutral-800 bg-neutral-950 p-4 shadow-2xl">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <h3 className="font-semibold">Add linked place</h3>
+              <button
+                type="button"
+                onClick={() => setPickerOpen(false)}
+                className={secondaryButtonClassName}
+              >
+                Close
+              </button>
+            </div>
+            <input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search places"
+              className={inputClassName}
+            />
+            <div className="mt-4 space-y-2">
+              {availablePlaces.map((place) => (
+                <button
+                  key={place.place_id}
+                  type="button"
+                  onClick={() => addPlace(place.place_id)}
+                  className="block w-full rounded-md border border-neutral-900 px-3 py-3 text-left text-sm text-neutral-200 hover:border-neutral-700"
+                >
+                  {place.name}
+                </button>
+              ))}
+              {availablePlaces.length === 0 ? (
+                <p className="text-sm text-neutral-500">
+                  No matching places.
+                </p>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   );
 }

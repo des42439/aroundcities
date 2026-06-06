@@ -55,6 +55,7 @@ Implemented mobile-first workflow:
 - Photos marked `Show as photo feed` can appear as standalone Photo feed cards in the public `/kch` discovery stream.
 - Optional Sources, Places, Schedules, and Parent Feed sections appear only when added or when existing data is present.
 - Source evidence, feed schedules, parent feed selection, and feed-place metadata are wired into admin as compact refinement sections.
+- The Places section shows existing linked places and uses a searchable add/remove picker instead of a growing checkbox list.
 - Source evidence screenshots are selected as image files in the feed editor, compressed in the browser, uploaded to Supabase Storage, and saved as source screenshot URLs.
 - Event Details is available as an optional feed editor section for structured event metadata such as free/paid entry, registration style, public/ticket/lucky-draw flags, dress code, organizer, and notes.
 - Published feeds can be archived without deleting their database rows.
@@ -114,6 +115,7 @@ The V2 Phase 1 foundation now includes:
 - Admin feed management is split into New Feed, Drafted Feeds, and Published Feeds instead of one desktop-style all-feeds list.
 - Drafted and published feed lists show the first sequenced photo as a thumbnail.
 - Feed editing is mobile-first and keeps optional refinement sections hidden until the curator explicitly adds Sources, Places, Schedules, or Parent Feed.
+- Feed linked places are edited through a compact searchable add/remove picker so the editor stays usable as the place list grows.
 - Feed sources, source screenshot URL evidence, simple schedule rows, feed-place metadata, and parent feeds are wired into the admin editor.
 - Feed source screenshot evidence uses a picker/upload flow instead of manual URL entry: the selected image is compressed client-side, uploaded to the `photos` Supabase Storage bucket under `source-screenshots/`, and the generated public URL is saved in `source_screenshots`.
 - Public feed cards and feed detail pages show dynamic event timing labels from `feed_schedules`. Public feed cards can show subtle structured event detail labels, but feed detail pages currently keep event details hidden.

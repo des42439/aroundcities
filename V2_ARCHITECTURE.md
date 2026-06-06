@@ -474,7 +474,7 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 4. Keep the draft editor compact: title, description, photo thumbnails, Add Section, Save Draft, Publish, Delete.
 5. Keep photo upload and photo-detail editing in overlays opened from the thumbnail area so the main editor stays compact. Photo detail editing should let the curator open the full-size image and delete the photo with confirmation.
 6. Add optional Sources, Places, Schedules, or Parent Feed sections only when the feed needs them.
-7. Optionally assign primary place and multiple feed places with a location note.
+7. Optionally assign primary place and multiple feed places with a location note. Linked places should use a searchable add/remove picker instead of a full checkbox list.
 8. Optionally assign photo-level places from the photo thumbnail editor.
 9. Add source URL/channel/note and uploaded screenshot evidence as admin-only feed evidence.
 10. Add simple schedule rows when the feed needs dated schedule data.
@@ -494,6 +494,7 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 - Do not promote Places as a daily admin section. The normal admin workflow should be feed-first and photo-first.
 - Place creation should happen inline or nearby while editing a feed or photo.
 - Keep `/admin/places` available as a maintenance route for cleanup and corrections.
+- Feed linked places should be edited with a searchable add/remove picker so the editor remains compact as places grow.
 - Do not ask for feed type during creation.
 - New feeds should be drafts by default.
 - Event JSON imports should create draft feeds only. They may create/reuse places, feed-place links, schedules, channels, and feed source rows, but should not create photos, upload screenshots, or introduce a separate event entity.

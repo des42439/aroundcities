@@ -28,6 +28,7 @@ All notable changes to AroundCities should be documented here.
 
 ### Changed
 
+- Changed the feed editor Places section to replace the growing linked-place checkbox list with a compact searchable add/remove picker.
 - Changed successful `/admin/feeds/import-events` saves to reset the textarea and preview, while keeping the pasted content when validation or per-event save errors occur.
 - Changed `/admin/sources` to default to a `Pending` view that shows sources never checked or not checked in the past 3 days, with a dropdown `Show all` filter option for the full list.
 - Changed `/admin/sources` source URLs to use clearer external-link styling in the list.
