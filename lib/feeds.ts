@@ -8,7 +8,11 @@ import {
 } from "@/types/database";
 import { getOrderedPhotos } from "./format";
 import { hydrateFeedsEventData } from "./feed-event-details";
-import { isScheduledEventExpired } from "./event-display";
+import {
+  getEarliestScheduleMinutes,
+  hasTodaySchedule,
+  isScheduledEventExpired,
+} from "./event-display";
 
 export type DiscoveryFeedItem =
   | {
@@ -259,6 +263,7 @@ export async function deleteFeed(
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_TODAY_EVENT_LEADS = 3;
 
 function filterExpiredEventFeeds(
   feeds: FeedWithPlaceAndPhotos[]
@@ -274,6 +279,7 @@ function buildDiscoveryFeedOrder(
   feeds: FeedWithPlaceAndPhotos[]
 ): FeedWithPlaceAndPhotos[] {
   const latestFeeds = [...feeds].sort(comparePublishedDesc);
+  const todayEventFeeds = getTodayEventFeeds(latestFeeds);
   const selectedFeedIds = new Set<string>();
   const orderedFeeds: FeedWithPlaceAndPhotos[] = [];
   let normalPostCount = 0;
@@ -306,6 +312,10 @@ function buildDiscoveryFeedOrder(
       selectedFeedIds.add(olderFeed.feed_id);
     }
   };
+
+  for (const eventFeed of todayEventFeeds.slice(0, MAX_TODAY_EVENT_LEADS)) {
+    appendFeed(eventFeed);
+  }
 
   // Slot 1: pick a recent post from the last 3 days, weighted toward newer
   // posts but still random enough that refreshes can surface different leads.
@@ -347,6 +357,10 @@ function buildDiscoveryFeedOrder(
 function buildDiscoveryItems(
   feeds: FeedWithPlaceAndPhotos[]
 ): DiscoveryFeedItem[] {
+  const protectedLeadCount = Math.min(
+    getTodayEventFeeds(feeds).length,
+    MAX_TODAY_EVENT_LEADS
+  );
   const photoItems = shuffle(
     feeds.flatMap((feed) =>
       getOrderedPhotos(feed.photos)
@@ -371,6 +385,7 @@ function buildDiscoveryItems(
 
     const shouldInsertPhoto =
       photoItems.length > 0 &&
+      feedIndex + 1 >= Math.max(protectedLeadCount, 1) &&
       (feedIndex === 0 || Math.random() > 0.35);
 
     if (shouldInsertPhoto && nextPhotoIndex < photoItems.length) {
@@ -385,6 +400,23 @@ function buildDiscoveryItems(
   }
 
   return items;
+}
+
+function getTodayEventFeeds(
+  feeds: FeedWithPlaceAndPhotos[]
+): FeedWithPlaceAndPhotos[] {
+  return feeds
+    .filter(
+      (feed) =>
+        feed.feed_type === "event_observation" &&
+        hasTodaySchedule(feed.schedules)
+    )
+    .sort(
+      (leftFeed, rightFeed) =>
+        getEarliestScheduleMinutes(leftFeed.schedules) -
+          getEarliestScheduleMinutes(rightFeed.schedules) ||
+        comparePublishedDesc(leftFeed, rightFeed)
+    );
 }
 
 function shuffle<T>(items: T[]): T[] {

@@ -353,6 +353,7 @@ Sources:
 - Use optional `feed_event_details` rows for structured event metadata. Do not create a separate public Event entity during Phase 1.
 - Public feed detail pages currently hide structured event details, but may show dynamic timing labels and external `Source` / `Channel` links.
 - Scheduled event observation feeds should leave the `/kch` discovery stream once their schedule has expired. A schedule with `start_time` and no `end_time` uses a 1-hour inferred duration; date-only schedules remain visible for the day but do not show `Happening Now`.
+- Non-expired event observation feeds scheduled for today should be promoted into the first one to three `/kch` feed slots, ordered by earliest schedule time, before the regular mixed discovery order resumes.
 - Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
 
 ### Schema Rules

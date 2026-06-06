@@ -29,6 +29,7 @@ All notable changes to AroundCities should be documented here.
 ### Changed
 
 - Changed event schedule display so events with only a start time use a 1-hour inferred duration for `Happening Now`, and expired event observation feeds are hidden from the public `/kch` discovery stream.
+- Changed `/kch` discovery ordering so event observations happening today are promoted into the first one to three feed slots before ordinary visit/photo-style posts.
 - Changed public feed card `more` behavior to expand the description inline and show a separate `More details` link for navigation.
 - Changed public feed detail pages to hide structured event details while keeping dynamic event timing labels.
 - Changed public feed detail source links to show separate `Source` and `Channel` external links when feed source data is available.

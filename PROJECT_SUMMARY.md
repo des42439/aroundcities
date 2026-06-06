@@ -117,6 +117,7 @@ The V2 Phase 1 foundation now includes:
 - Feed source screenshot evidence uses a picker/upload flow instead of manual URL entry: the selected image is compressed client-side, uploaded to the `photos` Supabase Storage bucket under `source-screenshots/`, and the generated public URL is saved in `source_screenshots`.
 - Public feed cards and feed detail pages show dynamic event timing labels from `feed_schedules`. Public feed cards can show subtle structured event detail labels, but feed detail pages currently keep event details hidden.
 - Scheduled event observation feeds are hidden from `/kch` after their schedule has expired. Events with a start time but no end time use a 1-hour inferred duration; date-only events stay visible for their calendar day without becoming `Happening Now`.
+- Public `/kch` promotes non-expired event observation feeds scheduled for today into the first one to three feed slots, ordered by earliest schedule time, before the ordinary mixed discovery ordering resumes.
 - Public feed card descriptions expand inline from the `more` control; only the separate `More details` link navigates to the feed detail page.
 - Public feed detail pages show separate external `Source` and `Channel` links when feed source data is available.
 - Event imports may include `source.source_channel_url`; this is used for the Channel link while `source.source_url` remains the original post/source link.

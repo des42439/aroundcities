@@ -206,6 +206,47 @@ export function isScheduledEventExpired(
   });
 }
 
+export function hasTodaySchedule(
+  schedules?: FeedSchedule[] | null,
+  now = new Date()
+): boolean {
+  const today = getKuchingDateParts(now);
+
+  return (schedules ?? []).some((schedule) => {
+    const dateParts = parseDateParts(schedule.schedule_date);
+
+    return (
+      dateParts !== null &&
+      daysBetween(today, dateParts) === 0 &&
+      !isScheduleExpiredToday(schedule, dateParts, today, now)
+    );
+  });
+}
+
+export function getEarliestScheduleMinutes(
+  schedules?: FeedSchedule[] | null,
+  now = new Date()
+): number {
+  const today = getKuchingDateParts(now);
+  const scheduleMinutes = (schedules ?? [])
+    .map((schedule) => {
+      const dateParts = parseDateParts(schedule.schedule_date);
+
+      if (
+        !dateParts ||
+        daysBetween(today, dateParts) !== 0 ||
+        isScheduleExpiredToday(schedule, dateParts, today, now)
+      ) {
+        return null;
+      }
+
+      return timeToMinutes(schedule.start_time);
+    })
+    .filter((value): value is number => value !== null);
+
+  return Math.min(...scheduleMinutes, Number.MAX_SAFE_INTEGER);
+}
+
 function isScheduleExpiredToday(
   schedule: FeedSchedule,
   scheduleDate: LocalDateParts,
