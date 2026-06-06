@@ -183,6 +183,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Public `/kch` ordering should feel like discovery, not a strict latest-first timeline: randomized recent slots first, latest fallback near slot 6, then latest remaining feeds with occasional older rediscovery when available.
 - Feed cards should feel like relaxed local notes. Use simple display heuristics for visual-first versus information-first feeds; do not add a complex feed type system unless explicitly requested.
 - Current public feed cards should show title, muted `Author · Relative Time`, a maximum two-line description with inline `more` only when truncated, then the photo block and a clear subtle divider. Inline `more` expands the full description on the card; only the separate `More details` link navigates. Do not render a place row, pin icon, or footer actions below the gallery. Any attached photos should render as a full-width social-feed image block.
+- Scheduled event observation feeds should drop out of public `/kch` after their schedule expires. If a schedule has `start_time` but no `end_time`, infer a 1-hour duration; date-only schedules stay visible for that day without showing `Happening Now`.
 - Multi-photo feed grids should feel like one substantial content block, not tiny thumbnails. Keep the 2-photo, 3-photo, and 4+ photo layouts visually close to the single-photo block size.
 - The schema-extension tables for feed sources, source screenshots, feed schedules, event details, parent feeds, and feed-place metadata are wired into the admin editor as optional refinement sections.
 

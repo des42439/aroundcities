@@ -11,6 +11,7 @@ type LocalDateParts = {
 
 const KUCHING_TIME_ZONE = "Asia/Kuching";
 const DAY_MS = 24 * 60 * 60 * 1000;
+export const DEFAULT_EVENT_DURATION_MINUTES = 60;
 
 export function getEventTimingLabel(
   schedules?: FeedSchedule[] | null,
@@ -139,7 +140,11 @@ function getNextSchedule(
           dateParts: LocalDateParts;
         } => item.dateParts !== null
       )
-      .filter(({ dateParts }) => daysBetween(today, dateParts) >= 0)
+      .filter(
+        ({ schedule, dateParts }) =>
+          daysBetween(today, dateParts) >= 0 &&
+          !isScheduleExpiredToday(schedule, dateParts, today, now)
+      )
       .sort(
         (left, right) =>
           daysBetween(today, left.dateParts) -
@@ -156,12 +161,83 @@ function isHappeningNow(schedule: FeedSchedule, now: Date) {
   }
 
   const startMinutes = timeToMinutes(schedule.start_time);
-  const endMinutes = schedule.end_time
-    ? timeToMinutes(schedule.end_time)
-    : 24 * 60 - 1;
+  const endMinutes = getScheduleEndMinutes(schedule, startMinutes);
   const nowMinutes = getKuchingMinutes(now);
 
   return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
+}
+
+export function isScheduledEventExpired(
+  schedules?: FeedSchedule[] | null,
+  now = new Date()
+): boolean {
+  const datedSchedules = (schedules ?? [])
+    .map((schedule) => ({
+      schedule,
+      dateParts: parseDateParts(schedule.schedule_date),
+    }))
+    .filter(
+      (
+        item
+      ): item is {
+        schedule: FeedSchedule;
+        dateParts: LocalDateParts;
+      } => item.dateParts !== null
+    );
+
+  if (!datedSchedules.length) {
+    return false;
+  }
+
+  const today = getKuchingDateParts(now);
+
+  return datedSchedules.every(({ schedule, dateParts }) => {
+    const diffDays = daysBetween(today, dateParts);
+
+    if (diffDays < 0) {
+      return true;
+    }
+
+    if (diffDays > 0) {
+      return false;
+    }
+
+    return isScheduleExpiredToday(schedule, dateParts, today, now);
+  });
+}
+
+function isScheduleExpiredToday(
+  schedule: FeedSchedule,
+  scheduleDate: LocalDateParts,
+  today: LocalDateParts,
+  now: Date
+) {
+  if (daysBetween(today, scheduleDate) !== 0) {
+    return false;
+  }
+
+  if (!schedule.start_time) {
+    return false;
+  }
+
+  const startMinutes = timeToMinutes(schedule.start_time);
+  const endMinutes = getScheduleEndMinutes(schedule, startMinutes);
+
+  return getKuchingMinutes(now) > endMinutes;
+}
+
+function getScheduleEndMinutes(
+  schedule: FeedSchedule,
+  startMinutes: number
+) {
+  if (schedule.end_time) {
+    return timeToMinutes(schedule.end_time);
+  }
+
+  return Math.min(
+    startMinutes + DEFAULT_EVENT_DURATION_MINUTES,
+    24 * 60 - 1
+  );
 }
 
 function getKuchingDateParts(date: Date): LocalDateParts {

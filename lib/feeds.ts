@@ -8,6 +8,7 @@ import {
 } from "@/types/database";
 import { getOrderedPhotos } from "./format";
 import { hydrateFeedsEventData } from "./feed-event-details";
+import { isScheduledEventExpired } from "./event-display";
 
 export type DiscoveryFeedItem =
   | {
@@ -140,14 +141,14 @@ export async function getDiscoveryPublishedFeeds(): Promise<
 > {
   const feeds = await getLatestPublishedFeeds();
 
-  return buildDiscoveryFeedOrder(feeds);
+  return buildDiscoveryFeedOrder(filterExpiredEventFeeds(feeds));
 }
 
 export async function getDiscoveryFeedItems(): Promise<
   DiscoveryFeedItem[]
 > {
   const feeds = await getLatestPublishedFeeds();
-  const orderedFeeds = buildDiscoveryFeedOrder(feeds);
+  const orderedFeeds = buildDiscoveryFeedOrder(filterExpiredEventFeeds(feeds));
 
   return buildDiscoveryItems(orderedFeeds);
 }
@@ -258,6 +259,16 @@ export async function deleteFeed(
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+function filterExpiredEventFeeds(
+  feeds: FeedWithPlaceAndPhotos[]
+): FeedWithPlaceAndPhotos[] {
+  return feeds.filter(
+    (feed) =>
+      feed.feed_type !== "event_observation" ||
+      !isScheduledEventExpired(feed.schedules)
+  );
+}
 
 function buildDiscoveryFeedOrder(
   feeds: FeedWithPlaceAndPhotos[]

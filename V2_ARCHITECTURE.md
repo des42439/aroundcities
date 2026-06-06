@@ -352,6 +352,7 @@ Sources:
 - Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed inside the optional admin Sources section. Source screenshots are selected as image files in the feed editor, compressed in the browser, uploaded to Supabase Storage under `source-screenshots/`, and saved as generated screenshot URL evidence records.
 - Use optional `feed_event_details` rows for structured event metadata. Do not create a separate public Event entity during Phase 1.
 - Public feed detail pages currently hide structured event details, but may show dynamic timing labels and external `Source` / `Channel` links.
+- Scheduled event observation feeds should leave the `/kch` discovery stream once their schedule has expired. A schedule with `start_time` and no `end_time` uses a 1-hour inferred duration; date-only schedules remain visible for the day but do not show `Happening Now`.
 - Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
 
 ### Schema Rules
