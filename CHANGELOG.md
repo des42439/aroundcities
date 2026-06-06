@@ -8,6 +8,7 @@ All notable changes to AroundCities should be documented here.
 
 - Added `/admin/feeds/import-events` for pasting ChatGPT-generated event JSON, previewing multiple events, and saving them as draft feeds without photos or screenshot uploads.
 - Added an `Import Events` link under the normal New Feed form.
+- Added an admin source evidence screenshot picker that compresses selected images, uploads them to Supabase Storage, and saves the generated screenshot URL.
 - Added `click_count` tracking for feeds and photos, with public click endpoints and a migration for atomic counter increments.
 - Added a follow-up click-count migration so counter increments do not change feed/photo edit timestamps.
 - Added `/photo/[photoId]` as a public single-photo page showing one photo with its title, description, and original feed link.

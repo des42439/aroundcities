@@ -220,6 +220,7 @@ Feed creation should be photo-first and draft-first:
 - Keep photo metadata as curator reference only. Extract EXIF captured datetime/GPS when available, but do not use it to assign places automatically.
 - Use a searchable modal/picker for parent feed selection; do not use a huge plain dropdown.
 - Archive published feeds by setting status to `archived`; archived feeds remain in the database and stay hidden from public `/kch`.
-- Source evidence is feed-specific and admin-only. Source screenshots currently use evidence URL records unless direct private upload is explicitly added later.
+- Source evidence is feed-specific and admin-only. Source screenshots are saved as URL records after the admin picker uploads the selected image to Supabase Storage.
+- Feed source evidence screenshots should use the admin picker/upload flow, not manual URL entry: compress the selected image client-side, upload it to Supabase Storage, and save the generated URL in `source_screenshots`.
 - Keep Sources manual-only: opening a source must not mark it checked, and marking checked should happen only when the curator clicks `Mark Checked`.
 - Do not add source crawling, scraping, bot browsing, scheduled checking, Facebook login, priority, or frequency fields unless the user explicitly expands scope.

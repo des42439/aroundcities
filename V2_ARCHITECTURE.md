@@ -2,7 +2,7 @@
 
 Last updated: 6 June 2026
 
-Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, screenshot URL records, feed schedules, and feed-place metadata as compact optional sections.
+Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, and feed-place metadata as compact optional sections.
 
 ## 1. Objective
 
@@ -348,7 +348,7 @@ Sources:
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.
 - The current `/kch` feed shows items immediately after the city header. Cards should show title, muted `Author · Relative Time`, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, then a clear subtle divider with enough breathing room to mark the end of the post. Do not render a place row, pin icon, or footer actions below the gallery.
 - Multi-photo grids should occupy a similar visual footprint to a single-photo block: 2 photos side-by-side, 3 photos with one large image and two stacked images, and 4+ photos as 2x2 with a `+N` overlay when needed.
-- Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed inside the optional admin Sources section.
+- Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed inside the optional admin Sources section. Source screenshots are selected as image files in the feed editor, compressed in the browser, uploaded to Supabase Storage under `source-screenshots/`, and saved as generated screenshot URL evidence records.
 - Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
 
 ### Schema Rules
@@ -468,7 +468,7 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 6. Add optional Sources, Places, Schedules, or Parent Feed sections only when the feed needs them.
 7. Optionally assign primary place and multiple feed places with a location note.
 8. Optionally assign photo-level places from the photo thumbnail editor.
-9. Add source URL/channel/note and screenshot URL evidence as admin-only feed evidence.
+9. Add source URL/channel/note and uploaded screenshot evidence as admin-only feed evidence.
 10. Add simple schedule rows when the feed needs dated schedule data.
 11. Use a searchable picker for parent feed selection and exclude the current feed.
 12. Publish when ready, or archive a published feed from `/admin/feeds/published` when it should leave public `/kch`.

@@ -17,6 +17,7 @@ import {
 } from "./AdminSubmitButton";
 import DeleteFeedForm from "./DeleteFeedForm";
 import PhotoManager from "./PhotoManager";
+import SourceEvidenceScreenshotPicker from "./SourceEvidenceScreenshotPicker";
 import {
   archiveFeedAction,
   createFeedScheduleAction,
@@ -397,6 +398,8 @@ function SourcesSection({
   channels: Channel[];
 }) {
   const action = createFeedSourceAction.bind(null, feedId);
+  const [screenshotUploadPending, setScreenshotUploadPending] =
+    useState(false);
 
   return (
     <section className="space-y-4 rounded-lg border border-neutral-900 p-4">
@@ -478,13 +481,17 @@ function SourcesSection({
             className={textareaClassName}
           />
         </Field>
-        <Field label="Evidence screenshot URL">
-          <input
-            name="screenshot_url"
-            type="url"
-            className={inputClassName}
-          />
-        </Field>
+        <div>
+          <span className="text-sm text-neutral-400">
+            Evidence screenshot
+          </span>
+          <div className="mt-2">
+            <SourceEvidenceScreenshotPicker
+              feedId={feedId}
+              onPendingChange={setScreenshotUploadPending}
+            />
+          </div>
+        </div>
         <Field label="Screenshot note">
           <input
             name="screenshot_remarks"
@@ -494,8 +501,11 @@ function SourcesSection({
         <AdminSubmitButton
           variant="secondary"
           pendingLabel="Adding..."
+          disabled={screenshotUploadPending}
         >
-          Add Source
+          {screenshotUploadPending
+            ? "Uploading Screenshot..."
+            : "Add Source"}
         </AdminSubmitButton>
       </AdminActionForm>
     </section>

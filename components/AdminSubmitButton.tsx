@@ -15,6 +15,7 @@ type Props = {
   name?: string;
   value?: string;
   confirmMessage?: string;
+  disabled?: boolean;
 };
 
 const variantClassNames = {
@@ -30,6 +31,7 @@ export function AdminSubmitButton({
   name,
   value,
   confirmMessage,
+  disabled = false,
 }: Props) {
   const { pending } = useFormStatus();
   const [clicked, setClicked] = useState(false);
@@ -56,7 +58,7 @@ export function AdminSubmitButton({
         type="submit"
         name={name}
         value={value}
-        disabled={pending}
+        disabled={pending || disabled}
         onClick={(event) => {
           if (
             confirmMessage &&

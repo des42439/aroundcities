@@ -55,6 +55,7 @@ Implemented mobile-first workflow:
 - Photos marked `Show as photo feed` can appear as standalone Photo feed cards in the public `/kch` discovery stream.
 - Optional Sources, Places, Schedules, and Parent Feed sections appear only when added or when existing data is present.
 - Source evidence, feed schedules, parent feed selection, and feed-place metadata are wired into admin as compact refinement sections.
+- Source evidence screenshots are selected as image files in the feed editor, compressed in the browser, uploaded to Supabase Storage, and saved as source screenshot URLs.
 - Published feeds can be archived without deleting their database rows.
 
 Admin must be protected before public launch.
@@ -111,6 +112,7 @@ The V2 Phase 1 foundation now includes:
 - Drafted and published feed lists show the first sequenced photo as a thumbnail.
 - Feed editing is mobile-first and keeps optional refinement sections hidden until the curator explicitly adds Sources, Places, Schedules, or Parent Feed.
 - Feed sources, source screenshot URL evidence, simple schedule rows, feed-place metadata, and parent feeds are wired into the admin editor.
+- Feed source screenshot evidence uses a picker/upload flow instead of manual URL entry: the selected image is compressed client-side, uploaded to the `photos` Supabase Storage bucket under `source-screenshots/`, and the generated public URL is saved in `source_screenshots`.
 - Published feed editing supports archiving, which sets status to `archived` and hides the feed from public `/kch`.
 - Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
 - Feed photo upload from the editor opens from an Add Photos overlay so the main editor stays thumbnail-first and compact on iPhone.
