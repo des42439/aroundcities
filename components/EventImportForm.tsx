@@ -20,6 +20,7 @@ type PreviewEvent = {
   sourceChannel: string;
   sourceUrl: string;
   sourceNote: string;
+  eventDetails: string[];
   confidence: string;
   missingInfo: string[];
 };
@@ -34,6 +35,50 @@ function object(value: unknown) {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
+}
+
+function normalizeImportedEventTitle(title: string) {
+  return title
+    .replace(
+      /^happening\s+(now|today|tomorrow|this weekend|next weekend|next month)\s*:?\s*/i,
+      ""
+    )
+    .trim();
+}
+
+function eventDetailsPreview(value: unknown) {
+  const details = object(value);
+
+  if (!details) {
+    return [];
+  }
+
+  return [
+    text(details.entry_type)
+      ? `Entry: ${text(details.entry_type)}`
+      : "",
+    text(details.registration_type)
+      ? `Registration: ${text(details.registration_type)}`
+      : "",
+    typeof details.open_to_public === "boolean"
+      ? `Open to public: ${details.open_to_public ? "yes" : "no"}`
+      : "",
+    typeof details.ticket_required === "boolean"
+      ? `Ticket required: ${details.ticket_required ? "yes" : "no"}`
+      : "",
+    typeof details.lucky_draw === "boolean"
+      ? `Lucky draw: ${details.lucky_draw ? "yes" : "no"}`
+      : "",
+    text(details.dress_code)
+      ? `Dress code: ${text(details.dress_code)}`
+      : "",
+    text(details.organizer)
+      ? `Organizer: ${text(details.organizer)}`
+      : "",
+    text(details.event_notes)
+      ? `Notes: ${text(details.event_notes)}`
+      : "",
+  ].filter(Boolean);
 }
 
 function parsePreview(jsonText: string): PreviewEvent[] {
@@ -60,7 +105,7 @@ function parsePreview(jsonText: string): PreviewEvent[] {
   return importObject.events.map((item, index) => {
     const event = object(item);
     const feed = object(event?.feed);
-    const title = text(feed?.title);
+    const title = normalizeImportedEventTitle(text(feed?.title));
 
     if (!title) {
       throw new Error(`Event ${index + 1} is missing feed.title.`);
@@ -116,6 +161,7 @@ function parsePreview(jsonText: string): PreviewEvent[] {
       sourceChannel: text(source?.source_channel_name),
       sourceUrl: text(source?.source_url),
       sourceNote: text(source?.source_note),
+      eventDetails: eventDetailsPreview(event?.event_details),
       confidence: text(adminNotes?.confidence),
       missingInfo,
     };
@@ -286,6 +332,7 @@ export default function EventImportForm() {
                   ["Source channel", event.sourceChannel],
                   ["Source URL", event.sourceUrl],
                   ["Source note", event.sourceNote],
+                  ["Event details", event.eventDetails.join("; ")],
                   ["Confidence", event.confidence],
                   ["Missing info", event.missingInfo.join(", ")],
                 ]}

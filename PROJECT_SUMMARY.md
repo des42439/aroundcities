@@ -56,6 +56,7 @@ Implemented mobile-first workflow:
 - Optional Sources, Places, Schedules, and Parent Feed sections appear only when added or when existing data is present.
 - Source evidence, feed schedules, parent feed selection, and feed-place metadata are wired into admin as compact refinement sections.
 - Source evidence screenshots are selected as image files in the feed editor, compressed in the browser, uploaded to Supabase Storage, and saved as source screenshot URLs.
+- Event Details is available as an optional feed editor section for structured event metadata such as free/paid entry, registration style, public/ticket/lucky-draw flags, dress code, organizer, and notes.
 - Published feeds can be archived without deleting their database rows.
 
 Admin must be protected before public launch.
@@ -108,11 +109,13 @@ The V2 Phase 1 foundation now includes:
 - New feed photos are compressed in the browser before upload, targeting less than 1MB per photo with a 1600px longest-side resize.
 - New feed creation returns to `/admin/feeds/drafts` after save.
 - Event JSON import is available from New Feed through `/admin/feeds/import-events`. It validates pasted JSON, forces all imported feeds to `draft`, creates or reuses places and source channels, links feed places with location notes, creates simple feed schedule rows, and stores feed source evidence without creating photos or uploading screenshots.
+- Event JSON import accepts optional `event_details` objects and strips dynamic timing prefixes such as `Happening Today:` from stored feed titles.
 - Admin feed management is split into New Feed, Drafted Feeds, and Published Feeds instead of one desktop-style all-feeds list.
 - Drafted and published feed lists show the first sequenced photo as a thumbnail.
 - Feed editing is mobile-first and keeps optional refinement sections hidden until the curator explicitly adds Sources, Places, Schedules, or Parent Feed.
 - Feed sources, source screenshot URL evidence, simple schedule rows, feed-place metadata, and parent feeds are wired into the admin editor.
 - Feed source screenshot evidence uses a picker/upload flow instead of manual URL entry: the selected image is compressed client-side, uploaded to the `photos` Supabase Storage bucket under `source-screenshots/`, and the generated public URL is saved in `source_screenshots`.
+- Public feed cards and feed detail pages show dynamic event timing labels from `feed_schedules` and subtle structured event detail labels when `feed_event_details` is present.
 - Published feed editing supports archiving, which sets status to `archived` and hides the feed from public `/kch`.
 - Feed photo editing uses a thumbnail grid and opens one photo-specific editor at a time instead of rendering every photo form inline.
 - Feed photo upload from the editor opens from an Add Photos overlay so the main editor stays thumbnail-first and compact on iPhone.

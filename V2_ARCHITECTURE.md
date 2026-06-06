@@ -2,7 +2,7 @@
 
 Last updated: 6 June 2026
 
-Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, and feed-place metadata as compact optional sections.
+Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections.
 
 ## 1. Objective
 
@@ -76,6 +76,7 @@ Notes:
 - `source_url` is optional and should be used only when a feed references an external source.
 - `operating_hours` is optional free text for human-entered schedules, such as shop hours, clinic sessions, or temporary festival dates and times.
 - Structured queryable schedules belong in `feed_operating_hours`; keep `operating_hours` as the readable curator note.
+- Event timing labels such as `Happening Today` should be computed from schedule rows at display time and should not be stored in `feeds.title`.
 - `tags` is a simple `text[]` field for Phase 1. It avoids extra tag tables while still allowing lightweight categorization.
 - `status` should support draft and published states at minimum.
 - `published_at` controls public chronological ordering.
@@ -349,6 +350,7 @@ Sources:
 - The current `/kch` feed shows items immediately after the city header. Cards should show title, muted `Author · Relative Time`, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, then a clear subtle divider with enough breathing room to mark the end of the post. Do not render a place row, pin icon, or footer actions below the gallery.
 - Multi-photo grids should occupy a similar visual footprint to a single-photo block: 2 photos side-by-side, 3 photos with one large image and two stacked images, and 4+ photos as 2x2 with a `+N` overlay when needed.
 - Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed inside the optional admin Sources section. Source screenshots are selected as image files in the feed editor, compressed in the browser, uploaded to Supabase Storage under `source-screenshots/`, and saved as generated screenshot URL evidence records.
+- Use optional `feed_event_details` rows for structured event metadata. Do not create a separate public Event entity during Phase 1.
 - Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
 
 ### Schema Rules
@@ -367,6 +369,7 @@ Sources:
 - Use `feed_places` for multiple human-assigned feed-level places.
 - Keep `feeds.place_id` temporarily as an optional primary place for route compatibility and simple displays.
 - Do not add event-specific tables in Phase 1.
+- Exception: `feed_event_details` is a support table for optional structured metadata attached to Feed, not a separate public Event entity.
 - Do not add user, account, comment, rating, or social tables in Phase 1.
 
 ## 6. Route Proposal
@@ -470,9 +473,10 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 8. Optionally assign photo-level places from the photo thumbnail editor.
 9. Add source URL/channel/note and uploaded screenshot evidence as admin-only feed evidence.
 10. Add simple schedule rows when the feed needs dated schedule data.
-11. Use a searchable picker for parent feed selection and exclude the current feed.
-12. Publish when ready, or archive a published feed from `/admin/feeds/published` when it should leave public `/kch`.
-13. Review saved Sources manually, open useful pages in a new tab, and click `Mark Checked` only after review.
+11. Add Event Details only when the feed needs structured event metadata such as entry type, registration type, public/ticket flags, lucky draw, dress code, organizer, or notes.
+12. Use a searchable picker for parent feed selection and exclude the current feed.
+13. Publish when ready, or archive a published feed from `/admin/feeds/published` when it should leave public `/kch`.
+14. Review saved Sources manually, open useful pages in a new tab, and click `Mark Checked` only after review.
 
 ### Admin Principles
 
@@ -488,6 +492,7 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 - Do not ask for feed type during creation.
 - New feeds should be drafts by default.
 - Event JSON imports should create draft feeds only. They may create/reuse places, feed-place links, schedules, channels, and feed source rows, but should not create photos, upload screenshots, or introduce a separate event entity.
+- Event JSON imports may include an optional `event_details` object. Imported titles must stay timeless; strip dynamic prefixes like `Happening Today:` before storing the feed title.
 - Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
 - Photo order should stay numeric and curator-controlled through `photos.sequence`; do not let the featured flag override sequence ordering for public galleries or admin thumbnails.
 - Multiple photos in one feed may be marked as Photo feed candidates. Do not enforce one featured photo per feed.

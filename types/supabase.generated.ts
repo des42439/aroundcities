@@ -199,6 +199,65 @@ export type Database = {
           },
         ]
       }
+      feed_event_details: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          detail_id: string
+          dress_code: string | null
+          entry_type: string
+          event_notes: string | null
+          feed_id: string
+          lucky_draw: boolean | null
+          open_to_public: boolean | null
+          organizer: string | null
+          registration_type: string
+          ticket_required: boolean | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          detail_id?: string
+          dress_code?: string | null
+          entry_type?: string
+          event_notes?: string | null
+          feed_id: string
+          lucky_draw?: boolean | null
+          open_to_public?: boolean | null
+          organizer?: string | null
+          registration_type?: string
+          ticket_required?: boolean | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          detail_id?: string
+          dress_code?: string | null
+          entry_type?: string
+          event_notes?: string | null
+          feed_id?: string
+          lucky_draw?: boolean | null
+          open_to_public?: boolean | null
+          organizer?: string | null
+          registration_type?: string
+          ticket_required?: boolean | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_event_details_feed_id_fkey"
+            columns: ["feed_id"]
+            isOneToOne: true
+            referencedRelation: "feeds"
+            referencedColumns: ["feed_id"]
+          },
+        ]
+      }
       feed_schedules: {
         Row: {
           created_at: string

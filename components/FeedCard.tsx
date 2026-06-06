@@ -5,6 +5,10 @@ import {
   formatRelativeTime,
   getOrderedPhotos,
 } from "@/lib/format";
+import {
+  getEventDetailLabels,
+  getEventTimingLabel,
+} from "@/lib/event-display";
 
 type Props = {
   feed: FeedWithPlaceAndPhotos;
@@ -16,6 +20,8 @@ export default function FeedCard({ feed }: Props) {
   const photos = getDisplayPhotos(feed.photos);
   const preview = (feed.description ?? feed.content ?? "").trim();
   const feedHref = `/feed/${feed.slug}`;
+  const eventTimingLabel = getEventTimingLabel(feed.schedules);
+  const eventDetailLabels = getEventDetailLabels(feed.event_details);
 
   return (
     <article className="border-b-2 border-neutral-800 pb-6 pt-4 sm:pb-7 sm:pt-5">
@@ -31,8 +37,27 @@ export default function FeedCard({ feed }: Props) {
             </TrackedFeedLink>
           </h2>
 
+          {eventTimingLabel ? (
+            <p className="mt-1 text-xs font-medium text-emerald-300">
+              {eventTimingLabel}
+            </p>
+          ) : null}
+
           <FeedMeta feed={feed} />
         </div>
+
+        {eventDetailLabels.length ? (
+          <div className="flex flex-wrap gap-1.5">
+            {eventDetailLabels.slice(0, 5).map((label) => (
+              <span
+                key={label}
+                className="rounded border border-neutral-800 px-2 py-1 text-xs text-neutral-400"
+              >
+                {label}
+              </span>
+            ))}
+          </div>
+        ) : null}
 
         {preview && (
           <FeedDescriptionPreview

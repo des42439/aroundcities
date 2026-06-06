@@ -5,6 +5,7 @@ import { updateFeedAction } from "@/lib/admin-actions";
 import { requireAdmin } from "@/lib/admin-auth";
 import { getFeedPlaces } from "@/lib/feed-places";
 import { getFeedSchedules } from "@/lib/feed-schedules";
+import { getFeedEventDetails } from "@/lib/feed-event-details";
 import {
   getChannels,
   getFeedSources,
@@ -38,6 +39,7 @@ export default async function EditFeedPage({
     feedSources,
     channels,
     schedules,
+    eventDetails,
     parentCandidates,
   ] = await Promise.all([
     getFeedById(feedId),
@@ -47,6 +49,7 @@ export default async function EditFeedPage({
     getFeedSources(feedId),
     getChannels(),
     getFeedSchedules(feedId),
+    getFeedEventDetails(feedId),
     getParentFeedCandidates(feedId),
   ]);
 
@@ -84,6 +87,7 @@ export default async function EditFeedPage({
         feedSources={feedSources}
         channels={channels}
         schedules={schedules}
+        eventDetails={eventDetails}
         parentCandidates={parentCandidates}
         action={action}
       />

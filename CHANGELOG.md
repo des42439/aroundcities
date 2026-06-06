@@ -6,6 +6,11 @@ All notable changes to AroundCities should be documented here.
 
 ### Added
 
+- Added optional `feed_event_details` support for structured event metadata: entry type, registration type, public/ticket/lucky-draw flags, dress code, organizer, and event notes.
+- Added dynamic public event timing labels based on feed schedule rows, such as `Happening Now`, `Happening Today`, `Happening Tomorrow`, weekend labels, and next-month labels.
+- Added an `Event Details` section to the admin feed editor.
+- Added optional `event_details` support to `/admin/feeds/import-events`.
+- Added `supabase/migrations/20260606003000_add_feed_event_details.sql` for event details and title cleanup of stored timing prefixes.
 - Added `/admin/feeds/import-events` for pasting ChatGPT-generated event JSON, previewing multiple events, and saving them as draft feeds without photos or screenshot uploads.
 - Added an `Import Events` link under the normal New Feed form.
 - Added an admin source evidence screenshot picker that compresses selected images, uploads them to Supabase Storage, and saves the generated screenshot URL.
@@ -22,6 +27,7 @@ All notable changes to AroundCities should be documented here.
 
 ### Changed
 
+- Changed event import and feed save handling to strip timing prefixes such as `Happening Today:` from stored feed titles.
 - Changed standalone Photo feed cards so the feed title opens the original feed while the image opens only that photo.
 - Changed public photo clicks from opening the raw full-size image in a new tab to opening the single-photo page.
 - Changed the admin photo featured checkbox label to `Show as photo feed` and allowed multiple photos in one feed to be selected.

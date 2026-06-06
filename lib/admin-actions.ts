@@ -23,6 +23,10 @@ import {
   FeedOperatingHourInput,
   replaceFeedOperatingHours,
 } from "./feed-operating-hours";
+import {
+  FeedEventDetailsInput,
+  replaceFeedEventDetails,
+} from "./feed-event-details";
 import { createPlace, updatePlace } from "./places";
 import {
   createPhoto,
@@ -39,6 +43,8 @@ import {
 } from "./sources";
 import { extractPhotoMetadata } from "./photo-metadata";
 import {
+  EventEntryType,
+  EventRegistrationType,
   FeedOperatingHourScheduleType,
   FeedStatus,
   FeedType,
@@ -84,6 +90,7 @@ type ParsedImportEvent = {
     source_channel_name: string | null;
     source_note: string | null;
   } | null;
+  event_details: FeedEventDetailsInput | null;
 };
 
 async function actionError(
@@ -253,6 +260,67 @@ function parseDate(value: FormDataEntryValue | null) {
   return text || null;
 }
 
+function parseNullableBoolean(
+  value: FormDataEntryValue | null
+): boolean | null {
+  const text = value?.toString();
+
+  if (text === "true") {
+    return true;
+  }
+
+  if (text === "false") {
+    return false;
+  }
+
+  return null;
+}
+
+function parseEventEntryType(value: unknown): EventEntryType {
+  return value === "free" || value === "paid"
+    ? value
+    : "unknown";
+}
+
+function parseEventRegistrationType(
+  value: unknown
+): EventRegistrationType {
+  if (
+    value === "free_registration" ||
+    value === "registration_required" ||
+    value === "walk_in"
+  ) {
+    return value;
+  }
+
+  return "unknown";
+}
+
+function parseEventDetailsFromForm(
+  formData: FormData
+): FeedEventDetailsInput {
+  return {
+    entry_type: parseEventEntryType(
+      formData.get("event_entry_type")?.toString()
+    ),
+    registration_type: parseEventRegistrationType(
+      formData.get("event_registration_type")?.toString()
+    ),
+    open_to_public: parseNullableBoolean(
+      formData.get("event_open_to_public")
+    ),
+    ticket_required: parseNullableBoolean(
+      formData.get("event_ticket_required")
+    ),
+    lucky_draw: parseNullableBoolean(
+      formData.get("event_lucky_draw")
+    ),
+    dress_code: nullableString(formData.get("event_dress_code")),
+    organizer: nullableString(formData.get("event_organizer")),
+    event_notes: nullableString(formData.get("event_notes")),
+  };
+}
+
 function textFromUnknown(value: unknown) {
   return typeof value === "string" && value.trim()
     ? value.trim()
@@ -263,6 +331,51 @@ function objectFromUnknown(value: unknown) {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
+}
+
+function parseEventDetailsFromObject(
+  value: unknown
+): FeedEventDetailsInput | null {
+  const eventDetails = objectFromUnknown(value);
+
+  if (!eventDetails) {
+    return null;
+  }
+
+  return {
+    entry_type: parseEventEntryType(eventDetails.entry_type),
+    registration_type: parseEventRegistrationType(
+      eventDetails.registration_type
+    ),
+    open_to_public:
+      typeof eventDetails.open_to_public === "boolean"
+        ? eventDetails.open_to_public
+        : null,
+    ticket_required:
+      typeof eventDetails.ticket_required === "boolean"
+        ? eventDetails.ticket_required
+        : null,
+    lucky_draw:
+      typeof eventDetails.lucky_draw === "boolean"
+        ? eventDetails.lucky_draw
+        : null,
+    dress_code: textFromUnknown(eventDetails.dress_code),
+    organizer: textFromUnknown(eventDetails.organizer),
+    event_notes: textFromUnknown(eventDetails.event_notes),
+  };
+}
+
+function normalizeImportedEventTitle(title: string) {
+  return title
+    .replace(
+      /^happening\s+(now|today|tomorrow|this weekend|next weekend|next month)\s*:?\s*/i,
+      ""
+    )
+    .trim();
+}
+
+function normalizeFeedTitleForStorage(title: string) {
+  return normalizeImportedEventTitle(title);
 }
 
 function parseEventImportJson(jsonText: string): ParsedImportEvent[] {
@@ -287,7 +400,10 @@ function parseEventImportJson(jsonText: string): ParsedImportEvent[] {
   return payload.events.map((item, index) => {
     const event = objectFromUnknown(item);
     const feed = objectFromUnknown(event?.feed);
-    const title = textFromUnknown(feed?.title);
+    const rawTitle = textFromUnknown(feed?.title);
+    const title = rawTitle
+      ? normalizeImportedEventTitle(rawTitle)
+      : null;
 
     if (!title) {
       throw new Error(`Event ${index + 1} is missing feed.title.`);
@@ -372,6 +488,9 @@ function parseEventImportJson(jsonText: string): ParsedImportEvent[] {
       places,
       schedules,
       source,
+      event_details: parseEventDetailsFromObject(
+        event?.event_details
+      ),
     };
   });
 }
@@ -678,7 +797,9 @@ export async function createFeedAction(
   let feedId: string | null = null;
 
   try {
-    const title = requiredString(formData, "title");
+    const title = normalizeFeedTitleForStorage(
+      requiredString(formData, "title")
+    );
     const status = parseFeedStatus(
       formData.get("status")
     );
@@ -727,7 +848,9 @@ export async function createDraftFeedWithPhotosAction(
   let feedId: string | null = null;
 
   try {
-    const title = requiredString(formData, "title");
+    const title = normalizeFeedTitleForStorage(
+      requiredString(formData, "title")
+    );
     const slug = `${slugify(title)}-${Date.now().toString(36)}`;
 
     const feed = await createFeed({
@@ -779,7 +902,7 @@ export async function createDraftFeedOnlyAction(input: {
   await requireAdmin();
 
   try {
-    const title = input.title.trim();
+    const title = normalizeFeedTitleForStorage(input.title.trim());
 
     if (!title) {
       throw new Error("Title is required.");
@@ -915,6 +1038,13 @@ export async function importEventFeedsAction(input: {
           channel_id: channel?.channel_id ?? null,
           source_note: event.source.source_note,
         });
+      }
+
+      if (event.event_details) {
+        await replaceFeedEventDetails(
+          feed.feed_id,
+          event.event_details
+        );
       }
 
       results.push({
@@ -1104,7 +1234,9 @@ export async function updateFeedAction(
   await requireAdmin();
 
   try {
-    const title = requiredString(formData, "title");
+    const title = normalizeFeedTitleForStorage(
+      requiredString(formData, "title")
+    );
     const status = parseFeedStatus(
       formData.get("status")
     );
@@ -1147,6 +1279,13 @@ export async function updateFeedAction(
         ),
       }
     );
+
+    if (formData.get("event_details_section_present") === "1") {
+      await replaceFeedEventDetails(
+        feedId,
+        parseEventDetailsFromForm(formData)
+      );
+    }
 
     revalidatePath("/admin/feeds");
     revalidatePath("/admin/feeds/drafts");

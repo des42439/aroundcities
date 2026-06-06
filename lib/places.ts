@@ -6,6 +6,7 @@ import {
   PlaceUpdate,
   PlaceWithFeeds,
 } from "@/types/database";
+import { hydrateFeedsEventData } from "./feed-event-details";
 
 export async function getPlaceBySlug(
   slug: string
@@ -45,9 +46,13 @@ export async function getPlaceBySlug(
     } as PlaceWithFeeds;
   }
 
+  const hydratedFeeds = await hydrateFeedsEventData(
+    (feeds ?? []) as FeedWithPlaceAndPhotos[]
+  );
+
   return {
     ...place,
-    feeds: (feeds ?? []) as FeedWithPlaceAndPhotos[],
+    feeds: hydratedFeeds,
   } as PlaceWithFeeds;
 }
 

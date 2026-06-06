@@ -29,6 +29,7 @@ import { FeedSourceWithScreenshots } from "@/lib/feed-sources";
 import {
   Channel,
   Feed,
+  FeedEventDetails,
   FeedPlaceWithPlace,
   FeedSchedule,
   FeedWithPlaceAndPhotos,
@@ -36,7 +37,12 @@ import {
   Place,
 } from "@/types/database";
 
-type SectionKey = "sources" | "places" | "schedules" | "parent";
+type SectionKey =
+  | "sources"
+  | "places"
+  | "schedules"
+  | "event_details"
+  | "parent";
 
 type Props = {
   feed: FeedWithPlaceAndPhotos;
@@ -46,6 +52,7 @@ type Props = {
   feedSources: FeedSourceWithScreenshots[];
   channels: Channel[];
   schedules: FeedSchedule[];
+  eventDetails: FeedEventDetails | null;
   parentCandidates: Feed[];
   action: (
     state: AdminActionState,
@@ -57,6 +64,7 @@ const sectionOptions: { key: SectionKey; label: string }[] = [
   { key: "sources", label: "Sources" },
   { key: "places", label: "Places" },
   { key: "schedules", label: "Schedules" },
+  { key: "event_details", label: "Event Details" },
   { key: "parent", label: "Parent Feed" },
 ];
 
@@ -68,6 +76,7 @@ export default function MobileFeedEditor({
   feedSources,
   channels,
   schedules,
+  eventDetails,
   parentCandidates,
   action,
 }: Props) {
@@ -87,6 +96,10 @@ export default function MobileFeedEditor({
 
     if (schedules.length) {
       initial.add("schedules");
+    }
+
+    if (eventDetails) {
+      initial.add("event_details");
     }
 
     if (feed.parent_feed_id) {
@@ -225,6 +238,10 @@ export default function MobileFeedEditor({
             parentCandidates={parentCandidates}
           />
         )}
+
+        {hasSection("event_details") ? (
+          <EventDetailsSection eventDetails={eventDetails} />
+        ) : null}
 
         <div className="relative">
           <button
@@ -509,6 +526,118 @@ function SourcesSection({
         </AdminSubmitButton>
       </AdminActionForm>
     </section>
+  );
+}
+
+function EventDetailsSection({
+  eventDetails,
+}: {
+  eventDetails: FeedEventDetails | null;
+}) {
+  return (
+    <section className="space-y-4 rounded-lg border border-neutral-900 p-4">
+      <input
+        type="hidden"
+        name="event_details_section_present"
+        value="1"
+      />
+      <h2 className="font-semibold">Event Details</h2>
+
+      <Field label="Entry type">
+        <select
+          name="event_entry_type"
+          defaultValue={eventDetails?.entry_type ?? "unknown"}
+          className={selectClassName}
+        >
+          <option value="unknown">Unknown</option>
+          <option value="free">Free</option>
+          <option value="paid">Paid</option>
+        </select>
+      </Field>
+
+      <Field label="Registration type">
+        <select
+          name="event_registration_type"
+          defaultValue={
+            eventDetails?.registration_type ?? "unknown"
+          }
+          className={selectClassName}
+        >
+          <option value="unknown">Unknown</option>
+          <option value="free_registration">
+            Free registration
+          </option>
+          <option value="registration_required">
+            Registration required
+          </option>
+          <option value="walk_in">Walk-in</option>
+        </select>
+      </Field>
+
+      <NullableBooleanField
+        label="Open to public"
+        name="event_open_to_public"
+        value={eventDetails?.open_to_public ?? null}
+      />
+      <NullableBooleanField
+        label="Ticket required"
+        name="event_ticket_required"
+        value={eventDetails?.ticket_required ?? null}
+      />
+      <NullableBooleanField
+        label="Lucky draw"
+        name="event_lucky_draw"
+        value={eventDetails?.lucky_draw ?? null}
+      />
+
+      <Field label="Dress code">
+        <input
+          name="event_dress_code"
+          defaultValue={eventDetails?.dress_code ?? ""}
+          className={inputClassName}
+        />
+      </Field>
+
+      <Field label="Organizer">
+        <input
+          name="event_organizer"
+          defaultValue={eventDetails?.organizer ?? ""}
+          className={inputClassName}
+        />
+      </Field>
+
+      <Field label="Event notes">
+        <textarea
+          name="event_notes"
+          defaultValue={eventDetails?.event_notes ?? ""}
+          className={textareaClassName}
+        />
+      </Field>
+    </section>
+  );
+}
+
+function NullableBooleanField({
+  label,
+  name,
+  value,
+}: {
+  label: string;
+  name: string;
+  value: boolean | null;
+}) {
+  return (
+    <Field label={label}>
+      <select
+        name={name}
+        defaultValue={value === null ? "" : String(value)}
+        className={selectClassName}
+      >
+        <option value="">Unknown</option>
+        <option value="true">Yes</option>
+        <option value="false">No</option>
+      </select>
+    </Field>
   );
 }
 

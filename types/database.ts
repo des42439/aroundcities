@@ -28,6 +28,17 @@ export type FeedScheduleType =
   | "operating_hours"
   | "other";
 
+export type EventEntryType =
+  | "free"
+  | "paid"
+  | "unknown";
+
+export type EventRegistrationType =
+  | "free_registration"
+  | "registration_required"
+  | "walk_in"
+  | "unknown";
+
 export interface Place {
   place_id: string;
   name: string;
@@ -193,11 +204,30 @@ export interface FeedSchedule {
   updated_at: string;
 }
 
+export interface FeedEventDetails {
+  detail_id: string;
+  feed_id: string;
+  entry_type: EventEntryType;
+  registration_type: EventRegistrationType;
+  open_to_public: boolean | null;
+  ticket_required: boolean | null;
+  lucky_draw: boolean | null;
+  dress_code: string | null;
+  organizer: string | null;
+  event_notes: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_by: string | null;
+  updated_at: string;
+}
+
 export interface FeedWithPlaceAndPhotos extends Feed {
   place: Place | null;
   photos: Photo[];
   feed_places?: FeedPlaceWithPlace[];
   operating_hour_rows?: FeedOperatingHour[];
+  schedules?: FeedSchedule[];
+  event_details?: FeedEventDetails | null;
 }
 
 export interface PlaceWithFeeds extends Place {
@@ -227,6 +257,12 @@ export type NewSource =
 
 export type SourceUpdate =
   Database["public"]["Tables"]["sources"]["Update"];
+
+export type NewFeedEventDetails =
+  Database["public"]["Tables"]["feed_event_details"]["Insert"];
+
+export type FeedEventDetailsUpdate =
+  Database["public"]["Tables"]["feed_event_details"]["Update"];
 
 export interface Database {
   public: {
@@ -642,6 +678,49 @@ export interface Database {
         Relationships: [
           {
             foreignKeyName: "feed_schedules_feed_id_fkey";
+            columns: ["feed_id"];
+            referencedRelation: "feeds";
+            referencedColumns: ["feed_id"];
+          },
+        ];
+      };
+      feed_event_details: {
+        Row: FeedEventDetails;
+        Insert: {
+          detail_id?: string;
+          feed_id: string;
+          entry_type?: EventEntryType;
+          registration_type?: EventRegistrationType;
+          open_to_public?: boolean | null;
+          ticket_required?: boolean | null;
+          lucky_draw?: boolean | null;
+          dress_code?: string | null;
+          organizer?: string | null;
+          event_notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          detail_id?: string;
+          feed_id?: string;
+          entry_type?: EventEntryType;
+          registration_type?: EventRegistrationType;
+          open_to_public?: boolean | null;
+          ticket_required?: boolean | null;
+          lucky_draw?: boolean | null;
+          dress_code?: string | null;
+          organizer?: string | null;
+          event_notes?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "feed_event_details_feed_id_fkey";
             columns: ["feed_id"];
             referencedRelation: "feeds";
             referencedColumns: ["feed_id"];

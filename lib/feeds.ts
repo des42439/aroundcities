@@ -7,6 +7,7 @@ import {
   Photo,
 } from "@/types/database";
 import { getOrderedPhotos } from "./format";
+import { hydrateFeedsEventData } from "./feed-event-details";
 
 export type DiscoveryFeedItem =
   | {
@@ -40,7 +41,9 @@ export async function getFeeds(): Promise<
     return [];
   }
 
-  return (data ?? []) as FeedWithPlaceAndPhotos[];
+  return await hydrateFeedsEventData(
+    (data ?? []) as FeedWithPlaceAndPhotos[]
+  );
 }
 
 export async function getFeedsByStatus(
@@ -63,7 +66,9 @@ export async function getFeedsByStatus(
     return [];
   }
 
-  return (data ?? []) as FeedWithPlaceAndPhotos[];
+  return await hydrateFeedsEventData(
+    (data ?? []) as FeedWithPlaceAndPhotos[]
+  );
 }
 
 export async function getFeedCountByStatus(
@@ -125,7 +130,9 @@ export async function getLatestPublishedFeeds(): Promise<
     return [];
   }
 
-  return (data ?? []) as FeedWithPlaceAndPhotos[];
+  return await hydrateFeedsEventData(
+    (data ?? []) as FeedWithPlaceAndPhotos[]
+  );
 }
 
 export async function getDiscoveryPublishedFeeds(): Promise<
@@ -166,7 +173,11 @@ export async function getFeedBySlug(
     return null;
   }
 
-  return data as FeedWithPlaceAndPhotos;
+  const [feed] = await hydrateFeedsEventData([
+    data as FeedWithPlaceAndPhotos,
+  ]);
+
+  return feed ?? null;
 }
 
 export async function getFeedById(
@@ -189,7 +200,11 @@ export async function getFeedById(
     return null;
   }
 
-  return data as FeedWithPlaceAndPhotos;
+  const [feed] = await hydrateFeedsEventData([
+    data as FeedWithPlaceAndPhotos,
+  ]);
+
+  return feed ?? null;
 }
 
 export async function createFeed(

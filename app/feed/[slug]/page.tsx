@@ -7,6 +7,10 @@ import {
   formatDate,
   formatFeedType,
 } from "@/lib/format";
+import {
+  getEventDetailLabels,
+  getEventTimingLabel,
+} from "@/lib/event-display";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +51,8 @@ export default async function FeedDetailPage({
   }
 
   const photos = await getPhotosByFeedId(feed.feed_id);
+  const eventTimingLabel = getEventTimingLabel(feed.schedules);
+  const eventDetailLabels = getEventDetailLabels(feed.event_details);
 
   return (
     <PublicShell>
@@ -63,6 +69,12 @@ export default async function FeedDetailPage({
           <h1 className="text-4xl font-semibold leading-tight">
             {feed.title}
           </h1>
+
+          {eventTimingLabel ? (
+            <p className="text-sm font-medium text-emerald-300">
+              {eventTimingLabel}
+            </p>
+          ) : null}
 
           {feed.place && (
             <Link
@@ -90,6 +102,24 @@ export default async function FeedDetailPage({
             </p>
           </section>
         )}
+
+        {eventDetailLabels.length ? (
+          <section className="mt-8 border-y border-neutral-900 py-5">
+            <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
+              Event details
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {eventDetailLabels.map((label) => (
+                <span
+                  key={label}
+                  className="rounded border border-neutral-800 px-2.5 py-1.5 text-sm text-neutral-300"
+                >
+                  {label}
+                </span>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         {photos.length > 0 && (
           <div className="mt-10 space-y-8">

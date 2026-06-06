@@ -132,6 +132,8 @@ V2 Phase 1 Steps 1-5 are implemented:
 - `/admin/stats` shows feed and photo click counts sorted from highest to lowest.
 - Photo-first draft creation for feeds asks only for photos, title, and description, then returns to Drafted Feeds.
 - Event JSON import is available from `/admin/feeds/import-events`; it previews `aroundcities_event_import_v1` JSON and saves imported items as draft event observation feeds without photos or screenshot uploads.
+- Event imports and feed saves keep titles timeless by stripping dynamic prefixes such as `Happening Today:`; public timing labels are computed from schedules.
+- Optional structured event details are stored on `feed_event_details` as support metadata attached to Feed, not as a separate Event entity.
 - Feed editing starts compact with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Feed editor photo uploads open from an Add Photos overlay; keep the main editor thumbnail-first.
 - Photos use `photos.sequence` for display order. Smaller positive sequence numbers appear first; unsequenced `0` photos fall behind manually ordered photos.
@@ -181,7 +183,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Feed cards should feel like relaxed local notes. Use simple display heuristics for visual-first versus information-first feeds; do not add a complex feed type system unless explicitly requested.
 - Current public feed cards should show title, muted `Author · Relative Time`, a maximum two-line description with inline "more" only when truncated, then the photo block and a clear subtle divider. Do not render a place row, pin icon, or footer actions below the gallery. Any attached photos should render as a full-width social-feed image block.
 - Multi-photo feed grids should feel like one substantial content block, not tiny thumbnails. Keep the 2-photo, 3-photo, and 4+ photo layouts visually close to the single-photo block size.
-- The schema-extension tables for feed sources, source screenshots, feed schedules, parent feeds, and feed-place metadata are wired into the admin editor as optional refinement sections. They remain hidden from public UI unless explicitly implemented later.
+- The schema-extension tables for feed sources, source screenshots, feed schedules, event details, parent feeds, and feed-place metadata are wired into the admin editor as optional refinement sections.
 
 Supabase Auth, search, maps, tags UI, and multiple cities are not implemented yet.
 
@@ -210,6 +212,7 @@ Feed creation should be photo-first and draft-first:
 - Error logs should avoid secrets and use minimal context such as action area, feed ID, or photo ID.
 - New feed photo uploads should use signed Supabase Storage upload URLs so large photos do not pass through Vercel Server Action request bodies.
 - Event JSON imports must force draft status, create no photos, upload no screenshots, and preserve the pasted textarea content when preview validation fails.
+- Event JSON imports may include optional `event_details`; save it to `feed_event_details` and keep imported descriptions as curator/editorial wording without forcing an official tone.
 - Keep the feed edit page compact by showing optional feed fields only after the curator explicitly selects them.
 - Keep feed photo editing thumbnail-first; open one photo-specific editor at a time instead of listing every photo edit form inline.
 - Keep photo deletion confirmed and visually separated from ordinary save controls.
@@ -219,6 +222,7 @@ Feed creation should be photo-first and draft-first:
 - Do not auto-select Photo feed candidates during upload. The curator should mark them manually in the photo editor.
 - Keep photo metadata as curator reference only. Extract EXIF captured datetime/GPS when available, but do not use it to assign places automatically.
 - Use a searchable modal/picker for parent feed selection; do not use a huge plain dropdown.
+- Use the optional Event Details section only for event feeds that need structured details: entry type, registration type, public/ticket/lucky-draw flags, dress code, organizer, and event notes.
 - Archive published feeds by setting status to `archived`; archived feeds remain in the database and stay hidden from public `/kch`.
 - Source evidence is feed-specific and admin-only. Source screenshots are saved as URL records after the admin picker uploads the selected image to Supabase Storage.
 - Feed source evidence screenshots should use the admin picker/upload flow, not manual URL entry: compress the selected image client-side, upload it to Supabase Storage, and save the generated URL in `source_screenshots`.
