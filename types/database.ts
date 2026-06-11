@@ -11,6 +11,16 @@ export type FeedStatus =
   | "published"
   | "archived";
 
+export type HistoryStatus =
+  | "draft"
+  | "published"
+  | "archived";
+
+export type HistoryConfidence =
+  | "high"
+  | "medium"
+  | "low";
+
 export type FeedType =
   | "photo_walk"
   | "food_visit"
@@ -91,6 +101,42 @@ export interface Photo {
   created_at: string;
   updated_by: string | null;
   updated_at: string;
+}
+
+export interface HistoryRecord {
+  history_id: string;
+  title: string;
+  description: string | null;
+  event_year: number;
+  event_month: number;
+  event_day: number;
+  status: HistoryStatus;
+  place_name: string | null;
+  location_note: string | null;
+  tags: string[];
+  source_url: string | null;
+  source_note: string | null;
+  source_screenshot_url: string | null;
+  confidence: HistoryConfidence;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface HistoryPhoto {
+  history_photo_id: string;
+  history_id: string;
+  photo_id: string;
+  sequence: number;
+  note: string | null;
+  created_at: string;
+}
+
+export interface HistoryPhotoWithPhoto extends HistoryPhoto {
+  photo: Photo;
+}
+
+export interface HistoryRecordWithPhotos extends HistoryRecord {
+  history_photos: HistoryPhotoWithPhoto[];
 }
 
 export interface FeedPlace {
@@ -252,6 +298,15 @@ export type NewPhoto =
 export type PhotoUpdate =
   Database["public"]["Tables"]["photos"]["Update"];
 
+export type NewHistoryRecord =
+  Database["public"]["Tables"]["history_records"]["Insert"];
+
+export type HistoryRecordUpdate =
+  Database["public"]["Tables"]["history_records"]["Update"];
+
+export type NewHistoryPhoto =
+  Database["public"]["Tables"]["history_photos"]["Insert"];
+
 export type NewSource =
   Database["public"]["Tables"]["sources"]["Insert"];
 
@@ -404,6 +459,79 @@ export interface Database {
             columns: ["place_id"];
             referencedRelation: "places";
             referencedColumns: ["place_id"];
+          },
+        ];
+      };
+      history_records: {
+        Row: HistoryRecord;
+        Insert: {
+          history_id?: string;
+          title: string;
+          description?: string | null;
+          event_year: number;
+          event_month: number;
+          event_day: number;
+          status?: HistoryStatus;
+          place_name?: string | null;
+          location_note?: string | null;
+          tags?: string[];
+          source_url?: string | null;
+          source_note?: string | null;
+          source_screenshot_url?: string | null;
+          confidence?: HistoryConfidence;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          history_id?: string;
+          title?: string;
+          description?: string | null;
+          event_year?: number;
+          event_month?: number;
+          event_day?: number;
+          status?: HistoryStatus;
+          place_name?: string | null;
+          location_note?: string | null;
+          tags?: string[];
+          source_url?: string | null;
+          source_note?: string | null;
+          source_screenshot_url?: string | null;
+          confidence?: HistoryConfidence;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      history_photos: {
+        Row: HistoryPhoto;
+        Insert: {
+          history_photo_id?: string;
+          history_id: string;
+          photo_id: string;
+          sequence?: number;
+          note?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          history_photo_id?: string;
+          history_id?: string;
+          photo_id?: string;
+          sequence?: number;
+          note?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "history_photos_history_id_fkey";
+            columns: ["history_id"];
+            referencedRelation: "history_records";
+            referencedColumns: ["history_id"];
+          },
+          {
+            foreignKeyName: "history_photos_photo_id_fkey";
+            columns: ["photo_id"];
+            referencedRelation: "photos";
+            referencedColumns: ["photo_id"];
           },
         ];
       };

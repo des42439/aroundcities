@@ -33,6 +33,16 @@ import {
   deletePhoto,
   updatePhoto,
 } from "./photos";
+import {
+  addHistoryPhotos,
+  createHistoryOnlyPhoto,
+  createHistoryRecord,
+  deleteHistoryRecord,
+  getNextHistoryPhotoSequence,
+  removeHistoryPhoto,
+  updateHistoryPhoto,
+  updateHistoryRecord,
+} from "./history";
 import { slugify } from "./slug";
 import { getSupabaseAdmin } from "./supabase-admin";
 import {
@@ -48,6 +58,8 @@ import {
   FeedOperatingHourScheduleType,
   FeedStatus,
   FeedType,
+  HistoryConfidence,
+  HistoryStatus,
 } from "@/types/database";
 
 type AdminActionState = {
@@ -63,6 +75,10 @@ export type EventImportResult = {
     feedId?: string;
     error?: string;
   }[];
+};
+
+export type HistoryImportResult = {
+  createdCount: number;
 };
 
 type EventImportPayload = {
@@ -97,6 +113,21 @@ type ParsedImportEvent = {
     source_note: string | null;
   } | null;
   event_details: FeedEventDetailsInput | null;
+};
+
+type ParsedHistoryImportRecord = {
+  title: string;
+  description: string | null;
+  event_year: number;
+  event_month: number;
+  event_day: number;
+  place_name: string | null;
+  location_note: string | null;
+  tags: string[];
+  source_url: string | null;
+  source_note: string | null;
+  source_screenshot_url: string | null;
+  confidence: HistoryConfidence;
 };
 
 async function actionError(
@@ -194,6 +225,78 @@ function parseFeedStatus(
   }
 
   return "draft";
+}
+
+function parseHistoryStatus(
+  value: FormDataEntryValue | null
+): HistoryStatus {
+  const status = value?.toString();
+
+  if (
+    status === "draft" ||
+    status === "published" ||
+    status === "archived"
+  ) {
+    return status;
+  }
+
+  return "draft";
+}
+
+function parseHistoryConfidence(value: unknown): HistoryConfidence {
+  if (value === "high" || value === "low") {
+    return value;
+  }
+
+  return "medium";
+}
+
+function parseHistoryImportConfidence(
+  value: unknown,
+  index: number
+): HistoryConfidence {
+  if (value === undefined || value === null || value === "") {
+    return "medium";
+  }
+
+  if (value === "high" || value === "medium" || value === "low") {
+    return value;
+  }
+
+  throw new Error(
+    `Record ${index + 1} confidence must be high, medium, or low.`
+  );
+}
+
+function parseRequiredInteger(
+  formData: FormData,
+  key: string
+) {
+  const value = Number(requiredString(formData, key));
+
+  if (!Number.isInteger(value)) {
+    throw new Error(`${key} must be a whole number.`);
+  }
+
+  return value;
+}
+
+function validateHistoryDateParts(
+  eventYear: number,
+  eventMonth: number,
+  eventDay: number
+) {
+  if (!Number.isInteger(eventYear)) {
+    throw new Error("Event year must be a whole number.");
+  }
+
+  if (eventMonth < 1 || eventMonth > 12) {
+    throw new Error("Event month must be between 1 and 12.");
+  }
+
+  if (eventDay < 1 || eventDay > 31) {
+    throw new Error("Event day must be between 1 and 31.");
+  }
 }
 
 function parseFeedType(
@@ -369,6 +472,75 @@ function parseEventDetailsFromObject(
     organizer: textFromUnknown(eventDetails.organizer),
     event_notes: textFromUnknown(eventDetails.event_notes),
   };
+}
+
+function parseHistoryImportJson(
+  jsonText: string
+): ParsedHistoryImportRecord[] {
+  let payload: unknown;
+
+  try {
+    payload = JSON.parse(jsonText);
+  } catch {
+    throw new Error("JSON could not be parsed.");
+  }
+
+  const importObject = objectFromUnknown(payload);
+
+  if (!importObject) {
+    throw new Error("JSON must be an object.");
+  }
+
+  if (importObject.version !== "aroundcities_history_import_v1") {
+    throw new Error(
+      "Import version must be aroundcities_history_import_v1."
+    );
+  }
+
+  if (!Array.isArray(importObject.records)) {
+    throw new Error("JSON must include a records array.");
+  }
+
+  return importObject.records.map((item, index) => {
+    const record = objectFromUnknown(item);
+    const title = textFromUnknown(record?.title);
+
+    if (!title) {
+      throw new Error(`Record ${index + 1} is missing title.`);
+    }
+
+    const eventYear = Number(record?.event_year);
+    const eventMonth = Number(record?.event_month);
+    const eventDay = Number(record?.event_day);
+
+    validateHistoryDateParts(eventYear, eventMonth, eventDay);
+
+    const rawTags = Array.isArray(record?.tags) ? record.tags : [];
+
+    return {
+      title,
+      description: textFromUnknown(record?.description),
+      event_year: eventYear,
+      event_month: eventMonth,
+      event_day: eventDay,
+      place_name: textFromUnknown(record?.place_name),
+      location_note: textFromUnknown(record?.location_note),
+      tags: rawTags
+        .map((tag) =>
+          typeof tag === "string" ? tag.trim().toLowerCase() : ""
+        )
+        .filter(Boolean),
+      source_url: textFromUnknown(record?.source_url),
+      source_note: textFromUnknown(record?.source_note),
+      source_screenshot_url: textFromUnknown(
+        record?.source_screenshot_url
+      ),
+      confidence: parseHistoryImportConfidence(
+        record?.confidence,
+        index
+      ),
+    };
+  });
 }
 
 function normalizeImportedEventTitle(title: string) {
@@ -1686,6 +1858,316 @@ export async function deleteFeedPhotoAction(
   }
 
   redirect(`/admin/feeds/${feedId}`);
+}
+
+export async function createHistoryRecordAction(
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  let historyId: string | null = null;
+
+  try {
+    const eventYear = parseRequiredInteger(formData, "event_year");
+    const eventMonth = parseRequiredInteger(formData, "event_month");
+    const eventDay = parseRequiredInteger(formData, "event_day");
+
+    validateHistoryDateParts(eventYear, eventMonth, eventDay);
+
+    const record = await createHistoryRecord({
+      title: requiredString(formData, "title"),
+      description: nullableString(formData.get("description")),
+      event_year: eventYear,
+      event_month: eventMonth,
+      event_day: eventDay,
+      status: "draft",
+      place_name: nullableString(formData.get("place_name")),
+      location_note: nullableString(formData.get("location_note")),
+      tags: parseTags(formData.get("tags")),
+      source_url: nullableString(formData.get("source_url")),
+      source_note: nullableString(formData.get("source_note")),
+      source_screenshot_url: nullableString(
+        formData.get("source_screenshot_url")
+      ),
+      confidence: parseHistoryConfidence(
+        formData.get("confidence")?.toString()
+      ),
+    });
+
+    historyId = record.history_id;
+    revalidatePath("/admin");
+    revalidatePath("/admin/history");
+  } catch (error) {
+    return await actionError("create_history_record", error);
+  }
+
+  redirect(`/admin/history/${historyId}`);
+}
+
+export async function updateHistoryRecordAction(
+  historyId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  try {
+    const eventYear = parseRequiredInteger(formData, "event_year");
+    const eventMonth = parseRequiredInteger(formData, "event_month");
+    const eventDay = parseRequiredInteger(formData, "event_day");
+
+    validateHistoryDateParts(eventYear, eventMonth, eventDay);
+
+    await updateHistoryRecord(historyId, {
+      title: requiredString(formData, "title"),
+      description: nullableString(formData.get("description")),
+      event_year: eventYear,
+      event_month: eventMonth,
+      event_day: eventDay,
+      status: parseHistoryStatus(formData.get("status")),
+      place_name: nullableString(formData.get("place_name")),
+      location_note: nullableString(formData.get("location_note")),
+      tags: parseTags(formData.get("tags")),
+      source_url: nullableString(formData.get("source_url")),
+      source_note: nullableString(formData.get("source_note")),
+      source_screenshot_url: nullableString(
+        formData.get("source_screenshot_url")
+      ),
+      confidence: parseHistoryConfidence(
+        formData.get("confidence")?.toString()
+      ),
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/history");
+    revalidatePath(`/admin/history/${historyId}`);
+  } catch (error) {
+    return await actionError("update_history_record", error, {
+      historyId,
+    });
+  }
+
+  redirect(`/admin/history/${historyId}`);
+}
+
+export async function deleteHistoryRecordAction(
+  historyId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await deleteHistoryRecord(historyId);
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/history");
+  } catch (error) {
+    return await actionError("delete_history_record", error, {
+      historyId,
+    });
+  }
+
+  redirect("/admin/history");
+}
+
+export async function linkExistingHistoryPhotosAction(
+  historyId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  try {
+    await addHistoryPhotos(
+      historyId,
+      formData.getAll("photo_ids").map((value) => value.toString())
+    );
+
+    revalidatePath(`/admin/history/${historyId}`);
+  } catch (error) {
+    return await actionError("link_existing_history_photos", error, {
+      historyId,
+    });
+  }
+
+  redirect(`/admin/history/${historyId}`);
+}
+
+export async function updateHistoryPhotoAction(
+  historyId: string,
+  historyPhotoId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  try {
+    await updateHistoryPhoto(historyPhotoId, {
+      sequence: parsePhotoSequence(formData.get("sequence")),
+      note: nullableString(formData.get("note")),
+    });
+
+    revalidatePath(`/admin/history/${historyId}`);
+  } catch (error) {
+    return await actionError("update_history_photo", error, {
+      historyId,
+      historyPhotoId,
+    });
+  }
+
+  redirect(`/admin/history/${historyId}`);
+}
+
+export async function removeHistoryPhotoAction(
+  historyId: string,
+  historyPhotoId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await removeHistoryPhoto(historyPhotoId);
+
+    revalidatePath(`/admin/history/${historyId}`);
+  } catch (error) {
+    return await actionError("remove_history_photo", error, {
+      historyId,
+      historyPhotoId,
+    });
+  }
+
+  redirect(`/admin/history/${historyId}`);
+}
+
+export async function createHistoryPhotoUploadTargetAction(input: {
+  historyId: string;
+  fileName: string;
+}): Promise<
+  | {
+      path: string;
+      token: string;
+      publicUrl: string;
+    }
+  | AdminActionState
+> {
+  await requireAdmin();
+
+  try {
+    const extension =
+      input.fileName.split(".").pop()?.toLowerCase() ?? "jpg";
+    const filename = `${Date.now()}-${slugify(
+      input.fileName.replace(/\.[^.]+$/, "")
+    )}.${extension}`;
+    const path = `history/${input.historyId}/${filename}`;
+    const supabaseAdmin = getSupabaseAdmin();
+    const { data, error } = await supabaseAdmin.storage
+      .from("photos")
+      .createSignedUploadUrl(path);
+
+    if (error) {
+      throw new Error(
+        `History photo upload URL failed: ${error.message}`
+      );
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from("photos")
+      .getPublicUrl(path);
+
+    return {
+      path,
+      token: data.token,
+      publicUrl: publicUrlData.publicUrl,
+    };
+  } catch (error) {
+    return await actionError("create_history_photo_upload_target", error, {
+      historyId: input.historyId,
+      fileName: input.fileName,
+    });
+  }
+}
+
+export async function createUploadedHistoryPhotoAction(input: {
+  historyId: string;
+  photoUrl: string;
+  title?: string | null;
+  description?: string | null;
+}): Promise<AdminActionState> {
+  await requireAdmin();
+
+  try {
+    await addUploadedHistoryPhoto(input);
+
+    revalidatePath(`/admin/history/${input.historyId}`);
+
+    return {
+      error: null,
+    };
+  } catch (error) {
+    return await actionError("create_uploaded_history_photo", error, {
+      historyId: input.historyId,
+    });
+  }
+}
+
+async function addUploadedHistoryPhoto(input: {
+  historyId: string;
+  photoUrl: string;
+  title?: string | null;
+  description?: string | null;
+}) {
+  const sequence = await getNextHistoryPhotoSequence(input.historyId);
+  const photo = await createHistoryOnlyPhoto({
+    title: input.title ?? null,
+    description: input.description ?? null,
+    photoUrl: input.photoUrl,
+    sequence,
+  });
+
+  await addHistoryPhotos(input.historyId, [photo.photo_id]);
+
+  return sequence;
+}
+
+export async function importHistoryRecordsAction(input: {
+  jsonText: string;
+}): Promise<HistoryImportResult | AdminActionState> {
+  await requireAdmin();
+
+  let records: ParsedHistoryImportRecord[];
+
+  try {
+    records = parseHistoryImportJson(input.jsonText);
+  } catch (error) {
+    return {
+      error:
+        error instanceof Error
+          ? error.message
+          : "Import JSON is invalid.",
+    };
+  }
+
+  try {
+    for (const record of records) {
+      await createHistoryRecord({
+        ...record,
+        status: "draft",
+      });
+    }
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/history");
+    revalidatePath("/admin/history/import");
+
+    return {
+      createdCount: records.length,
+    };
+  } catch (error) {
+    return await actionError("import_history_records", error);
+  }
 }
 
 export async function createSourceAction(

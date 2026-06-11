@@ -8,10 +8,15 @@ All notable changes to AroundCities should be documented here.
 
 - Added a temporary public homepage password lock for `/` and `/kch` while AroundCities is being prepared for launch.
 - Added centralized public lock settings in `lib/public-lock.ts`, including `LOCK_USER_PAGE`, `USER_PAGE_PASSWORD`, and the `ac_public_access` cookie.
+- Added Phase 1 of the standalone History module with dedicated `history_records` and `history_photos` tables.
+- Added `/admin/history`, `/admin/history/new`, `/admin/history/[historyId]`, and `/admin/history/import` for creating, editing, importing, publishing, archiving, deleting, and photo-linking history records.
+- Added history JSON import support for `aroundcities_history_import_v1`, forcing imported records to draft status.
+- Added history photo linking from existing feed photos plus compressed history-only photo uploads through the existing Supabase Storage `photos` bucket and archived photo-storage feed pattern.
 
 ### Notes
 
 - The public lock is separate from admin authentication and can be disabled by changing `LOCK_USER_PAGE` to `false` and redeploying.
+- The History module is admin-only in this phase. No homepage, feed generation, recommendation, search, analytics, or public discovery integration was added.
 
 ## 2026-06-06
 

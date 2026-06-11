@@ -2,7 +2,7 @@
 
 Last updated: 11 June 2026
 
-Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`.
+Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`. Phase 1 of the standalone History module is implemented as an admin-only archive and is not integrated into public discovery.
 
 ## 1. Objective
 
@@ -43,7 +43,42 @@ Only three core entities should exist in Phase 1:
 
 Supporting tables may exist for feed-place links, structured operating hours, storage, admin diagnostics, and manual admin source checklists. Do not treat these as new public product entities.
 
+History is a standalone admin-only archive module. It is intentionally not a feed type and is stored in dedicated history tables. Public history discovery should wait until a substantial library exists.
+
 No comments, likes, followers, messaging, ratings, reviews, public contributor accounts, or business-directory workflows.
+
+## 3A. History Module
+
+Purpose:
+
+- Store historical records about Kuching and Sarawak.
+- Manage draft, published, and archived history records from admin.
+- Import records from `aroundcities_history_import_v1` JSON.
+- Link records to reusable photos from the existing photo library.
+
+Tables:
+
+- `history_records`
+- `history_photos`
+
+History records are not feeds and must not be stored in `feeds`.
+
+History photos reuse `photos`. History-only uploads create ordinary photo rows attached to an archived feed used solely as a photo container, then link those photos through `history_photos`.
+
+Admin routes:
+
+- `/admin/history`
+- `/admin/history/new`
+- `/admin/history/[historyId]`
+- `/admin/history/import`
+
+Deferred:
+
+- Homepage history cards
+- Story Of The Day
+- Today In Kuching History
+- Feed generation from history records
+- Recommendation, ranking, search, analytics, translation, scheduling, and related-content features
 
 ## 4. Core Entities
 

@@ -28,6 +28,13 @@ Phase 1 should introduce only the minimum foundation:
 
 No comments, likes, followers, messaging, ratings, reviews, or social-network assumptions.
 
+Standalone admin-only module:
+
+- History records are stored outside the feed system in `history_records`.
+- History records can link to existing photos through `history_photos`.
+- History-only uploads still create normal `photos` rows under an archived feed used as a photo container.
+- No public history homepage integration, feed generation, recommendation, search, analytics, or scheduling features exist yet.
+
 ## Public Routes
 
 - `/` redirects to `/kch`
@@ -57,6 +64,8 @@ Implemented mobile-first workflow:
 - `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
 - `/admin/stats` lists feed and photo click counts from highest to lowest.
+- `/admin/history` manages standalone Kuching/Sarawak history records.
+- `/admin/history/import` accepts pasted `aroundcities_history_import_v1` JSON and saves valid records as drafts.
 - The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Photo order is controlled by `photos.sequence`, with smaller positive numbers displayed first.
 - Photos marked `Show as photo feed` can appear as standalone Photo feed cards in the public `/kch` discovery stream.
@@ -118,6 +127,7 @@ The V2 Phase 1 foundation now includes:
 - New feed creation returns to `/admin/feeds/drafts` after save.
 - Event JSON import is available from New Feed through `/admin/feeds/import-events`. It validates pasted JSON, forces all imported feeds to `draft`, creates or reuses places and source channels, links feed places with location notes, creates simple feed schedule rows, and stores feed source evidence without creating photos or uploading screenshots.
 - After a fully successful event import save, the import textarea and preview reset so the page is ready for a new paste. Validation and per-event save errors keep the pasted content available for correction.
+- History Phase 1 foundation with `history_records` and `history_photos`, admin CRUD, draft/publish/archive/delete actions, JSON import, existing-photo linking, and compressed history-only uploads into the shared photo library.
 - Event JSON import accepts optional `event_details` objects and strips dynamic timing prefixes such as `Happening Today:` from stored feed titles.
 - Admin feed management is split into New Feed, Drafted Feeds, and Published Feeds instead of one desktop-style all-feeds list.
 - Drafted and published feed lists show the first sequenced photo as a thumbnail.

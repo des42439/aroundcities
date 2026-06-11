@@ -52,6 +52,12 @@ Photo represents an asset attached to a feed. A feed can contain multiple photos
 
 Place represents a location. A place can be linked to many feeds.
 
+History records are standalone archive records.
+
+History records are not feeds and must not be stored in the feeds table.
+
+History photos reuse the existing photos table through `history_photos`.
+
 ## Required Public Routes
 
 Route proposals for V2:
@@ -93,6 +99,7 @@ Do not introduce:
 - Public contributor accounts
 - Business directory workflows
 - Event-portal complexity
+- Public history discovery features during History Phase 1
 - Source crawling, scraping, scheduled checking, Facebook automation, priority, or frequency systems
 
 ## Documentation Maintenance
@@ -130,6 +137,13 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Minimal admin UI protected by `ADMIN_PASSWORD`.
 - Mobile-first admin workflow is split into `/admin/feeds/new`, `/admin/feeds/drafts`, and `/admin/feeds/published`.
 - The `/admin` workflow hub shows counts for Drafted Feeds, Published Feeds, and Sources.
+- The `/admin` workflow hub also links to History.
+- `/admin/history`, `/admin/history/new`, `/admin/history/[historyId]`, and `/admin/history/import` support Phase 1 standalone history record management.
+- History records are stored in `history_records`, and history-photo links are stored in `history_photos`.
+- History JSON import uses `aroundcities_history_import_v1`, validates month/day/confidence, and always creates draft records.
+- History records can link existing feed photos using a client-side feed-title picker.
+- History-only uploads use browser image compression, Supabase Storage, normal `photos` rows, and an archived feed used only as a photo container.
+- Do not integrate History into `/kch`, create Story Of The Day, generate feeds from history records, add history recommendation/search/analytics, or build related-content features during History Phase 1.
 - `/admin/stats` shows feed and photo click counts sorted from highest to lowest.
 - Photo-first draft creation for feeds asks only for photos, title, and description, then returns to Drafted Feeds.
 - Event JSON import is available from `/admin/feeds/import-events`; it previews `aroundcities_event_import_v2` JSON, keeps v1 JSON compatible, and saves imported items as draft event observation feeds without photos or screenshot uploads.
