@@ -145,6 +145,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - History update import uses `aroundcities_history_update_v1`, updates existing records by `history_id`, never creates records, preserves existing tags, and adds `research:done` after successful updates.
 - History records can link existing feed photos using a client-side feed-title picker.
 - History-only uploads use browser image compression, Supabase Storage, normal `photos` rows, and an archived feed used only as a photo container.
+- History edit source screenshots use browser image compression and signed Supabase Storage uploads to the existing `photos` bucket, then save the generated URL in `history_records.source_screenshot_url`.
 - Do not integrate History into `/kch`, create Story Of The Day, generate feeds from history records, add history recommendation/search/analytics, or build related-content features during History Phase 1.
 - `/admin/stats` shows feed and photo click counts sorted from highest to lowest.
 - Photo-first draft creation for feeds asks only for photos, title, and description, then returns to Drafted Feeds.

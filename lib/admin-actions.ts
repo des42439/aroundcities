@@ -1541,6 +1541,59 @@ export async function createSourceScreenshotUploadTargetAction(input: {
   }
 }
 
+export async function createHistorySourceScreenshotUploadTargetAction(input: {
+  historyId: string;
+  fileName: string;
+}): Promise<
+  | {
+      path: string;
+      token: string;
+      publicUrl: string;
+    }
+  | AdminActionState
+> {
+  await requireAdmin();
+
+  try {
+    const extension =
+      input.fileName.split(".").pop()?.toLowerCase() ?? "jpg";
+    const filename = `${Date.now()}-${slugify(
+      input.fileName.replace(/\.[^.]+$/, "")
+    )}.${extension}`;
+    const path = `source-screenshots/history/${input.historyId}/${filename}`;
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { data, error } = await supabaseAdmin.storage
+      .from("photos")
+      .createSignedUploadUrl(path);
+
+    if (error) {
+      throw new Error(
+        `Screenshot upload URL failed: ${error.message}`
+      );
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from("photos")
+      .getPublicUrl(path);
+
+    return {
+      path,
+      token: data.token,
+      publicUrl: publicUrlData.publicUrl,
+    };
+  } catch (error) {
+    return await actionError(
+      "create_history_source_screenshot_upload_target",
+      error,
+      {
+        historyId: input.historyId,
+        fileName: input.fileName,
+      }
+    );
+  }
+}
+
 export async function createUploadedPhotoRecordAction(input: {
   feedId: string;
   photoUrl: string;

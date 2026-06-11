@@ -57,6 +57,7 @@ Purpose:
 - Export draft records through `aroundcities_history_research_export_v1` JSON for research, with optional tag exclusion.
 - Update existing records through `aroundcities_history_update_v1` JSON using `history_id`; successful updates add the `research:done` tag.
 - Link records to reusable photos from the existing photo library.
+- Upload a single source screenshot from the edit page using the existing browser compression and signed Supabase Storage upload flow, then store the generated URL in `history_records.source_screenshot_url`.
 
 Tables:
 

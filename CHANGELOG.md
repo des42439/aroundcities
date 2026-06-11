@@ -2,6 +2,13 @@
 
 All notable changes to AroundCities should be documented here.
 
+## 2026-06-12
+
+### Added
+
+- Added a `Go To Link` button under the History edit Source URL field for opening source references in a new tab.
+- Added a History edit source screenshot picker that compresses selected images, uploads them to the existing Supabase Storage `photos` bucket under `source-screenshots/history/`, previews the result, and auto-fills `source_screenshot_url`.
+
 ## 2026-06-11
 
 ### Added

@@ -1,11 +1,16 @@
 "use client";
 
+import { ChangeEvent, useRef, useState } from "react";
+import { createHistorySourceScreenshotUploadTargetAction } from "@/lib/admin-actions";
+import { compressAdminImage } from "@/lib/client-image-compression";
+import { supabase } from "@/lib/supabase";
 import AdminActionForm, {
   AdminActionState,
 } from "./AdminActionForm";
 import {
   Field,
   inputClassName,
+  secondaryButtonClassName,
   selectClassName,
   textareaClassName,
 } from "./AdminForm";
@@ -27,6 +32,78 @@ export default function HistoryRecordForm({
   record,
   action,
 }: Props) {
+  const screenshotInputRef = useRef<HTMLInputElement>(null);
+  const [sourceUrl, setSourceUrl] = useState(
+    record?.source_url ?? ""
+  );
+  const [sourceScreenshotUrl, setSourceScreenshotUrl] =
+    useState(record?.source_screenshot_url ?? "");
+  const [screenshotUploadPending, setScreenshotUploadPending] =
+    useState(false);
+  const [screenshotStatus, setScreenshotStatus] = useState("");
+  const [screenshotError, setScreenshotError] = useState<
+    string | null
+  >(null);
+  const trimmedSourceUrl = sourceUrl.trim();
+
+  async function handleScreenshotChange(
+    event: ChangeEvent<HTMLInputElement>
+  ) {
+    const file = event.target.files?.[0];
+
+    if (!file || !record) {
+      return;
+    }
+
+    setScreenshotUploadPending(true);
+    setScreenshotStatus("Uploading screenshot...");
+    setScreenshotError(null);
+
+    try {
+      const compressedFile = await compressAdminImage(file);
+      const target =
+        await createHistorySourceScreenshotUploadTargetAction({
+          historyId: record.history_id,
+          fileName: compressedFile.name,
+        });
+
+      if ("error" in target && target.error) {
+        throw new Error(target.error);
+      }
+
+      if (!("path" in target)) {
+        throw new Error("Screenshot upload target was not created.");
+      }
+
+      const { error: uploadError } = await supabase.storage
+        .from("photos")
+        .uploadToSignedUrl(
+          target.path,
+          target.token,
+          compressedFile
+        );
+
+      if (uploadError) {
+        throw new Error(
+          `Screenshot upload failed: ${uploadError.message}`
+        );
+      }
+
+      setSourceScreenshotUrl(target.publicUrl);
+      setScreenshotStatus("");
+    } catch (uploadError) {
+      setScreenshotError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : "Screenshot upload failed."
+      );
+      setScreenshotStatus("");
+    } finally {
+      setScreenshotUploadPending(false);
+      event.target.value = "";
+    }
+  }
+
   return (
     <AdminActionForm action={action} className="space-y-5">
       <AdminFormProgress />
@@ -122,12 +199,33 @@ export default function HistoryRecordForm({
       </Field>
 
       <Field label="Source URL">
-        <input
-          name="source_url"
-          type="url"
-          defaultValue={record?.source_url ?? ""}
-          className={inputClassName}
-        />
+        <div className="space-y-3">
+          <input
+            name="source_url"
+            type="url"
+            value={sourceUrl}
+            onChange={(event) => setSourceUrl(event.target.value)}
+            className={inputClassName}
+          />
+          {trimmedSourceUrl ? (
+            <a
+              href={trimmedSourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${secondaryButtonClassName} inline-flex w-full justify-center sm:w-auto`}
+            >
+              Go To Link
+            </a>
+          ) : (
+            <button
+              type="button"
+              disabled
+              className={`${secondaryButtonClassName} w-full sm:w-auto`}
+            >
+              Go To Link
+            </button>
+          )}
+        </div>
       </Field>
 
       <Field label="Source note">
@@ -138,11 +236,54 @@ export default function HistoryRecordForm({
         />
       </Field>
 
-      <Field label="Source screenshot URL">
+      <Field label="Source Screenshot">
+        <div className="space-y-3">
+          <input
+            ref={screenshotInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleScreenshotChange}
+            className="hidden"
+          />
+          <button
+            type="button"
+            onClick={() => screenshotInputRef.current?.click()}
+            disabled={!record || screenshotUploadPending}
+            className={`${secondaryButtonClassName} w-full sm:w-auto`}
+          >
+            Add Screenshot
+          </button>
+
+          {screenshotStatus ? (
+            <p className="text-sm text-neutral-400">
+              {screenshotStatus}
+            </p>
+          ) : null}
+
+          {sourceScreenshotUrl ? (
+            <img
+              src={sourceScreenshotUrl}
+              alt="Source screenshot preview"
+              className="max-h-72 w-full rounded-md border border-neutral-800 object-contain"
+            />
+          ) : null}
+
+          {screenshotError ? (
+            <div className="rounded-md border border-red-950 bg-red-950/30 px-3 py-2 text-sm text-red-100">
+              {screenshotError}
+            </div>
+          ) : null}
+        </div>
+      </Field>
+
+      <Field label="Source Screenshot URL">
         <input
           name="source_screenshot_url"
           type="url"
-          defaultValue={record?.source_screenshot_url ?? ""}
+          value={sourceScreenshotUrl}
+          onChange={(event) =>
+            setSourceScreenshotUrl(event.target.value)
+          }
           className={inputClassName}
         />
       </Field>

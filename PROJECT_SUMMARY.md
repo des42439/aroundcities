@@ -1,6 +1,6 @@
 # AroundCities Project Summary
 
-Last updated: 11 June 2026
+Last updated: 12 June 2026
 
 ## Current Direction
 
@@ -68,6 +68,7 @@ Implemented mobile-first workflow:
 - `/admin/history/import` accepts pasted `aroundcities_history_import_v1` JSON and saves valid records as drafts.
 - `/admin/history/export` exports draft history records as `aroundcities_history_research_export_v1` JSON for ChatGPT/library research, defaulting to exclude records already tagged `research:done`.
 - `/admin/history/import` also accepts `aroundcities_history_update_v1` JSON to update existing records by `history_id`; successful updates preserve existing tags and add `research:done`.
+- `/admin/history/[historyId]` lets the curator open the Source URL in a new tab and upload a compressed source screenshot into Supabase Storage, auto-filling `source_screenshot_url`.
 - The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Photo order is controlled by `photos.sequence`, with smaller positive numbers displayed first.
 - Photos marked `Show as photo feed` can appear as standalone Photo feed cards in the public `/kch` discovery stream.
@@ -130,6 +131,7 @@ The V2 Phase 1 foundation now includes:
 - Event JSON import is available from New Feed through `/admin/feeds/import-events`. It validates pasted JSON, forces all imported feeds to `draft`, creates or reuses places and source channels, links feed places with location notes, creates simple feed schedule rows, and stores feed source evidence without creating photos or uploading screenshots.
 - After a fully successful event import save, the import textarea and preview reset so the page is ready for a new paste. Validation and per-event save errors keep the pasted content available for correction.
 - History Phase 1 foundation with `history_records` and `history_photos`, admin CRUD, draft/publish/archive/delete actions, JSON import, existing-photo linking, and compressed history-only uploads into the shared photo library.
+- History record editing includes source verification helpers: Source URL opens in a new tab, and Source Screenshot uploads use the existing browser compression plus Supabase signed upload flow before saving the generated URL on the record.
 - Event JSON import accepts optional `event_details` objects and strips dynamic timing prefixes such as `Happening Today:` from stored feed titles.
 - Admin feed management is split into New Feed, Drafted Feeds, and Published Feeds instead of one desktop-style all-feeds list.
 - Drafted and published feed lists show the first sequenced photo as a thumbnail.
