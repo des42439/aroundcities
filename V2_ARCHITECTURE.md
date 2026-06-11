@@ -54,6 +54,8 @@ Purpose:
 - Store historical records about Kuching and Sarawak.
 - Manage draft, published, and archived history records from admin.
 - Import records from `aroundcities_history_import_v1` JSON.
+- Export draft records through `aroundcities_history_research_export_v1` JSON for research, with optional tag exclusion.
+- Update existing records through `aroundcities_history_update_v1` JSON using `history_id`; successful updates add the `research:done` tag.
 - Link records to reusable photos from the existing photo library.
 
 Tables:
@@ -71,6 +73,7 @@ Admin routes:
 - `/admin/history/new`
 - `/admin/history/[historyId]`
 - `/admin/history/import`
+- `/admin/history/export`
 
 Deferred:
 

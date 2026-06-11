@@ -11,6 +11,8 @@ All notable changes to AroundCities should be documented here.
 - Added Phase 1 of the standalone History module with dedicated `history_records` and `history_photos` tables.
 - Added `/admin/history`, `/admin/history/new`, `/admin/history/[historyId]`, and `/admin/history/import` for creating, editing, importing, publishing, archiving, deleting, and photo-linking history records.
 - Added history JSON import support for `aroundcities_history_import_v1`, forcing imported records to draft status.
+- Added `/admin/history/export` for exporting draft history records as `aroundcities_history_research_export_v1` JSON, with optional tag exclusion and large item counts for research.
+- Added `aroundcities_history_update_v1` support to `/admin/history/import` for updating existing history records by `history_id` and automatically tagging successful updates with `research:done`.
 - Added history photo linking from existing feed photos plus compressed history-only photo uploads through the existing Supabase Storage `photos` bucket and archived photo-storage feed pattern.
 
 ### Notes

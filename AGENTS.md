@@ -139,8 +139,10 @@ V2 Phase 1 Steps 1-5 are implemented:
 - The `/admin` workflow hub shows counts for Drafted Feeds, Published Feeds, and Sources.
 - The `/admin` workflow hub also links to History.
 - `/admin/history`, `/admin/history/new`, `/admin/history/[historyId]`, and `/admin/history/import` support Phase 1 standalone history record management.
+- `/admin/history/export` exports draft history records for research as `aroundcities_history_research_export_v1`, defaulting to exclude records tagged `research:done`.
 - History records are stored in `history_records`, and history-photo links are stored in `history_photos`.
 - History JSON import uses `aroundcities_history_import_v1`, validates month/day/confidence, and always creates draft records.
+- History update import uses `aroundcities_history_update_v1`, updates existing records by `history_id`, never creates records, preserves existing tags, and adds `research:done` after successful updates.
 - History records can link existing feed photos using a client-side feed-title picker.
 - History-only uploads use browser image compression, Supabase Storage, normal `photos` rows, and an archived feed used only as a photo container.
 - Do not integrate History into `/kch`, create Story Of The Day, generate feeds from history records, add history recommendation/search/analytics, or build related-content features during History Phase 1.

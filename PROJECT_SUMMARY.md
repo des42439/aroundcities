@@ -66,6 +66,8 @@ Implemented mobile-first workflow:
 - `/admin/stats` lists feed and photo click counts from highest to lowest.
 - `/admin/history` manages standalone Kuching/Sarawak history records.
 - `/admin/history/import` accepts pasted `aroundcities_history_import_v1` JSON and saves valid records as drafts.
+- `/admin/history/export` exports draft history records as `aroundcities_history_research_export_v1` JSON for ChatGPT/library research, defaulting to exclude records already tagged `research:done`.
+- `/admin/history/import` also accepts `aroundcities_history_update_v1` JSON to update existing records by `history_id`; successful updates preserve existing tags and add `research:done`.
 - The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Photo order is controlled by `photos.sequence`, with smaller positive numbers displayed first.
 - Photos marked `Show as photo feed` can appear as standalone Photo feed cards in the public `/kch` discovery stream.

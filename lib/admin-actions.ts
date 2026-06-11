@@ -38,6 +38,8 @@ import {
   createHistoryOnlyPhoto,
   createHistoryRecord,
   deleteHistoryRecord,
+  getHistoryRecordById,
+  getHistoryResearchExportRecords,
   getNextHistoryPhotoSequence,
   removeHistoryPhoto,
   updateHistoryPhoto,
@@ -78,7 +80,19 @@ export type EventImportResult = {
 };
 
 export type HistoryImportResult = {
+  mode: "create" | "update";
   createdCount: number;
+  updatedCount: number;
+  skippedCount: number;
+  skipped: string[];
+};
+
+export type HistoryResearchExportResult = {
+  jsonText: string;
+  count: number;
+  excludeTag: string;
+  exportedAt: string;
+  filename: string;
 };
 
 type EventImportPayload = {
@@ -129,6 +143,24 @@ type ParsedHistoryImportRecord = {
   source_screenshot_url: string | null;
   confidence: HistoryConfidence;
 };
+
+type ParsedHistoryUpdateRecord = ParsedHistoryImportRecord & {
+  history_id: string;
+};
+
+type ParsedHistoryImportJson =
+  | {
+      mode: "create";
+      records: ParsedHistoryImportRecord[];
+    }
+  | {
+      mode: "update";
+      records: {
+        index: number;
+        record: ParsedHistoryUpdateRecord | null;
+        error: string | null;
+      }[];
+    };
 
 async function actionError(
   area: string,
@@ -476,7 +508,7 @@ function parseEventDetailsFromObject(
 
 function parseHistoryImportJson(
   jsonText: string
-): ParsedHistoryImportRecord[] {
+): ParsedHistoryImportJson {
   let payload: unknown;
 
   try {
@@ -491,9 +523,12 @@ function parseHistoryImportJson(
     throw new Error("JSON must be an object.");
   }
 
-  if (importObject.version !== "aroundcities_history_import_v1") {
+  if (
+    importObject.version !== "aroundcities_history_import_v1" &&
+    importObject.version !== "aroundcities_history_update_v1"
+  ) {
     throw new Error(
-      "Import version must be aroundcities_history_import_v1."
+      "Import version must be aroundcities_history_import_v1 or aroundcities_history_update_v1."
     );
   }
 
@@ -501,46 +536,180 @@ function parseHistoryImportJson(
     throw new Error("JSON must include a records array.");
   }
 
-  return importObject.records.map((item, index) => {
-    const record = objectFromUnknown(item);
-    const title = textFromUnknown(record?.title);
-
-    if (!title) {
-      throw new Error(`Record ${index + 1} is missing title.`);
-    }
-
-    const eventYear = Number(record?.event_year);
-    const eventMonth = Number(record?.event_month);
-    const eventDay = Number(record?.event_day);
-
-    validateHistoryDateParts(eventYear, eventMonth, eventDay);
-
-    const rawTags = Array.isArray(record?.tags) ? record.tags : [];
-
+  if (importObject.version === "aroundcities_history_update_v1") {
     return {
-      title,
-      description: textFromUnknown(record?.description),
+      mode: "update",
+      records: importObject.records.map((item, index) =>
+        parseHistoryUpdateRecord(item, index)
+      ),
+    };
+  }
+
+  return {
+    mode: "create",
+    records: importObject.records.map((item, index) =>
+      parseHistoryCreateRecord(item, index)
+    ),
+  };
+}
+
+function parseHistoryCreateRecord(
+  item: unknown,
+  index: number
+): ParsedHistoryImportRecord {
+  const record = objectFromUnknown(item);
+  const title = textFromUnknown(record?.title);
+
+  if (!title) {
+    throw new Error(`Record ${index + 1} is missing title.`);
+  }
+
+  const eventYear = Number(record?.event_year);
+  const eventMonth = Number(record?.event_month);
+  const eventDay = Number(record?.event_day);
+
+  validateHistoryDateParts(eventYear, eventMonth, eventDay);
+
+  const rawTags = Array.isArray(record?.tags) ? record.tags : [];
+
+  return {
+    title,
+    description: textFromUnknown(record?.description),
+    event_year: eventYear,
+    event_month: eventMonth,
+    event_day: eventDay,
+    place_name: textFromUnknown(record?.place_name),
+    location_note: textFromUnknown(record?.location_note),
+    tags: rawTags
+      .map((tag) =>
+        typeof tag === "string" ? tag.trim().toLowerCase() : ""
+      )
+      .filter(Boolean),
+    source_url: textFromUnknown(record?.source_url),
+    source_note: textFromUnknown(record?.source_note),
+    source_screenshot_url: textFromUnknown(
+      record?.source_screenshot_url
+    ),
+    confidence: parseHistoryImportConfidence(
+      record?.confidence,
+      index
+    ),
+  };
+}
+
+function parseHistoryUpdateRecord(
+  item: unknown,
+  index: number
+): {
+  index: number;
+  record: ParsedHistoryUpdateRecord | null;
+  error: string | null;
+} {
+  const record = objectFromUnknown(item);
+
+  if (!record) {
+    return {
+      index,
+      record: null,
+      error: `Record ${index + 1}: record must be an object.`,
+    };
+  }
+
+  const historyId =
+    typeof record.history_id === "string"
+      ? record.history_id.trim()
+      : "";
+
+  if (!historyId) {
+    return {
+      index,
+      record: null,
+      error: `Record ${index + 1}: history_id is required.`,
+    };
+  }
+
+  const eventYear = Number(record.event_year);
+  const eventMonth = Number(record.event_month);
+  const eventDay = Number(record.event_day);
+
+  try {
+    validateHistoryDateParts(eventYear, eventMonth, eventDay);
+  } catch (error) {
+    return {
+      index,
+      record: null,
+      error: `Record ${index + 1}: ${
+        error instanceof Error
+          ? error.message
+          : "event date is invalid."
+      }`,
+    };
+  }
+
+  if (!Array.isArray(record.tags)) {
+    return {
+      index,
+      record: null,
+      error: `Record ${index + 1}: tags must be an array.`,
+    };
+  }
+
+  if (
+    record.confidence !== "high" &&
+    record.confidence !== "medium" &&
+    record.confidence !== "low"
+  ) {
+    return {
+      index,
+      record: null,
+      error: `Record ${index + 1}: confidence must be high, medium, or low.`,
+    };
+  }
+
+  return {
+    index,
+    record: {
+      history_id: historyId,
+      title: typeof record.title === "string" ? record.title.trim() : "",
+      description: textFromUnknown(record.description),
       event_year: eventYear,
       event_month: eventMonth,
       event_day: eventDay,
-      place_name: textFromUnknown(record?.place_name),
-      location_note: textFromUnknown(record?.location_note),
-      tags: rawTags
+      place_name: textFromUnknown(record.place_name),
+      location_note: textFromUnknown(record.location_note),
+      tags: record.tags
         .map((tag) =>
           typeof tag === "string" ? tag.trim().toLowerCase() : ""
         )
         .filter(Boolean),
-      source_url: textFromUnknown(record?.source_url),
-      source_note: textFromUnknown(record?.source_note),
+      source_url: textFromUnknown(record.source_url),
+      source_note: textFromUnknown(record.source_note),
       source_screenshot_url: textFromUnknown(
-        record?.source_screenshot_url
+        record.source_screenshot_url
       ),
-      confidence: parseHistoryImportConfidence(
-        record?.confidence,
-        index
-      ),
-    };
-  });
+      confidence: record.confidence,
+    },
+    error: null,
+  };
+}
+
+function mergeHistoryResearchTags(
+  existingTags: string[],
+  importedTags: string[]
+) {
+  return Array.from(
+    new Set([...existingTags, ...importedTags, "research:done"])
+  );
+}
+
+function formatHistoryExportTimestamp(date: Date) {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hour = String(date.getUTCHours()).padStart(2, "0");
+  const minute = String(date.getUTCMinutes()).padStart(2, "0");
+
+  return `${year}${month}${day}-${hour}${minute}`;
 }
 
 function normalizeImportedEventTitle(title: string) {
@@ -2132,15 +2301,68 @@ async function addUploadedHistoryPhoto(input: {
   return sequence;
 }
 
+export async function generateHistoryResearchExportAction(input: {
+  excludeTag: string;
+  itemCount: number;
+}): Promise<HistoryResearchExportResult | AdminActionState> {
+  await requireAdmin();
+
+  try {
+    const excludeTag = input.excludeTag.trim();
+    const requestedCount = Number.isFinite(input.itemCount)
+      ? input.itemCount
+      : 10;
+    const itemCount = Math.min(Math.max(requestedCount, 1), 10000);
+    const records = await getHistoryResearchExportRecords({
+      excludeTag,
+      itemCount,
+    });
+    const exportedAt = new Date();
+    const payload = {
+      version: "aroundcities_history_research_export_v1",
+      exported_at: exportedAt.toISOString(),
+      count: records.length,
+      exclude_tag: excludeTag,
+      records: records.map((record) => ({
+        history_id: record.history_id,
+        title: record.title,
+        description: record.description ?? "",
+        event_year: record.event_year,
+        event_month: record.event_month,
+        event_day: record.event_day,
+        place_name: record.place_name ?? "",
+        location_note: record.location_note ?? "",
+        tags: record.tags ?? [],
+        source_url: record.source_url ?? "",
+        source_note: record.source_note ?? "",
+        source_screenshot_url: record.source_screenshot_url ?? "",
+        confidence: record.confidence,
+      })),
+    };
+
+    return {
+      jsonText: JSON.stringify(payload, null, 2),
+      count: records.length,
+      excludeTag,
+      exportedAt: payload.exported_at,
+      filename: `aroundcities-history-research-export-${formatHistoryExportTimestamp(
+        exportedAt
+      )}.json`,
+    };
+  } catch (error) {
+    return await actionError("export_history_research", error);
+  }
+}
+
 export async function importHistoryRecordsAction(input: {
   jsonText: string;
 }): Promise<HistoryImportResult | AdminActionState> {
   await requireAdmin();
 
-  let records: ParsedHistoryImportRecord[];
+  let parsed: ParsedHistoryImportJson;
 
   try {
-    records = parseHistoryImportJson(input.jsonText);
+    parsed = parseHistoryImportJson(input.jsonText);
   } catch (error) {
     return {
       error:
@@ -2151,11 +2373,73 @@ export async function importHistoryRecordsAction(input: {
   }
 
   try {
-    for (const record of records) {
-      await createHistoryRecord({
-        ...record,
-        status: "draft",
-      });
+    if (parsed.mode === "create") {
+      for (const record of parsed.records) {
+        await createHistoryRecord({
+          ...record,
+          status: "draft",
+        });
+      }
+
+      revalidatePath("/admin");
+      revalidatePath("/admin/history");
+      revalidatePath("/admin/history/import");
+
+      return {
+        mode: "create",
+        createdCount: parsed.records.length,
+        updatedCount: 0,
+        skippedCount: 0,
+        skipped: [],
+      };
+    }
+
+    let updatedCount = 0;
+    const skipped: string[] = [];
+
+    for (const item of parsed.records) {
+      if (!item.record) {
+        skipped.push(item.error ?? `Record ${item.index + 1}: skipped.`);
+        continue;
+      }
+
+      const existingRecord = await getHistoryRecordById(
+        item.record.history_id
+      );
+
+      if (!existingRecord) {
+        skipped.push(`Record ${item.index + 1}: history_id not found.`);
+        continue;
+      }
+
+      try {
+        await updateHistoryRecord(item.record.history_id, {
+          title: item.record.title,
+          description: item.record.description,
+          event_year: item.record.event_year,
+          event_month: item.record.event_month,
+          event_day: item.record.event_day,
+          place_name: item.record.place_name,
+          location_note: item.record.location_note,
+          tags: mergeHistoryResearchTags(
+            existingRecord.tags ?? [],
+            item.record.tags
+          ),
+          source_url: item.record.source_url,
+          source_note: item.record.source_note,
+          source_screenshot_url: item.record.source_screenshot_url,
+          confidence: item.record.confidence,
+        });
+        updatedCount += 1;
+      } catch (error) {
+        skipped.push(
+          `Record ${item.index + 1}: ${
+            error instanceof Error
+              ? error.message
+              : "history record update failed."
+          }`
+        );
+      }
     }
 
     revalidatePath("/admin");
@@ -2163,7 +2447,11 @@ export async function importHistoryRecordsAction(input: {
     revalidatePath("/admin/history/import");
 
     return {
-      createdCount: records.length,
+      mode: "update",
+      createdCount: 0,
+      updatedCount,
+      skippedCount: skipped.length,
+      skipped,
     };
   } catch (error) {
     return await actionError("import_history_records", error);

@@ -29,6 +29,12 @@ export default async function HistoryPage() {
         >
           Import JSON
         </Link>
+        <Link
+          href="/admin/history/export"
+          className={secondaryButtonClassName}
+        >
+          Export History
+        </Link>
       </div>
 
       {records.length === 0 ? (

@@ -42,6 +42,50 @@ export async function getHistoryRecordCount(): Promise<number> {
   return count ?? 0;
 }
 
+export async function getHistoryResearchExportRecords(input: {
+  excludeTag: string;
+  itemCount: number;
+}): Promise<HistoryRecord[]> {
+  const limit = Math.min(Math.max(input.itemCount, 1), 10000);
+  const excludeTag = input.excludeTag.trim();
+  const records: HistoryRecord[] = [];
+  const batchSize = 1000;
+  let offset = 0;
+
+  while (records.length < limit) {
+    const { data, error } = await historyDb()
+      .from("history_records")
+      .select("*")
+      .eq("status", "draft")
+      .order("created_at", { ascending: true })
+      .range(offset, offset + batchSize - 1);
+
+    if (error) {
+      throw new Error(`History export query failed: ${error.message}`);
+    }
+
+    const batch = (data ?? []) as HistoryRecord[];
+
+    for (const record of batch) {
+      if (!excludeTag || !(record.tags ?? []).includes(excludeTag)) {
+        records.push(record);
+      }
+
+      if (records.length >= limit) {
+        break;
+      }
+    }
+
+    if (batch.length < batchSize) {
+      break;
+    }
+
+    offset += batchSize;
+  }
+
+  return records;
+}
+
 export async function getHistoryRecordById(
   historyId: string
 ): Promise<HistoryRecordWithPhotos | null> {

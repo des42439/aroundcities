@@ -13,12 +13,18 @@ import {
 } from "@/lib/admin-actions";
 
 type PreviewRecord = {
+  historyId: string;
   title: string;
   description: string;
   eventDate: string;
   placeName: string;
   sourceNote: string;
   confidence: string;
+};
+
+type PreviewResult = {
+  version: string;
+  records: PreviewRecord[];
 };
 
 function text(value: unknown) {
@@ -31,7 +37,7 @@ function object(value: unknown) {
     : null;
 }
 
-function parsePreview(jsonText: string): PreviewRecord[] {
+function parsePreview(jsonText: string): PreviewResult {
   let payload: unknown;
 
   try {
@@ -46,9 +52,12 @@ function parsePreview(jsonText: string): PreviewRecord[] {
     throw new Error("JSON must be an object.");
   }
 
-  if (importObject.version !== "aroundcities_history_import_v1") {
+  if (
+    importObject.version !== "aroundcities_history_import_v1" &&
+    importObject.version !== "aroundcities_history_update_v1"
+  ) {
     throw new Error(
-      "Import version must be aroundcities_history_import_v1."
+      "Import version must be aroundcities_history_import_v1 or aroundcities_history_update_v1."
     );
   }
 
@@ -56,48 +65,78 @@ function parsePreview(jsonText: string): PreviewRecord[] {
     throw new Error("JSON must include a records array.");
   }
 
-  return importObject.records.map((item, index) => {
-    const record = object(item);
-    const title = text(record?.title);
-    const eventYear = Number(record?.event_year);
-    const eventMonth = Number(record?.event_month);
-    const eventDay = Number(record?.event_day);
-    const confidence = text(record?.confidence) || "medium";
+  return {
+    version: String(importObject.version),
+    records: importObject.records.map((item, index) => {
+      const record = object(item);
+      const title = text(record?.title);
+      const isCreateImport =
+        importObject.version === "aroundcities_history_import_v1";
+      const eventYear = Number(record?.event_year);
+      const eventMonth = Number(record?.event_month);
+      const eventDay = Number(record?.event_day);
+      const confidence = text(record?.confidence) || "medium";
 
-    if (!title) {
-      throw new Error(`Record ${index + 1} is missing title.`);
-    }
+      if (isCreateImport && !title) {
+        throw new Error(`Record ${index + 1} is missing title.`);
+      }
 
-    if (eventMonth < 1 || eventMonth > 12) {
-      throw new Error(
-        `Record ${index + 1} event_month must be between 1 and 12.`
-      );
-    }
+      if (isCreateImport && !Number.isInteger(eventYear)) {
+        throw new Error(
+          `Record ${index + 1} event_year must be a whole number.`
+        );
+      }
 
-    if (eventDay < 1 || eventDay > 31) {
-      throw new Error(
-        `Record ${index + 1} event_day must be between 1 and 31.`
-      );
-    }
+      if (
+        isCreateImport &&
+        (!Number.isInteger(eventMonth) ||
+          eventMonth < 1 ||
+          eventMonth > 12)
+      ) {
+        throw new Error(
+          `Record ${index + 1} event_month must be between 1 and 12.`
+        );
+      }
 
-    if (!["high", "medium", "low"].includes(confidence)) {
-      throw new Error(
-        `Record ${index + 1} confidence must be high, medium, or low.`
-      );
-    }
+      if (
+        isCreateImport &&
+        (!Number.isInteger(eventDay) ||
+          eventDay < 1 ||
+          eventDay > 31)
+      ) {
+        throw new Error(
+          `Record ${index + 1} event_day must be between 1 and 31.`
+        );
+      }
 
-    return {
-      title,
-      description: text(record?.description),
-      eventDate: `${eventYear}-${String(eventMonth).padStart(
-        2,
-        "0"
-      )}-${String(eventDay).padStart(2, "0")}`,
-      placeName: text(record?.place_name),
-      sourceNote: text(record?.source_note),
-      confidence,
-    };
-  });
+      if (
+        isCreateImport &&
+        !["high", "medium", "low"].includes(confidence)
+      ) {
+        throw new Error(
+          `Record ${index + 1} confidence must be high, medium, or low.`
+        );
+      }
+
+      return {
+        historyId: text(record?.history_id),
+        title,
+        description: text(record?.description),
+        eventDate:
+          Number.isFinite(eventYear) &&
+          Number.isFinite(eventMonth) &&
+          Number.isFinite(eventDay)
+            ? `${eventYear}-${String(eventMonth).padStart(
+                2,
+                "0"
+              )}-${String(eventDay).padStart(2, "0")}`
+            : "Invalid date fields",
+        placeName: text(record?.place_name),
+        sourceNote: text(record?.source_note),
+        confidence,
+      };
+    }),
+  };
 }
 
 function serverError(result: unknown) {
@@ -115,7 +154,7 @@ function serverError(result: unknown) {
 
 export default function HistoryImportForm() {
   const [jsonText, setJsonText] = useState("");
-  const [preview, setPreview] = useState<PreviewRecord[] | null>(null);
+  const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [saveResult, setSaveResult] =
@@ -192,9 +231,28 @@ export default function HistoryImportForm() {
       {saveResult ? (
         <div className="space-y-3 rounded-md border border-emerald-950 bg-emerald-950/30 px-3 py-3 text-sm text-emerald-100">
           <p>
-            Successfully imported {saveResult.createdCount} history
-            record{saveResult.createdCount === 1 ? "" : "s"}.
+            {saveResult.mode === "update"
+              ? `Successfully updated ${saveResult.updatedCount} history record${
+                  saveResult.updatedCount === 1 ? "" : "s"
+                }. Skipped ${saveResult.skippedCount} record${
+                  saveResult.skippedCount === 1 ? "" : "s"
+                }.`
+              : `Successfully imported ${
+                  saveResult.createdCount
+                } history record${
+                  saveResult.createdCount === 1 ? "" : "s"
+                }.`}
           </p>
+          {saveResult.skipped.length ? (
+            <div className="space-y-2 text-red-100">
+              <p>Skipped:</p>
+              <ul className="list-disc space-y-1 pl-5">
+                {saveResult.skipped.map((reason, index) => (
+                  <li key={`${reason}-${index}`}>{reason}</li>
+                ))}
+              </ul>
+            </div>
+          ) : null}
           <Link
             href="/admin/history"
             className="inline-block underline underline-offset-4"
@@ -227,21 +285,32 @@ export default function HistoryImportForm() {
 
       {preview ? (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold">
-            Preview ({preview.length})
-          </h2>
-          {preview.map((record, index) => (
+          <div>
+            <h2 className="text-lg font-semibold">
+              Preview ({preview.records.length})
+            </h2>
+            <p className="mt-1 text-sm text-neutral-500">
+              Version: {preview.version}
+            </p>
+          </div>
+          {preview.records.map((record, index) => (
             <article
-              key={`${record.title}-${index}`}
+              key={`${record.historyId || record.title}-${index}`}
               className="space-y-3 rounded-md border border-neutral-800 bg-neutral-950 p-4"
             >
               <div className="text-xs text-neutral-500">
                 Record {index + 1}
               </div>
               <h3 className="text-lg font-semibold">
-                {record.title}
+                {record.title || "Untitled"}
               </h3>
               <dl className="space-y-2 text-sm">
+                {record.historyId ? (
+                  <PreviewRow
+                    label="History ID"
+                    value={record.historyId}
+                  />
+                ) : null}
                 <PreviewRow label="Event date" value={record.eventDate} />
                 <PreviewRow
                   label="Description"
