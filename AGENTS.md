@@ -126,6 +126,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Database migration for `places`, `feeds`, and `photos`.
 - TypeScript types and simple data helpers.
 - Public routes for `/`, `/kch`, `/feed/[slug]`, `/photo/[photoId]`, and `/place/[slug]`.
+- `/` and `/kch` are temporarily protected by a lightweight public password lock while content is being prepared. Public lock settings live in `lib/public-lock.ts`; disable by setting `LOCK_USER_PAGE` to `false` and redeploying.
 - Minimal admin UI protected by `ADMIN_PASSWORD`.
 - Mobile-first admin workflow is split into `/admin/feeds/new`, `/admin/feeds/drafts`, and `/admin/feeds/published`.
 - The `/admin` workflow hub shows counts for Drafted Feeds, Published Feeds, and Sources.

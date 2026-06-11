@@ -1,8 +1,8 @@
 # AroundCities V2 Phase 1 Architecture
 
-Last updated: 6 June 2026
+Last updated: 11 June 2026
 
-Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections.
+Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`.
 
 ## 1. Objective
 
@@ -26,6 +26,12 @@ It is not:
 - A social network
 
 The product should feel like a local editorial feed: concise posts, useful context, strong photos, and clear links to places around Kuching.
+
+Temporary pre-launch note:
+
+- The public homepage may be hidden behind a simple password gate while content is being prepared.
+- This lock is not a user authentication system and does not change the admin auth model.
+- Future public launch should only require setting `LOCK_USER_PAGE` to `false` in `lib/public-lock.ts` and redeploying.
 
 ## 3. Phase 1 Scope
 

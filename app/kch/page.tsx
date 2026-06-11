@@ -1,11 +1,33 @@
 import FeedCard from "@/components/FeedCard";
 import PhotoFeedCard from "@/components/PhotoFeedCard";
+import PublicLockScreen from "@/components/PublicLockScreen";
 import PublicShell from "@/components/PublicShell";
 import { getDiscoveryFeedItems } from "@/lib/feeds";
+import { hasPublicPageAccess } from "@/lib/public-lock";
 
 export const dynamic = "force-dynamic";
 
-export default async function KuchingPage() {
+type Props = {
+  searchParams: Promise<{
+    publicLockError?: string;
+  }>;
+};
+
+export default async function KuchingPage({
+  searchParams,
+}: Props) {
+  const hasAccess = await hasPublicPageAccess();
+
+  if (!hasAccess) {
+    const params = await searchParams;
+
+    return (
+      <PublicLockScreen
+        hasError={params.publicLockError === "1"}
+      />
+    );
+  }
+
   const items = await getDiscoveryFeedItems();
 
   return (

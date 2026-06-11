@@ -1,6 +1,6 @@
 # AroundCities Project Summary
 
-Last updated: 6 June 2026
+Last updated: 11 June 2026
 
 ## Current Direction
 
@@ -38,6 +38,13 @@ No comments, likes, followers, messaging, ratings, reviews, or social-network as
 
 These public routes are implemented for Phase 1.
 
+Temporary public launch lock:
+
+- `/` and `/kch` are currently protected by a lightweight password screen while content is being prepared.
+- Public lock settings live in `lib/public-lock.ts`.
+- Set `LOCK_USER_PAGE` to `false` and redeploy to remove the public homepage lock.
+- This does not affect `/admin` or the existing admin password/session flow.
+
 ## Admin Direction
 
 Admin should be optimized for a single curator.
@@ -60,7 +67,7 @@ Implemented mobile-first workflow:
 - Event Details is available as an optional feed editor section for structured event metadata such as free/paid entry, registration style, public/ticket/lucky-draw flags, dress code, organizer, and notes.
 - Published feeds can be archived without deleting their database rows.
 
-Admin must be protected before public launch.
+Admin is protected separately from the temporary public homepage lock.
 
 ## Architecture Source
 

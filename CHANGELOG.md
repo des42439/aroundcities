@@ -2,6 +2,17 @@
 
 All notable changes to AroundCities should be documented here.
 
+## 2026-06-11
+
+### Added
+
+- Added a temporary public homepage password lock for `/` and `/kch` while AroundCities is being prepared for launch.
+- Added centralized public lock settings in `lib/public-lock.ts`, including `LOCK_USER_PAGE`, `USER_PAGE_PASSWORD`, and the `ac_public_access` cookie.
+
+### Notes
+
+- The public lock is separate from admin authentication and can be disabled by changing `LOCK_USER_PAGE` to `false` and redeploying.
+
 ## 2026-06-06
 
 ### Added
