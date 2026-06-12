@@ -15,6 +15,10 @@ All notable changes to AroundCities should be documented here.
 
 - Changed History export from the old draft-only tag-exclusion flow to export records by the selected History filter.
 
+### Fixed
+
+- Fixed History edit Publish and Archive buttons so the clicked action overrides the Status dropdown value.
+
 ## 2026-06-11
 
 ### Added

@@ -290,6 +290,14 @@ function parseHistoryRecordFilter(value: unknown): HistoryRecordFilter {
   return "daily";
 }
 
+function parseSubmittedHistoryStatus(formData: FormData): HistoryStatus {
+  const submittedStatuses = formData.getAll("status");
+  const submittedStatus =
+    submittedStatuses[submittedStatuses.length - 1] ?? null;
+
+  return parseHistoryStatus(submittedStatus);
+}
+
 function parseHistoryConfidence(value: unknown): HistoryConfidence {
   if (value === "high" || value === "low") {
     return value;
@@ -2162,7 +2170,7 @@ export async function updateHistoryRecordAction(
       event_year: eventYear,
       event_month: eventMonth,
       event_day: eventDay,
-      status: parseHistoryStatus(formData.get("status")),
+      status: parseSubmittedHistoryStatus(formData),
       place_name: nullableString(formData.get("place_name")),
       location_note: nullableString(formData.get("location_note")),
       tags: parseTags(formData.get("tags")),
