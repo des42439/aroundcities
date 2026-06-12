@@ -4,42 +4,102 @@ import {
   primaryButtonClassName,
   secondaryButtonClassName,
 } from "@/components/AdminForm";
+import HistoryRecordFilterSelect from "@/components/HistoryRecordFilterSelect";
 import { requireAdmin } from "@/lib/admin-auth";
 import { formatDate } from "@/lib/format";
-import { getHistoryRecords } from "@/lib/history";
+import {
+  ensureDailyHistoryTasks,
+  getDailyHistoryTaskTag,
+  getHistoryRecords,
+  type HistoryRecordFilter,
+} from "@/lib/history";
 
 export const dynamic = "force-dynamic";
 
-export default async function HistoryPage() {
+type HistoryPageProps = {
+  searchParams?: Promise<{
+    view?: string | string[];
+  }>;
+};
+
+function getHistoryFilterParam(value?: string | string[]): HistoryRecordFilter {
+  const view = Array.isArray(value) ? value[0] : value;
+
+  if (
+    view === "all" ||
+    view === "published" ||
+    view === "draft" ||
+    view === "archived"
+  ) {
+    return view;
+  }
+
+  return "daily";
+}
+
+export default async function HistoryPage({
+  searchParams,
+}: HistoryPageProps) {
   await requireAdmin();
-  const records = await getHistoryRecords();
+  const params = await searchParams;
+  const filter = getHistoryFilterParam(params?.view);
+  const todayTag = getDailyHistoryTaskTag();
+
+  await ensureDailyHistoryTasks(todayTag);
+
+  const records = await getHistoryRecords(filter, todayTag);
+  const dailyTaskCount =
+    filter === "daily"
+      ? records.length
+      : (await getHistoryRecords("daily", todayTag)).length;
 
   return (
     <AdminShell title="History">
-      <div className="mb-5 flex flex-wrap gap-3">
-        <Link
-          href="/admin/history/new"
-          className={primaryButtonClassName}
-        >
-          New History Record
-        </Link>
-        <Link
-          href="/admin/history/import"
-          className={secondaryButtonClassName}
-        >
-          Import JSON
-        </Link>
-        <Link
-          href="/admin/history/export"
-          className={secondaryButtonClassName}
-        >
-          Export History
-        </Link>
+      <div className="mb-5 space-y-4">
+        <div className="flex flex-wrap gap-3">
+          <Link
+            href="/admin/history/new"
+            className={primaryButtonClassName}
+          >
+            New History Record
+          </Link>
+          <Link
+            href="/admin/history/import"
+            className={secondaryButtonClassName}
+          >
+            Import JSON
+          </Link>
+          <Link
+            href="/admin/history/export"
+            className={secondaryButtonClassName}
+          >
+            Export History
+          </Link>
+        </div>
+
+        <div className="flex flex-col gap-3 border-b border-neutral-900 pb-5">
+          <HistoryRecordFilterSelect
+            filter={filter}
+            basePath="/admin/history"
+          />
+          {filter === "daily" ? (
+            <div>
+              <h2 className="text-lg font-semibold text-neutral-100">
+                Today&apos;s History Research Tasks
+              </h2>
+              <p className="mt-1 text-sm text-neutral-500">
+                {dailyTaskCount} tasks remaining today
+              </p>
+            </div>
+          ) : null}
+        </div>
       </div>
 
       {records.length === 0 ? (
         <p className="rounded-lg border border-neutral-900 p-4 text-sm text-neutral-500">
-          No history records yet.
+          {filter === "daily"
+            ? "No daily history tasks remaining today."
+            : "No history records found for this view."}
         </p>
       ) : (
         <div className="space-y-3">

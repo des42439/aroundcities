@@ -1,6 +1,6 @@
 # AroundCities V2 Phase 1 Architecture
 
-Last updated: 11 June 2026
+Last updated: 12 June 2026
 
 Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`. Phase 1 of the standalone History module is implemented as an admin-only archive and is not integrated into public discovery.
 
@@ -54,7 +54,8 @@ Purpose:
 - Store historical records about Kuching and Sarawak.
 - Manage draft, published, and archived history records from admin.
 - Import records from `aroundcities_history_import_v1` JSON.
-- Export draft records through `aroundcities_history_research_export_v1` JSON for research, with optional tag exclusion.
+- Assign a small daily research batch by tagging up to 10 oldest draft records with `daily-task:YYYYMMDD` on the first `/admin/history` visit of each Kuching day.
+- Export records through `aroundcities_history_research_export_v1` JSON for research using Daily Tasks, Show All, Published, Drafted, and Archived filters.
 - Update existing records through `aroundcities_history_update_v1` JSON using `history_id`; successful updates add the `research:done` tag.
 - Link records to reusable photos from the existing photo library.
 - Upload a single source screenshot from the edit page using the existing browser compression and signed Supabase Storage upload flow, then store the generated URL in `history_records.source_screenshot_url`.
@@ -67,6 +68,8 @@ Tables:
 History records are not feeds and must not be stored in `feeds`.
 
 History photos reuse `photos`. History-only uploads create ordinary photo rows attached to an archived feed used solely as a photo container, then link those photos through `history_photos`.
+
+Daily research tasks reuse `history_records.tags`. Starting a new Kuching day removes only old tags beginning with `daily-task:` so unfinished drafts can be reassigned later without deleting ordinary tags such as source, slug, or `research:done` tags.
 
 Admin routes:
 

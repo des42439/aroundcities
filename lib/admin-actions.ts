@@ -40,10 +40,12 @@ import {
   deleteHistoryRecord,
   getHistoryRecordById,
   getHistoryResearchExportRecords,
+  getDailyHistoryTaskTag,
   getNextHistoryPhotoSequence,
   removeHistoryPhoto,
   updateHistoryPhoto,
   updateHistoryRecord,
+  type HistoryRecordFilter,
 } from "./history";
 import { slugify } from "./slug";
 import { getSupabaseAdmin } from "./supabase-admin";
@@ -90,7 +92,7 @@ export type HistoryImportResult = {
 export type HistoryResearchExportResult = {
   jsonText: string;
   count: number;
-  excludeTag: string;
+  filter: HistoryRecordFilter;
   exportedAt: string;
   filename: string;
 };
@@ -273,6 +275,19 @@ function parseHistoryStatus(
   }
 
   return "draft";
+}
+
+function parseHistoryRecordFilter(value: unknown): HistoryRecordFilter {
+  if (
+    value === "all" ||
+    value === "published" ||
+    value === "draft" ||
+    value === "archived"
+  ) {
+    return value;
+  }
+
+  return "daily";
 }
 
 function parseHistoryConfidence(value: unknown): HistoryConfidence {
@@ -2355,27 +2370,23 @@ async function addUploadedHistoryPhoto(input: {
 }
 
 export async function generateHistoryResearchExportAction(input: {
-  excludeTag: string;
-  itemCount: number;
+  filter: HistoryRecordFilter;
 }): Promise<HistoryResearchExportResult | AdminActionState> {
   await requireAdmin();
 
   try {
-    const excludeTag = input.excludeTag.trim();
-    const requestedCount = Number.isFinite(input.itemCount)
-      ? input.itemCount
-      : 10;
-    const itemCount = Math.min(Math.max(requestedCount, 1), 10000);
+    const filter = parseHistoryRecordFilter(input.filter);
+    const todayTag = getDailyHistoryTaskTag();
     const records = await getHistoryResearchExportRecords({
-      excludeTag,
-      itemCount,
+      filter,
+      todayTag,
     });
     const exportedAt = new Date();
     const payload = {
       version: "aroundcities_history_research_export_v1",
       exported_at: exportedAt.toISOString(),
       count: records.length,
-      exclude_tag: excludeTag,
+      filter,
       records: records.map((record) => ({
         history_id: record.history_id,
         title: record.title,
@@ -2396,7 +2407,7 @@ export async function generateHistoryResearchExportAction(input: {
     return {
       jsonText: JSON.stringify(payload, null, 2),
       count: records.length,
-      excludeTag,
+      filter,
       exportedAt: payload.exported_at,
       filename: `aroundcities-history-research-export-${formatHistoryExportTimestamp(
         exportedAt

@@ -3,16 +3,16 @@
 import Link from "next/link";
 import { useState } from "react";
 import {
-  Field,
-  inputClassName,
   primaryButtonClassName,
   secondaryButtonClassName,
   textareaClassName,
 } from "./AdminForm";
+import HistoryRecordFilterSelect from "./HistoryRecordFilterSelect";
 import {
   generateHistoryResearchExportAction,
   HistoryResearchExportResult,
 } from "@/lib/admin-actions";
+import type { HistoryRecordFilter } from "@/lib/history";
 
 function serverError(result: unknown) {
   if (
@@ -27,9 +27,14 @@ function serverError(result: unknown) {
   return null;
 }
 
-export default function HistoryExportForm() {
-  const [excludeTag, setExcludeTag] = useState("research:done");
-  const [itemCount, setItemCount] = useState("10");
+type HistoryExportFormProps = {
+  initialFilter: HistoryRecordFilter;
+};
+
+export default function HistoryExportForm({
+  initialFilter,
+}: HistoryExportFormProps) {
+  const [filter, setFilter] = useState(initialFilter);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
@@ -44,8 +49,7 @@ export default function HistoryExportForm() {
 
     try {
       const result = await generateHistoryResearchExportAction({
-        excludeTag,
-        itemCount: Number(itemCount),
+        filter,
       });
       const actionError = serverError(result);
 
@@ -114,30 +118,16 @@ export default function HistoryExportForm() {
     <div className="space-y-6">
       <div className="space-y-2 text-sm text-neutral-400">
         <p>
-          Export draft history records as JSON for ChatGPT research or
+          Export history records as JSON for ChatGPT research or
           history library analysis.
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Exclude Tag">
-          <input
-            value={excludeTag}
-            onChange={(event) => setExcludeTag(event.target.value)}
-            className={inputClassName}
-          />
-        </Field>
-        <Field label="Item Count">
-          <input
-            type="number"
-            min="1"
-            max="10000"
-            value={itemCount}
-            onChange={(event) => setItemCount(event.target.value)}
-            className={inputClassName}
-          />
-        </Field>
-      </div>
+      <HistoryRecordFilterSelect
+        filter={filter}
+        basePath="/admin/history/export"
+        onFilterChange={setFilter}
+      />
 
       {error ? (
         <div className="rounded-md border border-red-950 bg-red-950/30 px-3 py-2 text-sm text-red-100">

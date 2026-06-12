@@ -65,8 +65,9 @@ Implemented mobile-first workflow:
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
 - `/admin/stats` lists feed and photo click counts from highest to lowest.
 - `/admin/history` manages standalone Kuching/Sarawak history records.
+- `/admin/history` defaults to Today's History Research Tasks, a lightweight daily batch of up to 10 draft records tagged with `daily-task:YYYYMMDD` in `history_records.tags`.
 - `/admin/history/import` accepts pasted `aroundcities_history_import_v1` JSON and saves valid records as drafts.
-- `/admin/history/export` exports draft history records as `aroundcities_history_research_export_v1` JSON for ChatGPT/library research, defaulting to exclude records already tagged `research:done`.
+- `/admin/history/export` exports `aroundcities_history_research_export_v1` JSON for ChatGPT/library research using the same Daily Tasks, Show All, Published, Drafted, and Archived filters as `/admin/history`.
 - `/admin/history/import` also accepts `aroundcities_history_update_v1` JSON to update existing records by `history_id`; successful updates preserve existing tags and add `research:done`.
 - `/admin/history/[historyId]` lets the curator open the Source URL in a new tab and upload a compressed source screenshot into Supabase Storage, auto-filling `source_screenshot_url`.
 - The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
@@ -131,6 +132,7 @@ The V2 Phase 1 foundation now includes:
 - Event JSON import is available from New Feed through `/admin/feeds/import-events`. It validates pasted JSON, forces all imported feeds to `draft`, creates or reuses places and source channels, links feed places with location notes, creates simple feed schedule rows, and stores feed source evidence without creating photos or uploading screenshots.
 - After a fully successful event import save, the import textarea and preview reset so the page is ready for a new paste. Validation and per-event save errors keep the pasted content available for correction.
 - History Phase 1 foundation with `history_records` and `history_photos`, admin CRUD, draft/publish/archive/delete actions, JSON import, existing-photo linking, and compressed history-only uploads into the shared photo library.
+- History admin uses `history_records.tags` for a simple daily research workflow: first `/admin/history` visit of the Kuching day clears old `daily-task:` tags, assigns up to 10 oldest draft records, and the default view shows only the remaining draft records from today's batch.
 - History record editing includes source verification helpers: Source URL opens in a new tab, and Source Screenshot uploads use the existing browser compression plus Supabase signed upload flow before saving the generated URL on the record.
 - Event JSON import accepts optional `event_details` objects and strips dynamic timing prefixes such as `Happening Today:` from stored feed titles.
 - Admin feed management is split into New Feed, Drafted Feeds, and Published Feeds instead of one desktop-style all-feeds list.

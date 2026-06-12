@@ -6,8 +6,14 @@ All notable changes to AroundCities should be documented here.
 
 ### Added
 
+- Added a lightweight Daily History Task workflow for `/admin/history`, assigning up to 10 draft history records per Kuching day with `daily-task:YYYYMMDD` tags and showing those draft tasks by default.
+- Added History admin and export filters for Daily Tasks, Show All, Published, Drafted, and Archived.
 - Added a `Go To Link` button under the History edit Source URL field for opening source references in a new tab.
 - Added a History edit source screenshot picker that compresses selected images, uploads them to the existing Supabase Storage `photos` bucket under `source-screenshots/history/`, previews the result, and auto-fills `source_screenshot_url`.
+
+### Changed
+
+- Changed History export from the old draft-only tag-exclusion flow to export records by the selected History filter.
 
 ## 2026-06-11
 

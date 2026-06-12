@@ -5,6 +5,7 @@ import {
   FeedWithPlaceAndPhotos,
   HistoryPhotoWithPhoto,
   HistoryRecord,
+  HistoryStatus,
   HistoryRecordUpdate,
   HistoryRecordWithPhotos,
   NewHistoryPhoto,
@@ -12,11 +13,92 @@ import {
   Photo,
 } from "@/types/database";
 
-export async function getHistoryRecords(): Promise<HistoryRecord[]> {
-  const { data, error } = await historyDb()
+export const DAILY_HISTORY_RESEARCH_TARGET = 10;
+
+export type HistoryRecordFilter =
+  | "daily"
+  | "all"
+  | "published"
+  | "draft"
+  | "archived";
+
+const DAILY_HISTORY_TASK_TAG_PREFIX = "daily-task:";
+const HISTORY_TIME_ZONE = "Asia/Kuching";
+
+export function getDailyHistoryTaskTag(date = new Date()) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: HISTORY_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const partMap = Object.fromEntries(
+    parts.map((part) => [part.type, part.value])
+  );
+
+  return `${DAILY_HISTORY_TASK_TAG_PREFIX}${partMap.year}${partMap.month}${partMap.day}`;
+}
+
+export async function ensureDailyHistoryTasks(
+  todayTag = getDailyHistoryTaskTag()
+): Promise<void> {
+  const db = historyDb();
+  const { data: existing, error: existingError } = await db
     .from("history_records")
-    .select("*")
-    .order("created_at", { ascending: false });
+    .select("history_id")
+    .contains("tags", [todayTag])
+    .limit(1);
+
+  if (existingError) {
+    throw new Error(
+      `Daily history task lookup failed: ${existingError.message}`
+    );
+  }
+
+  if ((existing ?? []).length > 0) {
+    return;
+  }
+
+  await clearOldDailyHistoryTaskTags(db);
+
+  const { data: draftRecords, error: draftError } = await db
+    .from("history_records")
+    .select("history_id,tags")
+    .eq("status", "draft")
+    .order("created_at", { ascending: true })
+    .limit(DAILY_HISTORY_RESEARCH_TARGET);
+
+  if (draftError) {
+    throw new Error(
+      `Daily history task draft lookup failed: ${draftError.message}`
+    );
+  }
+
+  for (const record of (draftRecords ?? []) as Pick<
+    HistoryRecord,
+    "history_id" | "tags"
+  >[]) {
+    await updateHistoryTags(record.history_id, [
+      ...removeDailyHistoryTaskTags(record.tags ?? []),
+      todayTag,
+    ]);
+  }
+}
+
+export async function getHistoryRecords(
+  filter: HistoryRecordFilter = "all",
+  todayTag = getDailyHistoryTaskTag()
+): Promise<HistoryRecord[]> {
+  let query = historyDb()
+    .from("history_records")
+    .select("*");
+
+  query = applyHistoryRecordFilter(query, filter, todayTag).order(
+    "created_at",
+    { ascending: false }
+  );
+
+  const { data, error } = await query;
 
   if (error) {
     console.error(error);
@@ -43,38 +125,34 @@ export async function getHistoryRecordCount(): Promise<number> {
 }
 
 export async function getHistoryResearchExportRecords(input: {
-  excludeTag: string;
-  itemCount: number;
+  filter: HistoryRecordFilter;
+  todayTag: string;
 }): Promise<HistoryRecord[]> {
-  const limit = Math.min(Math.max(input.itemCount, 1), 10000);
-  const excludeTag = input.excludeTag.trim();
   const records: HistoryRecord[] = [];
   const batchSize = 1000;
   let offset = 0;
 
-  while (records.length < limit) {
-    const { data, error } = await historyDb()
+  while (true) {
+    let query = historyDb()
       .from("history_records")
-      .select("*")
-      .eq("status", "draft")
+      .select("*");
+
+    query = applyHistoryRecordFilter(
+      query,
+      input.filter,
+      input.todayTag
+    )
       .order("created_at", { ascending: true })
       .range(offset, offset + batchSize - 1);
+
+    const { data, error } = await query;
 
     if (error) {
       throw new Error(`History export query failed: ${error.message}`);
     }
 
     const batch = (data ?? []) as HistoryRecord[];
-
-    for (const record of batch) {
-      if (!excludeTag || !(record.tags ?? []).includes(excludeTag)) {
-        records.push(record);
-      }
-
-      if (records.length >= limit) {
-        break;
-      }
-    }
+    records.push(...batch);
 
     if (batch.length < batchSize) {
       break;
@@ -341,6 +419,68 @@ function getOrderedHistoryPhotos(
 
 function normalizeSequence(sequence: number): number {
   return sequence > 0 ? sequence : Number.MAX_SAFE_INTEGER;
+}
+
+function applyHistoryRecordFilter(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  query: any,
+  filter: HistoryRecordFilter,
+  todayTag: string
+) {
+  if (filter === "daily") {
+    return query.eq("status", "draft").contains("tags", [todayTag]);
+  }
+
+  if (filter === "published" || filter === "draft" || filter === "archived") {
+    const status: HistoryStatus = filter;
+    return query.eq("status", status);
+  }
+
+  return query;
+}
+
+async function clearOldDailyHistoryTaskTags(
+  db: ReturnType<typeof historyDb>
+) {
+  const { data, error } = await db
+    .from("history_records")
+    .select("history_id,tags");
+
+  if (error) {
+    throw new Error(
+      `Daily history task cleanup lookup failed: ${error.message}`
+    );
+  }
+
+  for (const record of (data ?? []) as Pick<
+    HistoryRecord,
+    "history_id" | "tags"
+  >[]) {
+    const cleanedTags = removeDailyHistoryTaskTags(record.tags ?? []);
+
+    if (cleanedTags.length !== (record.tags ?? []).length) {
+      await updateHistoryTags(record.history_id, cleanedTags);
+    }
+  }
+}
+
+function removeDailyHistoryTaskTags(tags: string[]) {
+  return tags.filter(
+    (tag) => !tag.startsWith(DAILY_HISTORY_TASK_TAG_PREFIX)
+  );
+}
+
+async function updateHistoryTags(historyId: string, tags: string[]) {
+  const { error } = await historyDb()
+    .from("history_records")
+    .update({ tags })
+    .eq("history_id", historyId);
+
+  if (error) {
+    throw new Error(
+      `Daily history task tag update failed: ${error.message}`
+    );
+  }
 }
 
 function historyDb() {

@@ -139,7 +139,9 @@ V2 Phase 1 Steps 1-5 are implemented:
 - The `/admin` workflow hub shows counts for Drafted Feeds, Published Feeds, and Sources.
 - The `/admin` workflow hub also links to History.
 - `/admin/history`, `/admin/history/new`, `/admin/history/[historyId]`, and `/admin/history/import` support Phase 1 standalone history record management.
-- `/admin/history/export` exports draft history records for research as `aroundcities_history_research_export_v1`, defaulting to exclude records tagged `research:done`.
+- `/admin/history` defaults to a lightweight daily research task view. On the first visit of each Kuching day, it clears old `daily-task:` tags, assigns up to 10 oldest draft records with `daily-task:YYYYMMDD`, and shows only those draft records by default.
+- `/admin/history` and `/admin/history/export` support Daily Tasks, Show All, Published, Drafted, and Archived filters.
+- `/admin/history/export` exports history records for research as `aroundcities_history_research_export_v1` using the selected History filter.
 - History records are stored in `history_records`, and history-photo links are stored in `history_photos`.
 - History JSON import uses `aroundcities_history_import_v1`, validates month/day/confidence, and always creates draft records.
 - History update import uses `aroundcities_history_update_v1`, updates existing records by `history_id`, never creates records, preserves existing tags, and adds `research:done` after successful updates.
