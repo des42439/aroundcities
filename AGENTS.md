@@ -76,6 +76,7 @@ Admin should be optimized for a single curator.
 
 Prefer a simple workflow:
 
+- Manage photo albums as the primary admin workflow
 - Create a draft feed from title, content, and photos
 - Post-process slug, tags, source, places, and publishing later
 - Add operating hours / schedule during post-processing when a feed needs it
@@ -135,6 +136,11 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Public routes for `/`, `/kch`, `/feed/[slug]`, `/photo/[photoId]`, and `/place/[slug]`.
 - `/` and `/kch` are temporarily protected by a lightweight public password lock while content is being prepared. Public lock settings live in `lib/public-lock.ts`; disable by setting `LOCK_USER_PAGE` to `false` and redeploying.
 - Minimal admin UI protected by `ADMIN_PASSWORD`.
+- Photos are now the first/main admin workflow through `/admin/photos`.
+- Feed workflow links are hidden from the main admin navigation and admin hub, but feed routes remain available by direct URL.
+- Photo albums are stored in `photo_albums`; photos link to one album through `photos.album_id`.
+- Album photos support `is_album_cover`, `status`, `tags`, and `location_note` for future reuse across History, Learning, Greetings, Discovery, Positive Messages, and generated homepage cards.
+- `/admin/photos`, `/admin/photos/new`, `/admin/photos/[albumId]`, and `/admin/photos/photo/[photoId]` support Photo Album Admin v1.
 - Mobile-first admin workflow is split into `/admin/feeds/new`, `/admin/feeds/drafts`, and `/admin/feeds/published`.
 - The `/admin` workflow hub shows counts for Drafted Feeds, Published Feeds, and Sources.
 - The `/admin` workflow hub also links to History.

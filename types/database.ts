@@ -11,6 +11,16 @@ export type FeedStatus =
   | "published"
   | "archived";
 
+export type PhotoAlbumStatus =
+  | "drafted"
+  | "published"
+  | "archived";
+
+export type PhotoStatus =
+  | "drafted"
+  | "published"
+  | "archived";
+
 export type HistoryStatus =
   | "drafted"
   | "researched"
@@ -97,22 +107,40 @@ export interface Feed {
 
 export interface Photo {
   photo_id: string;
-  feed_id: string;
+  feed_id: string | null;
+  album_id: string | null;
   place_id: string | null;
   title: string | null;
   description: string | null;
   photo_url: string;
   location_name: string | null;
+  location_note: string | null;
   captured_at: string | null;
   latitude: number | null;
   longitude: number | null;
   featured: boolean;
+  is_album_cover: boolean;
   sequence: number;
+  status: PhotoStatus;
+  tags: string[];
   click_count: number;
   created_by: string | null;
   created_at: string;
   updated_by: string | null;
   updated_at: string;
+}
+
+export interface PhotoAlbum {
+  album_id: string;
+  title: string;
+  description: string | null;
+  status: PhotoAlbumStatus;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PhotoAlbumWithPhotos extends PhotoAlbum {
+  photos: Photo[];
 }
 
 export interface HistoryRecord {
@@ -326,6 +354,12 @@ export type NewPhoto =
 export type PhotoUpdate =
   Database["public"]["Tables"]["photos"]["Update"];
 
+export type NewPhotoAlbum =
+  Database["public"]["Tables"]["photo_albums"]["Insert"];
+
+export type PhotoAlbumUpdate =
+  Database["public"]["Tables"]["photo_albums"]["Update"];
+
 export type NewHistoryRecord =
   Database["public"]["Tables"]["history_records"]["Insert"];
 
@@ -445,17 +479,22 @@ export interface Database {
         Row: Photo;
         Insert: {
           photo_id?: string;
-          feed_id: string;
+          feed_id?: string | null;
+          album_id?: string | null;
           place_id?: string | null;
           title?: string | null;
           description?: string | null;
           photo_url: string;
           location_name?: string | null;
+          location_note?: string | null;
           captured_at?: string | null;
           latitude?: number | null;
           longitude?: number | null;
           featured?: boolean;
+          is_album_cover?: boolean;
           sequence?: number;
+          status?: PhotoStatus;
+          tags?: string[];
           click_count?: number;
           created_by?: string | null;
           created_at?: string;
@@ -464,17 +503,22 @@ export interface Database {
         };
         Update: {
           photo_id?: string;
-          feed_id?: string;
+          feed_id?: string | null;
+          album_id?: string | null;
           place_id?: string | null;
           title?: string | null;
           description?: string | null;
           photo_url?: string;
           location_name?: string | null;
+          location_note?: string | null;
           captured_at?: string | null;
           latitude?: number | null;
           longitude?: number | null;
           featured?: boolean;
+          is_album_cover?: boolean;
           sequence?: number;
+          status?: PhotoStatus;
+          tags?: string[];
           click_count?: number;
           created_by?: string | null;
           created_at?: string;
@@ -489,12 +533,38 @@ export interface Database {
             referencedColumns: ["feed_id"];
           },
           {
+            foreignKeyName: "photos_album_id_fkey";
+            columns: ["album_id"];
+            referencedRelation: "photo_albums";
+            referencedColumns: ["album_id"];
+          },
+          {
             foreignKeyName: "photos_place_id_fkey";
             columns: ["place_id"];
             referencedRelation: "places";
             referencedColumns: ["place_id"];
           },
         ];
+      };
+      photo_albums: {
+        Row: PhotoAlbum;
+        Insert: {
+          album_id?: string;
+          title: string;
+          description?: string | null;
+          status?: PhotoAlbumStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          album_id?: string;
+          title?: string;
+          description?: string | null;
+          status?: PhotoAlbumStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       history_records: {
         Row: HistoryRecord;

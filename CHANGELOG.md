@@ -12,12 +12,16 @@ All notable changes to AroundCities should be documented here.
 - Added `aroundcities_history_research_update_v2` import support that updates existing history records, marks them as researched, and inserts or updates source rows by URL without overwriting screenshot evidence.
 - Added History list pipeline counts for Drafted, Researched, Pending Review, Published, and Archived records.
 - Added a manual internal History Screenshot Assistant CLI under `tools/history-screenshot-assistant` for capturing screenshots of reviewed researched history sources with Playwright, optimizing them with Sharp, uploading them to Supabase Storage, and moving ready records to Pending Review.
+- Added Photo Album Admin v1 with `/admin/photos`, `/admin/photos/new`, `/admin/photos/[albumId]`, and `/admin/photos/photo/[photoId]`.
+- Added `photo_albums` and album-oriented photo fields for album ownership, album cover selection, photo status, tags, and location notes.
+- Added photo tag chip editing with suggestions from existing photo tags and common starter tags.
 
 ### Changed
 
 - Changed History daily research tasks and filters to use `drafted` instead of the old `draft` status.
 - Changed History publish behavior so records with `history_sources` require at least one reviewed source before publishing, while legacy records with only old source fields remain publishable.
 - Kept legacy `history_records.source_url`, `source_note`, and `source_screenshot_url` fields available for compatibility while making `history_sources` the preferred source storage going forward.
+- Changed the main admin navigation and admin hub to make Photos the primary workflow and hide feed workflow links while keeping feed routes available by direct URL.
 
 ## 2026-06-12
 

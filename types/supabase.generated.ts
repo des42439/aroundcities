@@ -623,65 +623,114 @@ export type Database = {
           },
         ]
       }
+      photo_albums: {
+        Row: {
+          album_id: string
+          created_at: string
+          description: string | null
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          album_id?: string
+          created_at?: string
+          description?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          album_id?: string
+          created_at?: string
+          description?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       photos: {
         Row: {
+          album_id: string | null
           captured_at: string | null
           click_count: number
           created_at: string
           created_by: string | null
           description: string | null
           featured: boolean
-          feed_id: string
+          feed_id: string | null
+          is_album_cover: boolean
           latitude: number | null
           location_name: string | null
+          location_note: string | null
           longitude: number | null
           photo_id: string
           photo_url: string
           place_id: string | null
           sequence: number
+          status: string
+          tags: string[]
           title: string | null
           updated_at: string
           updated_by: string | null
         }
         Insert: {
+          album_id?: string | null
           captured_at?: string | null
           click_count?: number
           created_at?: string
           created_by?: string | null
           description?: string | null
           featured?: boolean
-          feed_id: string
+          feed_id?: string | null
+          is_album_cover?: boolean
           latitude?: number | null
           location_name?: string | null
+          location_note?: string | null
           longitude?: number | null
           photo_id?: string
           photo_url: string
           place_id?: string | null
           sequence?: number
+          status?: string
+          tags?: string[]
           title?: string | null
           updated_at?: string
           updated_by?: string | null
         }
         Update: {
+          album_id?: string | null
           captured_at?: string | null
           click_count?: number
           created_at?: string
           created_by?: string | null
           description?: string | null
           featured?: boolean
-          feed_id?: string
+          feed_id?: string | null
+          is_album_cover?: boolean
           latitude?: number | null
           location_name?: string | null
+          location_note?: string | null
           longitude?: number | null
           photo_id?: string
           photo_url?: string
           place_id?: string | null
           sequence?: number
+          status?: string
+          tags?: string[]
           title?: string | null
           updated_at?: string
           updated_by?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "photos_album_id_fkey"
+            columns: ["album_id"]
+            isOneToOne: false
+            referencedRelation: "photo_albums"
+            referencedColumns: ["album_id"]
+          },
           {
             foreignKeyName: "photos_feed_id_fkey"
             columns: ["feed_id"]

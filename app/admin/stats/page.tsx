@@ -88,7 +88,11 @@ export default async function AdminStatsPage() {
               {photoStats.map((photo) => (
                 <Link
                   key={photo.photo_id}
-                  href={`/admin/feeds/${photo.feed_id}`}
+                  href={
+                    photo.feed_id
+                      ? `/admin/feeds/${photo.feed_id}`
+                      : `/admin/photos/photo/${photo.photo_id}`
+                  }
                   className="flex items-center gap-4 rounded-lg border border-neutral-900 p-3 hover:border-neutral-700"
                 >
                   <Image
@@ -106,7 +110,7 @@ export default async function AdminStatsPage() {
                         "Untitled photo"}
                     </h3>
                     <p className="mt-1 truncate text-sm text-neutral-500">
-                      {photo.feed?.title ?? "Missing feed"} ·{" "}
+                      {photo.feed?.title ?? "Photo album"} ·{" "}
                       {formatDate(
                         photo.captured_at ?? photo.created_at
                       )}

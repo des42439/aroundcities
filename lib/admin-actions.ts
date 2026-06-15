@@ -34,6 +34,14 @@ import {
   updatePhoto,
 } from "./photos";
 import {
+  createAlbumPhoto,
+  createPhotoAlbum,
+  getAlbumPhotoById,
+  setAlbumCover,
+  updateAlbumPhoto,
+  updatePhotoAlbum,
+} from "./photo-albums";
+import {
   addHistoryPhotos,
   createHistorySource,
   createHistoryOnlyPhoto,
@@ -72,6 +80,8 @@ import {
   HistoryScreenshotStatus,
   HistorySourceStatus,
   HistoryStatus,
+  PhotoAlbumStatus,
+  PhotoStatus,
 } from "@/types/database";
 
 type AdminActionState = {
@@ -364,12 +374,38 @@ function parseHistoryScreenshotStatus(
   return "pending";
 }
 
+function parsePhotoAlbumStatus(value: unknown): PhotoAlbumStatus {
+  if (value === "published" || value === "archived") {
+    return value;
+  }
+
+  return "drafted";
+}
+
+function parsePhotoStatus(value: unknown): PhotoStatus {
+  if (value === "published" || value === "archived") {
+    return value;
+  }
+
+  return "drafted";
+}
+
 function parseSubmittedHistoryStatus(formData: FormData): HistoryStatus {
   const submittedStatuses = formData.getAll("status");
   const submittedStatus =
     submittedStatuses[submittedStatuses.length - 1] ?? null;
 
   return parseHistoryStatus(submittedStatus);
+}
+
+function parseSubmittedPhotoAlbumStatus(
+  formData: FormData
+): PhotoAlbumStatus {
+  const submittedStatuses = formData.getAll("status");
+  const submittedStatus =
+    submittedStatuses[submittedStatuses.length - 1] ?? null;
+
+  return parsePhotoAlbumStatus(submittedStatus?.toString());
 }
 
 function parseHistoryConfidence(value: unknown): HistoryConfidence {
@@ -1681,6 +1717,113 @@ export async function createPhotoUploadTargetAction(input: {
   }
 }
 
+export async function createPhotoAlbumAction(input: {
+  title: string;
+  description?: string | null;
+}): Promise<{ albumId: string } | AdminActionState> {
+  await requireAdmin();
+
+  try {
+    const album = await createPhotoAlbum({
+      title: input.title.trim(),
+      description: input.description?.trim() || null,
+      status: "drafted",
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/photos");
+
+    return {
+      albumId: album.album_id,
+    };
+  } catch (error) {
+    return await actionError("create_photo_album", error);
+  }
+}
+
+export async function createAlbumPhotoUploadTargetAction(input: {
+  albumId: string;
+  fileName: string;
+}): Promise<
+  | {
+      path: string;
+      token: string;
+      publicUrl: string;
+    }
+  | AdminActionState
+> {
+  await requireAdmin();
+
+  try {
+    const extension =
+      input.fileName.split(".").pop()?.toLowerCase() ?? "jpg";
+    const filename = `${Date.now()}-${slugify(
+      input.fileName.replace(/\.[^.]+$/, "")
+    )}.${extension}`;
+    const path = `albums/${input.albumId}/${filename}`;
+    const supabaseAdmin = getSupabaseAdmin();
+
+    const { data, error } = await supabaseAdmin.storage
+      .from("photos")
+      .createSignedUploadUrl(path);
+
+    if (error) {
+      throw new Error(
+        `Album photo upload URL failed: ${error.message}`
+      );
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from("photos")
+      .getPublicUrl(path);
+
+    return {
+      path,
+      token: data.token,
+      publicUrl: publicUrlData.publicUrl,
+    };
+  } catch (error) {
+    return await actionError("create_album_photo_upload_target", error, {
+      albumId: input.albumId,
+      fileName: input.fileName,
+    });
+  }
+}
+
+export async function createUploadedAlbumPhotoAction(input: {
+  albumId: string;
+  photoUrl: string;
+  sequence?: number;
+  capturedAt?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}): Promise<AdminActionState> {
+  await requireAdmin();
+
+  try {
+    await createAlbumPhoto({
+      albumId: input.albumId,
+      photoUrl: input.photoUrl,
+      sequence: input.sequence ?? 0,
+      capturedAt: input.capturedAt ?? null,
+      latitude: input.latitude ?? null,
+      longitude: input.longitude ?? null,
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/photos");
+    revalidatePath(`/admin/photos/${input.albumId}`);
+
+    return {
+      error: null,
+    };
+  } catch (error) {
+    return await actionError("create_uploaded_album_photo", error, {
+      albumId: input.albumId,
+    });
+  }
+}
+
 export async function createSourceScreenshotUploadTargetAction(input: {
   feedId: string;
   fileName: string;
@@ -2275,6 +2418,142 @@ export async function deleteFeedPhotoAction(
   }
 
   redirect(`/admin/feeds/${feedId}`);
+}
+
+export async function updatePhotoAlbumAction(
+  albumId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  try {
+    await updatePhotoAlbum(albumId, {
+      title: requiredString(formData, "title"),
+      description: nullableString(formData.get("description")),
+      status: parseSubmittedPhotoAlbumStatus(formData),
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/photos");
+    revalidatePath(`/admin/photos/${albumId}`);
+  } catch (error) {
+    return await actionError("update_photo_album", error, {
+      albumId,
+    });
+  }
+
+  redirect(`/admin/photos/${albumId}`);
+}
+
+export async function archivePhotoAlbumAction(
+  albumId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await updatePhotoAlbum(albumId, {
+      status: "archived",
+    });
+
+    revalidatePath("/admin");
+    revalidatePath("/admin/photos");
+    revalidatePath(`/admin/photos/${albumId}`);
+  } catch (error) {
+    return await actionError("archive_photo_album", error, {
+      albumId,
+    });
+  }
+
+  redirect(`/admin/photos/${albumId}`);
+}
+
+export async function updateAlbumPhotoAction(
+  photoId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+
+  let albumId: string | null = null;
+
+  try {
+    const photo = await getAlbumPhotoById(photoId);
+
+    if (!photo?.album_id) {
+      throw new Error("Album photo was not found.");
+    }
+
+    albumId = photo.album_id;
+    const isAlbumCover = formData.get("is_album_cover") === "on";
+
+    await updateAlbumPhoto(photoId, {
+      title: nullableString(formData.get("title")),
+      description: nullableString(formData.get("description")),
+      captured_at: parseDateTime(formData.get("captured_at")),
+      sequence: parsePhotoSequence(formData.get("sequence")),
+      status: parsePhotoStatus(formData.get("status")?.toString()),
+      tags: parseTags(formData.get("tags")),
+      location_name: nullableString(formData.get("location_name")),
+      location_note: nullableString(formData.get("location_note")),
+      latitude: optionalNumber(formData.get("latitude")),
+      longitude: optionalNumber(formData.get("longitude")),
+      is_album_cover: isAlbumCover,
+    });
+
+    await setAlbumCover({
+      albumId,
+      photoId,
+      isAlbumCover,
+    });
+
+    revalidatePath("/admin/photos");
+    revalidatePath(`/admin/photos/${albumId}`);
+    revalidatePath(`/admin/photos/photo/${photoId}`);
+  } catch (error) {
+    return await actionError("update_album_photo", error, {
+      photoId,
+      albumId,
+    });
+  }
+
+  redirect(`/admin/photos/${albumId}`);
+}
+
+export async function archiveAlbumPhotoAction(
+  photoId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  let albumId: string | null = null;
+
+  try {
+    const photo = await getAlbumPhotoById(photoId);
+
+    if (!photo?.album_id) {
+      throw new Error("Album photo was not found.");
+    }
+
+    albumId = photo.album_id;
+
+    await updateAlbumPhoto(photoId, {
+      status: "archived",
+    });
+
+    revalidatePath("/admin/photos");
+    revalidatePath(`/admin/photos/${albumId}`);
+  } catch (error) {
+    return await actionError("archive_album_photo", error, {
+      photoId,
+      albumId,
+    });
+  }
+
+  redirect(`/admin/photos/${albumId}`);
 }
 
 export async function createHistoryRecordAction(

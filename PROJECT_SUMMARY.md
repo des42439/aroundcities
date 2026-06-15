@@ -18,6 +18,8 @@ The primary question it answers is:
 
 AroundCities is curator-driven. It is not an event portal, tourism website, business directory, or social network.
 
+Current admin direction is photo-first. Photos are becoming the reusable content library for future History, Learning, Greetings, Discovery, Positive Messages, and generated homepage cards. Feeds remain in the database and codebase, but feed workflow links are hidden from the main admin navigation for now.
+
 ## Phase 1 Foundation
 
 Phase 1 should introduce only the minimum foundation:
@@ -59,9 +61,13 @@ Admin should be optimized for a single curator.
 
 Implemented mobile-first workflow:
 
+- `/admin/photos` is the primary admin workflow for photo albums.
+- `/admin/photos/new` creates a drafted photo album with multiple compressed photo uploads.
+- `/admin/photos/[albumId]` edits album title, description, status, and shows album photos.
+- `/admin/photos/photo/[photoId]` edits individual photo metadata, album cover flag, tags, captured date, coordinates, and location notes.
 - `/admin/feeds/new` is the fast capture screen. It asks only for photos, title, and description, then creates a draft.
 - `/admin/feeds/import-events` accepts pasted `aroundcities_event_import_v2` JSON, keeps v1 JSON compatible, previews event feed drafts, and saves valid imports as draft feeds without requiring photos.
-- `/admin` shows total counts for Drafted Feeds, Published Feeds, and Sources on the workflow cards.
+- `/admin` shows Photos first and hides feed workflow cards from the main hub.
 - `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
 - `/admin/stats` lists feed and photo click counts from highest to lowest.
@@ -77,6 +83,8 @@ Implemented mobile-first workflow:
 - The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Photo order is controlled by `photos.sequence`, with smaller positive numbers displayed first.
 - Photos marked `Show as photo feed` can appear as standalone Photo feed cards in the public `/kch` discovery stream.
+- Photo albums organize the photo library through `photo_albums`; each photo can belong to one album through `photos.album_id`.
+- Album photos support `status`, `tags`, `is_album_cover`, `location_note`, EXIF-derived capture datetime, latitude, and longitude.
 - Optional Sources, Places, Schedules, and Parent Feed sections appear only when added or when existing data is present.
 - Source evidence, feed schedules, parent feed selection, and feed-place metadata are wired into admin as compact refinement sections.
 - The Places section shows existing linked places and uses a searchable add/remove picker instead of a growing checkbox list.
@@ -111,6 +119,8 @@ The V2 Phase 1 foundation now includes:
 - Feed fields: `feed_type`, `slug`, `title`, `content`, nullable `place_id`, nullable `source_url`, nullable `operating_hours`, `tags`, `published_at`, `status`, timestamps.
 - Feed fields also include `click_count` for public feed click tracking.
 - Photo fields: `feed_id`, nullable `place_id`, title, description, URL, location name, captured timestamp, latitude, longitude, featured flag, numeric sequence, click count, timestamps.
+- Photo fields also include nullable `album_id`, album cover flag, photo status, tags, and location note for the photo-first admin library.
+- Photo albums: `photo_albums` stores title, description, drafted/published/archived status, and timestamps.
 - Place fields: name, slug, description, optional coordinates, timestamps.
 - TypeScript database types for the V2 schema.
 - Simple data helpers for feeds, places, and photos.

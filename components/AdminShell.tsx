@@ -25,22 +25,10 @@ export default function AdminShell({
 
           <nav className="flex flex-wrap items-center gap-2 text-sm">
             <Link
-              href="/admin/feeds/new"
+              href="/admin/photos"
               className="rounded-md border border-neutral-800 px-3 py-2 text-neutral-300 hover:border-neutral-600"
             >
-              New
-            </Link>
-            <Link
-              href="/admin/feeds/drafts"
-              className="rounded-md border border-neutral-800 px-3 py-2 text-neutral-300 hover:border-neutral-600"
-            >
-              Drafts
-            </Link>
-            <Link
-              href="/admin/feeds/published"
-              className="rounded-md border border-neutral-800 px-3 py-2 text-neutral-300 hover:border-neutral-600"
-            >
-              Published
+              Photos
             </Link>
             <Link
               href="/admin/sources"

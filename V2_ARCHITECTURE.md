@@ -2,7 +2,7 @@
 
 Last updated: 15 June 2026
 
-Implementation status: Steps 1-5 are implemented, plus the mobile-first admin workflow for fast capture, event JSON import, drafted feeds, published feeds, and optional refinement sections. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`. The standalone History module is implemented as an admin-only archive and research pipeline, with no public discovery integration.
+Implementation status: Steps 1-5 are implemented, plus a photo-first admin workflow through Photo Album Admin v1. Feed workflows remain in the codebase and are reachable by direct URL, but they are hidden from the main admin navigation for now. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`. The standalone History module is implemented as an admin-only archive and research pipeline, with no public discovery integration.
 
 ## 1. Objective
 
@@ -35,13 +35,15 @@ Temporary pre-launch note:
 
 ## 3. Phase 1 Scope
 
-Only three core entities should exist in Phase 1:
+The public product foundation still centers on three core entities:
 
 - Feed
 - Photo
 - Place
 
 Supporting tables may exist for feed-place links, structured operating hours, storage, admin diagnostics, and manual admin source checklists. Do not treat these as new public product entities.
+
+Admin is moving photo-first. `photo_albums` is the current organization layer for reusable photo library assets. Photos can be tagged for future reuse across History, Learning, Greetings, Discovery, Positive Messages, and generated homepage cards. No public homepage integration for albums or tags exists yet.
 
 History is a standalone admin-only archive module. It is intentionally not a feed type and is stored in dedicated history tables. Public history discovery should wait until a substantial library exists.
 
@@ -145,16 +147,21 @@ Fields:
 
 - `photo_id`
 - `feed_id`
+- `album_id`
 - `place_id` nullable
 - `title`
 - `description`
 - `photo_url`
 - `location_name`
+- `location_note`
 - `captured_at`
 - `latitude`
 - `longitude`
 - `featured`
+- `is_album_cover`
 - `sequence`
+- `status`
+- `tags`
 - `click_count`
 - `created_at`
 - `updated_at`
@@ -162,6 +169,11 @@ Fields:
 Notes:
 
 - A feed can contain multiple photos.
+- A photo can belong to one photo album through `photos.album_id`.
+- `photo_albums` stores album title, description, status, and timestamps.
+- `is_album_cover` marks the album thumbnail; only one cover should be selected per album during admin editing, but an album may temporarily have no cover.
+- Photo `status` supports `drafted`, `published`, and `archived` for the photo library workflow.
+- Photo tags are simple `text[]` chips for future reuse; there is no separate tag management page.
 - `featured` is a multi-photo curator flag surfaced as `Show as photo feed`; it makes photos eligible for standalone Photo feed cards on `/kch`.
 - `featured` should not override sequence ordering for feed cards, previews, or galleries.
 - `sequence` controls the photo display order within a feed. Smaller positive numbers appear first; unsequenced `0` values fall behind manually ordered photos.
@@ -499,6 +511,10 @@ Admin is for a single curator.
 Suggested minimal routes:
 
 - `/admin`
+- `/admin/photos`
+- `/admin/photos/new`
+- `/admin/photos/[albumId]`
+- `/admin/photos/photo/[photoId]`
 - `/admin/feeds`
 - `/admin/feeds/new`
 - `/admin/feeds/import-events`
@@ -513,7 +529,7 @@ Suggested minimal routes:
 - `/admin/sources/[sourceId]`
 - `/admin/stats`
 
-`/admin/feeds` is a small workflow hub. Daily feed work should move through New Feed, Drafted Feeds, and Published Feeds rather than a desktop-style all-feeds table.
+`/admin/photos` is the primary current admin workflow. `/admin/feeds` and feed edit routes remain available by direct URL, but feed workflow links are hidden from the main admin navigation for now.
 `/admin/feeds/import-events` supports pasting ChatGPT-generated `aroundcities_event_import_v2` JSON, keeps v1 JSON compatible, previews multiple event observations, and saves them as draft feeds without photos or screenshot uploads.
 Photo management can live inside the feed editor during Phase 1.
 Place management routes should remain available directly for maintenance, but Places should not appear as a main admin navigation item.

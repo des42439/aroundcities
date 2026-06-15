@@ -26,7 +26,7 @@ export async function getPhotosByFeedId(
     return [];
   }
 
-  return getOrderedPhotos(data ?? []);
+  return getOrderedPhotos(((data ?? []) as unknown as Photo[]).map(normalizePhoto));
 }
 
 export async function getPublishedPhotoById(
@@ -47,10 +47,16 @@ export async function getPublishedPhotoById(
     return null;
   }
 
+  const normalizedPhoto = normalizePhoto(photo as unknown as Photo);
+
+  if (!normalizedPhoto.feed_id) {
+    return null;
+  }
+
   const { data: feed, error: feedError } = await getSupabaseAdmin()
     .from("feeds")
     .select("*")
-    .eq("feed_id", photo.feed_id)
+    .eq("feed_id", normalizedPhoto.feed_id)
     .eq("status", "published")
     .maybeSingle();
 
@@ -64,7 +70,7 @@ export async function getPublishedPhotoById(
   }
 
   return {
-    ...photo,
+    ...normalizedPhoto,
     feed: feed as Feed,
   };
 }
@@ -72,7 +78,7 @@ export async function getPublishedPhotoById(
 export async function createPhoto(
   input: NewPhoto
 ): Promise<Photo> {
-  const { data, error } = await getSupabaseAdmin()
+  const { data, error } = await photoDb()
     .from("photos")
     .insert(input)
     .select("*")
@@ -82,14 +88,14 @@ export async function createPhoto(
     throw new Error(`Photo create failed: ${error.message}`);
   }
 
-  return data;
+  return normalizePhoto(data as Photo);
 }
 
 export async function updatePhoto(
   photoId: string,
   input: PhotoUpdate
 ): Promise<Photo> {
-  const { data, error } = await getSupabaseAdmin()
+  const { data, error } = await photoDb()
     .from("photos")
     .update({
       ...input,
@@ -103,7 +109,7 @@ export async function updatePhoto(
     throw new Error(`Photo update failed: ${error.message}`);
   }
 
-  return data;
+  return normalizePhoto(data as Photo);
 }
 
 export async function deletePhoto(
@@ -122,7 +128,7 @@ export async function deletePhoto(
 
   await deletePhotoStorageObject(data.photo_url);
 
-  return data;
+  return normalizePhoto(data as Photo);
 }
 
 async function deletePhotoStorageObject(photoUrl: string) {
@@ -152,4 +158,22 @@ function getPhotoStoragePath(photoUrl: string) {
   return decodeURIComponent(
     photoUrl.slice(markerIndex + marker.length)
   );
+}
+
+function normalizePhoto(photo: Photo): Photo {
+  return {
+    ...photo,
+    album_id: photo.album_id ?? null,
+    location_note: photo.location_note ?? null,
+    is_album_cover: photo.is_album_cover ?? false,
+    status: photo.status ?? "drafted",
+    tags: photo.tags ?? [],
+  };
+}
+
+function photoDb() {
+  return getSupabaseAdmin() as unknown as {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    from: (table: string) => any;
+  };
 }

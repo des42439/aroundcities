@@ -16,6 +16,7 @@ export type PhotoClickStat = Pick<
   Photo,
   | "photo_id"
   | "feed_id"
+  | "album_id"
   | "title"
   | "description"
   | "photo_url"
@@ -70,10 +71,10 @@ async function getFeedClickStats(): Promise<FeedClickStat[]> {
 }
 
 async function getPhotoClickStats(): Promise<PhotoClickStat[]> {
-  const { data: photos, error } = await getSupabaseAdmin()
+  const { data: photos, error } = await statsDb()
     .from("photos")
     .select(
-      "photo_id,feed_id,title,description,photo_url,click_count,captured_at,created_at"
+      "photo_id,feed_id,album_id,title,description,photo_url,click_count,captured_at,created_at"
     )
     .order("click_count", { ascending: false })
     .order("created_at", { ascending: false })
@@ -84,10 +85,11 @@ async function getPhotoClickStats(): Promise<PhotoClickStat[]> {
     return [];
   }
 
-  const photoRows = (photos ?? []) as Pick<
+  const photoRows = (photos ?? []) as unknown as Pick<
     PhotoClickStat,
     | "photo_id"
     | "feed_id"
+    | "album_id"
     | "title"
     | "description"
     | "photo_url"
@@ -96,15 +98,22 @@ async function getPhotoClickStats(): Promise<PhotoClickStat[]> {
     | "created_at"
   >[];
   const feedIds = [
-    ...new Set(photoRows.map((photo) => photo.feed_id)),
+    ...new Set(
+      photoRows
+        .map((photo) => photo.feed_id)
+        .filter((feedId): feedId is string => Boolean(feedId))
+    ),
   ];
 
   if (!feedIds.length) {
-    return [];
+    return photoRows.map((photo) => ({
+      ...photo,
+      feed: null,
+    }));
   }
 
   const { data: feeds, error: feedError } =
-    await getSupabaseAdmin()
+    await statsDb()
       .from("feeds")
       .select("feed_id,title,slug,status")
       .in("feed_id", feedIds);
@@ -122,6 +131,13 @@ async function getPhotoClickStats(): Promise<PhotoClickStat[]> {
 
   return photoRows.map((photo) => ({
     ...photo,
-    feed: feedsById.get(photo.feed_id) ?? null,
+    feed: photo.feed_id ? feedsById.get(photo.feed_id) ?? null : null,
   }));
+}
+
+function statsDb() {
+  return getSupabaseAdmin() as unknown as {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    from: (table: string) => any;
+  };
 }
