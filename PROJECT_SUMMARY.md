@@ -73,6 +73,7 @@ Implemented mobile-first workflow:
 - `/admin/history/import` accepts `aroundcities_history_research_update_v2` JSON to update existing records, set status to `researched`, and insert/update multiple `history_sources` rows by URL.
 - `/admin/history/[historyId]` includes a Sources section for source title, URL, note, review status, screenshot status, screenshot URL, screenshot error, sequence, and delete controls.
 - `/admin/history/[historyId]` lets the curator open the Source URL in a new tab and upload a compressed source screenshot into Supabase Storage, auto-filling `source_screenshot_url`.
+- `tools/history-screenshot-assistant` is a manual internal CLI that captures screenshots for reviewed researched History sources, uploads them to Supabase Storage, and moves ready History records from `researched` to `pending_review`.
 - The feed editor starts with title, description, photo thumbnails, Add Section, save/publish/archive/delete controls.
 - Photo order is controlled by `photos.sequence`, with smaller positive numbers displayed first.
 - Photos marked `Show as photo feed` can appear as standalone Photo feed cards in the public `/kch` discovery stream.
@@ -139,6 +140,7 @@ The V2 Phase 1 foundation now includes:
 - History record editing includes source verification helpers: Source URL opens in a new tab, and Source Screenshot uploads use the existing browser compression plus Supabase signed upload flow before saving the generated URL on the record.
 - New History research imports use `aroundcities_history_research_update_v2`, preserve legacy source fields, write multiple source records into `history_sources`, and never publish automatically.
 - Publishing a history record with new source rows requires at least one `reviewed` source. Legacy records that only use old source fields remain functional.
+- History Screenshot Assistant is run manually with `npm run history:screenshot`; it is not an admin page, public route, deploy hook, crawler, or scheduled job.
 - Event JSON import accepts optional `event_details` objects and strips dynamic timing prefixes such as `Happening Today:` from stored feed titles.
 - Admin feed management is split into New Feed, Drafted Feeds, and Published Feeds instead of one desktop-style all-feeds list.
 - Drafted and published feed lists show the first sequenced photo as a thumbnail.

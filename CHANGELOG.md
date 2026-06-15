@@ -11,6 +11,7 @@ All notable changes to AroundCities should be documented here.
 - Added a Sources section to `/admin/history/[historyId]` for adding, editing, reviewing, rejecting, and deleting linked history sources.
 - Added `aroundcities_history_research_update_v2` import support that updates existing history records, marks them as researched, and inserts or updates source rows by URL without overwriting screenshot evidence.
 - Added History list pipeline counts for Drafted, Researched, Pending Review, Published, and Archived records.
+- Added a manual internal History Screenshot Assistant CLI under `tools/history-screenshot-assistant` for capturing screenshots of reviewed researched history sources with Playwright, optimizing them with Sharp, uploading them to Supabase Storage, and moving ready records to Pending Review.
 
 ### Changed
 

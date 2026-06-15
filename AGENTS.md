@@ -149,6 +149,8 @@ V2 Phase 1 Steps 1-5 are implemented:
 - History research update import uses `aroundcities_history_research_update_v2`, updates existing records by `history_id`, marks them `researched`, inserts or updates `history_sources` by source URL, and never publishes automatically.
 - Legacy `history_records.source_url`, `source_note`, and `source_screenshot_url` fields remain for compatibility, but new research imports should use `history_sources`.
 - Publishing a history record with `history_sources` requires at least one source marked `reviewed`; legacy records without source rows remain publishable.
+- `tools/history-screenshot-assistant` is a manual internal CLI for reviewed researched History sources. It captures source screenshots with Playwright, uploads them to Supabase Storage, updates `history_sources`, and moves fully evidenced records from `researched` to `pending_review`.
+- The History Screenshot Assistant must not run automatically on deployment and must not be turned into an admin/public page unless explicitly requested.
 - History records can link existing feed photos using a client-side feed-title picker.
 - History-only uploads use browser image compression, Supabase Storage, normal `photos` rows, and an archived feed used only as a photo container.
 - History edit source screenshots use browser image compression and signed Supabase Storage uploads to the existing `photos` bucket, then save the generated URL in `history_records.source_screenshot_url`.

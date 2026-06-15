@@ -59,6 +59,7 @@ Purpose:
 - Update existing records through `aroundcities_history_update_v1` JSON using `history_id`; successful updates add the `research:done` tag.
 - Import researched updates through `aroundcities_history_research_update_v2`; this updates existing records, marks them `researched`, and inserts or updates multiple source rows by URL.
 - Review linked sources in admin before publishing. Records with `history_sources` require at least one reviewed source; legacy records using only old source fields remain compatible.
+- Run the manual `tools/history-screenshot-assistant` CLI after source review to capture screenshots for reviewed sources and move fully evidenced researched records to `pending_review`.
 - Link records to reusable photos from the existing photo library.
 - Upload a single source screenshot from the edit page using the existing browser compression and signed Supabase Storage upload flow, then store the generated URL in `history_records.source_screenshot_url`.
 
@@ -91,6 +92,7 @@ Deferred:
 - Today In Kuching History
 - Feed generation from history records
 - Recommendation, ranking, search, analytics, translation, scheduling, and related-content features
+- Automatic screenshot jobs or deploy-time screenshot processing
 
 ## 4. Core Entities
 

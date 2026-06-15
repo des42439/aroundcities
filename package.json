@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "history:screenshot": "npm --prefix tools/history-screenshot-assistant run start --"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.1",
