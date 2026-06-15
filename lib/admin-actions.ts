@@ -35,16 +35,22 @@ import {
 } from "./photos";
 import {
   addHistoryPhotos,
+  createHistorySource,
   createHistoryOnlyPhoto,
   createHistoryRecord,
+  deleteHistorySource,
   deleteHistoryRecord,
   getHistoryRecordById,
   getHistoryResearchExportRecords,
   getDailyHistoryTaskTag,
   getNextHistoryPhotoSequence,
+  hasHistorySources,
+  hasReviewedHistorySource,
   removeHistoryPhoto,
+  updateHistorySource,
   updateHistoryPhoto,
   updateHistoryRecord,
+  upsertHistoryResearchSources,
   type HistoryRecordFilter,
 } from "./history";
 import { slugify } from "./slug";
@@ -63,6 +69,8 @@ import {
   FeedStatus,
   FeedType,
   HistoryConfidence,
+  HistoryScreenshotStatus,
+  HistorySourceStatus,
   HistoryStatus,
 } from "@/types/database";
 
@@ -82,9 +90,11 @@ export type EventImportResult = {
 };
 
 export type HistoryImportResult = {
-  mode: "create" | "update";
+  mode: "create" | "update" | "research_update";
   createdCount: number;
   updatedCount: number;
+  sourcesInsertedCount: number;
+  sourcesUpdatedCount: number;
   skippedCount: number;
   skipped: string[];
 };
@@ -150,6 +160,20 @@ type ParsedHistoryUpdateRecord = ParsedHistoryImportRecord & {
   history_id: string;
 };
 
+type ParsedHistoryResearchSource = {
+  source_url: string;
+  source_title: string | null;
+  source_note: string | null;
+  sequence: number;
+};
+
+type ParsedHistoryResearchUpdateRecord = Omit<
+  ParsedHistoryUpdateRecord,
+  "source_url" | "source_note" | "source_screenshot_url"
+> & {
+  sources: ParsedHistoryResearchSource[];
+};
+
 type ParsedHistoryImportJson =
   | {
       mode: "create";
@@ -160,6 +184,14 @@ type ParsedHistoryImportJson =
       records: {
         index: number;
         record: ParsedHistoryUpdateRecord | null;
+        error: string | null;
+      }[];
+    }
+  | {
+      mode: "research_update";
+      records: {
+        index: number;
+        record: ParsedHistoryResearchUpdateRecord | null;
         error: string | null;
       }[];
     };
@@ -226,6 +258,26 @@ function parsePhotoSequence(value: FormDataEntryValue | null) {
   return sequence;
 }
 
+function parseSourceSequence(value: FormDataEntryValue | null) {
+  const text = value?.toString().trim() ?? "";
+
+  if (!text) {
+    return 0;
+  }
+
+  if (!/^\d+$/.test(text)) {
+    throw new Error("Source sequence must be a whole number.");
+  }
+
+  const sequence = Number(text);
+
+  if (!Number.isSafeInteger(sequence) || sequence < 0) {
+    throw new Error("Source sequence must be 0 or higher.");
+  }
+
+  return sequence;
+}
+
 function parseTags(value: FormDataEntryValue | null) {
   const text = value?.toString() ?? "";
 
@@ -267,27 +319,49 @@ function parseHistoryStatus(
   const status = value?.toString();
 
   if (
-    status === "draft" ||
+    status === "drafted" ||
+    status === "researched" ||
+    status === "pending_review" ||
     status === "published" ||
     status === "archived"
   ) {
     return status;
   }
 
-  return "draft";
+  return "drafted";
 }
 
 function parseHistoryRecordFilter(value: unknown): HistoryRecordFilter {
   if (
     value === "all" ||
+    value === "drafted" ||
+    value === "researched" ||
+    value === "pending_review" ||
     value === "published" ||
-    value === "draft" ||
     value === "archived"
   ) {
     return value;
   }
 
   return "daily";
+}
+
+function parseHistorySourceStatus(value: unknown): HistorySourceStatus {
+  if (value === "reviewed" || value === "rejected") {
+    return value;
+  }
+
+  return "pending";
+}
+
+function parseHistoryScreenshotStatus(
+  value: unknown
+): HistoryScreenshotStatus {
+  if (value === "completed" || value === "failed") {
+    return value;
+  }
+
+  return "pending";
 }
 
 function parseSubmittedHistoryStatus(formData: FormData): HistoryStatus {
@@ -548,10 +622,11 @@ function parseHistoryImportJson(
 
   if (
     importObject.version !== "aroundcities_history_import_v1" &&
-    importObject.version !== "aroundcities_history_update_v1"
+    importObject.version !== "aroundcities_history_update_v1" &&
+    importObject.version !== "aroundcities_history_research_update_v2"
   ) {
     throw new Error(
-      "Import version must be aroundcities_history_import_v1 or aroundcities_history_update_v1."
+      "Import version must be aroundcities_history_import_v1, aroundcities_history_update_v1, or aroundcities_history_research_update_v2."
     );
   }
 
@@ -568,12 +643,105 @@ function parseHistoryImportJson(
     };
   }
 
+  if (
+    importObject.version ===
+    "aroundcities_history_research_update_v2"
+  ) {
+    return {
+      mode: "research_update",
+      records: importObject.records.map((item, index) =>
+        parseHistoryResearchUpdateRecord(item, index)
+      ),
+    };
+  }
+
   return {
     mode: "create",
     records: importObject.records.map((item, index) =>
       parseHistoryCreateRecord(item, index)
     ),
   };
+}
+
+function parseHistoryResearchUpdateRecord(
+  item: unknown,
+  index: number
+): {
+  index: number;
+  record: ParsedHistoryResearchUpdateRecord | null;
+  error: string | null;
+} {
+  const parsed = parseHistoryUpdateRecord(item, index);
+
+  if (!parsed.record) {
+    return {
+      index: parsed.index,
+      record: null,
+      error: parsed.error,
+    };
+  }
+
+  const record = objectFromUnknown(item);
+
+  if (!Array.isArray(record?.sources)) {
+    return {
+      index,
+      record: null,
+      error: `Record ${index + 1}: sources must be an array.`,
+    };
+  }
+
+  const sources: ParsedHistoryResearchSource[] = [];
+
+  for (const [sourceIndex, sourceValue] of record.sources.entries()) {
+    const source = objectFromUnknown(sourceValue);
+    const sourceUrl = textFromUnknown(source?.source_url);
+
+    if (!sourceUrl) {
+      return {
+        index,
+        record: null,
+        error: `Record ${index + 1}, source ${
+          sourceIndex + 1
+        }: source_url is required.`,
+      };
+    }
+
+    sources.push({
+      source_url: sourceUrl,
+      source_title: textFromUnknown(source?.source_title),
+      source_note: textFromUnknown(source?.source_note),
+      sequence: parseImportSequence(source?.sequence),
+    });
+  }
+
+  return {
+    index,
+    record: {
+      history_id: parsed.record.history_id,
+      title: parsed.record.title,
+      description: parsed.record.description,
+      event_year: parsed.record.event_year,
+      event_month: parsed.record.event_month,
+      event_day: parsed.record.event_day,
+      place_name: parsed.record.place_name,
+      location_note: parsed.record.location_note,
+      tags: parsed.record.tags,
+      confidence: parsed.record.confidence,
+      sources,
+    },
+    error: null,
+  };
+}
+
+function parseImportSequence(value: unknown) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number) || number < 0) {
+    return 0;
+  }
+
+  return Math.floor(number);
 }
 
 function parseHistoryCreateRecord(
@@ -1102,6 +1270,7 @@ export async function createPlaceForFeedAction(
   formData: FormData
 ) {
   await requireAdmin();
+  void _state;
 
   try {
     const name = requiredString(formData, "name");
@@ -1135,6 +1304,7 @@ export async function updatePlaceAction(
   formData: FormData
 ) {
   await requireAdmin();
+  void _state;
 
   try {
     const name = requiredString(formData, "name");
@@ -1662,6 +1832,7 @@ export async function updateFeedAction(
   formData: FormData
 ) {
   await requireAdmin();
+  void _state;
 
   try {
     const title = normalizeFeedTitleForStorage(
@@ -1786,6 +1957,7 @@ export async function createFeedSourceAction(
   formData: FormData
 ) {
   await requireAdmin();
+  void _state;
 
   try {
     const source = await createFeedSource({
@@ -2126,7 +2298,7 @@ export async function createHistoryRecordAction(
       event_year: eventYear,
       event_month: eventMonth,
       event_day: eventDay,
-      status: "draft",
+      status: "drafted",
       place_name: nullableString(formData.get("place_name")),
       location_note: nullableString(formData.get("location_note")),
       tags: parseTags(formData.get("tags")),
@@ -2163,6 +2335,15 @@ export async function updateHistoryRecordAction(
     const eventDay = parseRequiredInteger(formData, "event_day");
 
     validateHistoryDateParts(eventYear, eventMonth, eventDay);
+    const nextStatus = parseSubmittedHistoryStatus(formData);
+
+    if (
+      nextStatus === "published" &&
+      (await hasHistorySources(historyId)) &&
+      !(await hasReviewedHistorySource(historyId))
+    ) {
+      throw new Error("Review at least one source before publishing.");
+    }
 
     await updateHistoryRecord(historyId, {
       title: requiredString(formData, "title"),
@@ -2170,7 +2351,7 @@ export async function updateHistoryRecordAction(
       event_year: eventYear,
       event_month: eventMonth,
       event_day: eventDay,
-      status: parseSubmittedHistoryStatus(formData),
+      status: nextStatus,
       place_name: nullableString(formData.get("place_name")),
       location_note: nullableString(formData.get("location_note")),
       tags: parseTags(formData.get("tags")),
@@ -2215,6 +2396,137 @@ export async function deleteHistoryRecordAction(
   }
 
   redirect("/admin/history");
+}
+
+export async function createHistorySourceAction(
+  historyId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    const sourceUrl = requiredString(formData, "source_url");
+
+    if (!sourceUrl) {
+      throw new Error("Source URL is required.");
+    }
+
+    await createHistorySource({
+      history_id: historyId,
+      source_url: sourceUrl,
+      source_title: nullableString(formData.get("source_title")),
+      source_note: nullableString(formData.get("source_note")),
+      source_status: "pending",
+      source_screenshot_url: nullableString(
+        formData.get("source_screenshot_url")
+      ),
+      screenshot_status: "pending",
+      screenshot_error: nullableString(formData.get("screenshot_error")),
+      sequence: parseSourceSequence(formData.get("sequence")),
+    });
+
+    revalidatePath(`/admin/history/${historyId}`);
+  } catch (error) {
+    return await actionError("create_history_source", error, {
+      historyId,
+    });
+  }
+
+  redirect(`/admin/history/${historyId}`);
+}
+
+export async function updateHistorySourceAction(
+  historyId: string,
+  historySourceId: string,
+  _state: AdminActionState,
+  formData: FormData
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    const sourceUrl = requiredString(formData, "source_url");
+
+    if (!sourceUrl) {
+      throw new Error("Source URL is required.");
+    }
+
+    await updateHistorySource(historySourceId, {
+      source_url: sourceUrl,
+      source_title: nullableString(formData.get("source_title")),
+      source_note: nullableString(formData.get("source_note")),
+      source_status: parseHistorySourceStatus(
+        formData.get("source_status")?.toString()
+      ),
+      source_screenshot_url: nullableString(
+        formData.get("source_screenshot_url")
+      ),
+      screenshot_status: parseHistoryScreenshotStatus(
+        formData.get("screenshot_status")?.toString()
+      ),
+      screenshot_error: nullableString(formData.get("screenshot_error")),
+      sequence: parseSourceSequence(formData.get("sequence")),
+    });
+
+    revalidatePath(`/admin/history/${historyId}`);
+  } catch (error) {
+    return await actionError("update_history_source", error, {
+      historyId,
+      historySourceId,
+    });
+  }
+
+  redirect(`/admin/history/${historyId}`);
+}
+
+export async function setHistorySourceStatusAction(
+  historyId: string,
+  historySourceId: string,
+  sourceStatus: HistorySourceStatus,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await updateHistorySource(historySourceId, {
+      source_status: parseHistorySourceStatus(sourceStatus),
+    });
+
+    revalidatePath(`/admin/history/${historyId}`);
+  } catch (error) {
+    return await actionError("set_history_source_status", error, {
+      historyId,
+      historySourceId,
+      sourceStatus,
+    });
+  }
+
+  redirect(`/admin/history/${historyId}`);
+}
+
+export async function deleteHistorySourceAction(
+  historyId: string,
+  historySourceId: string,
+  _state: AdminActionState
+) {
+  await requireAdmin();
+  void _state;
+
+  try {
+    await deleteHistorySource(historySourceId);
+
+    revalidatePath(`/admin/history/${historyId}`);
+  } catch (error) {
+    return await actionError("delete_history_source", error, {
+      historyId,
+      historySourceId,
+    });
+  }
+
+  redirect(`/admin/history/${historyId}`);
 }
 
 export async function linkExistingHistoryPhotosAction(
@@ -2449,7 +2761,7 @@ export async function importHistoryRecordsAction(input: {
       for (const record of parsed.records) {
         await createHistoryRecord({
           ...record,
-          status: "draft",
+          status: "drafted",
         });
       }
 
@@ -2461,56 +2773,112 @@ export async function importHistoryRecordsAction(input: {
         mode: "create",
         createdCount: parsed.records.length,
         updatedCount: 0,
+        sourcesInsertedCount: 0,
+        sourcesUpdatedCount: 0,
         skippedCount: 0,
         skipped: [],
       };
     }
 
     let updatedCount = 0;
+    let sourcesInsertedCount = 0;
+    let sourcesUpdatedCount = 0;
     const skipped: string[] = [];
 
-    for (const item of parsed.records) {
-      if (!item.record) {
-        skipped.push(item.error ?? `Record ${item.index + 1}: skipped.`);
-        continue;
-      }
+    if (parsed.mode === "research_update") {
+      for (const item of parsed.records) {
+        if (!item.record) {
+          skipped.push(item.error ?? `Record ${item.index + 1}: skipped.`);
+          continue;
+        }
 
-      const existingRecord = await getHistoryRecordById(
-        item.record.history_id
-      );
-
-      if (!existingRecord) {
-        skipped.push(`Record ${item.index + 1}: history_id not found.`);
-        continue;
-      }
-
-      try {
-        await updateHistoryRecord(item.record.history_id, {
-          title: item.record.title,
-          description: item.record.description,
-          event_year: item.record.event_year,
-          event_month: item.record.event_month,
-          event_day: item.record.event_day,
-          place_name: item.record.place_name,
-          location_note: item.record.location_note,
-          tags: mergeHistoryResearchTags(
-            existingRecord.tags ?? [],
-            item.record.tags
-          ),
-          source_url: item.record.source_url,
-          source_note: item.record.source_note,
-          source_screenshot_url: item.record.source_screenshot_url,
-          confidence: item.record.confidence,
-        });
-        updatedCount += 1;
-      } catch (error) {
-        skipped.push(
-          `Record ${item.index + 1}: ${
-            error instanceof Error
-              ? error.message
-              : "history record update failed."
-          }`
+        const existingRecord = await getHistoryRecordById(
+          item.record.history_id
         );
+
+        if (!existingRecord) {
+          skipped.push(`Record ${item.index + 1}: history_id not found.`);
+          continue;
+        }
+
+        try {
+          await updateHistoryRecord(item.record.history_id, {
+            title: item.record.title,
+            description: item.record.description,
+            event_year: item.record.event_year,
+            event_month: item.record.event_month,
+            event_day: item.record.event_day,
+            place_name: item.record.place_name,
+            location_note: item.record.location_note,
+            tags: mergeHistoryResearchTags(
+              existingRecord.tags ?? [],
+              item.record.tags
+            ),
+            confidence: item.record.confidence,
+            status: "researched",
+          });
+
+          const sourceResult = await upsertHistoryResearchSources({
+            historyId: item.record.history_id,
+            sources: item.record.sources,
+          });
+          sourcesInsertedCount += sourceResult.inserted;
+          sourcesUpdatedCount += sourceResult.updated;
+          updatedCount += 1;
+        } catch (error) {
+          skipped.push(
+            `Record ${item.index + 1}: ${
+              error instanceof Error
+                ? error.message
+                : "history record update failed."
+            }`
+          );
+        }
+      }
+    } else {
+      for (const item of parsed.records) {
+        if (!item.record) {
+          skipped.push(item.error ?? `Record ${item.index + 1}: skipped.`);
+          continue;
+        }
+
+        const existingRecord = await getHistoryRecordById(
+          item.record.history_id
+        );
+
+        if (!existingRecord) {
+          skipped.push(`Record ${item.index + 1}: history_id not found.`);
+          continue;
+        }
+
+        try {
+          await updateHistoryRecord(item.record.history_id, {
+            title: item.record.title,
+            description: item.record.description,
+            event_year: item.record.event_year,
+            event_month: item.record.event_month,
+            event_day: item.record.event_day,
+            place_name: item.record.place_name,
+            location_note: item.record.location_note,
+            tags: mergeHistoryResearchTags(
+              existingRecord.tags ?? [],
+              item.record.tags
+            ),
+            source_url: item.record.source_url,
+            source_note: item.record.source_note,
+            source_screenshot_url: item.record.source_screenshot_url,
+            confidence: item.record.confidence,
+          });
+          updatedCount += 1;
+        } catch (error) {
+          skipped.push(
+            `Record ${item.index + 1}: ${
+              error instanceof Error
+                ? error.message
+                : "history record update failed."
+            }`
+          );
+        }
       }
     }
 
@@ -2519,9 +2887,11 @@ export async function importHistoryRecordsAction(input: {
     revalidatePath("/admin/history/import");
 
     return {
-      mode: "update",
+      mode: parsed.mode,
       createdCount: 0,
       updatedCount,
+      sourcesInsertedCount,
+      sourcesUpdatedCount,
       skippedCount: skipped.length,
       skipped,
     };

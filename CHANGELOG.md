@@ -2,6 +2,22 @@
 
 All notable changes to AroundCities should be documented here.
 
+## 2026-06-15
+
+### Added
+
+- Added the History research workflow statuses: Drafted, Researched, Pending Review, Published, and Archived.
+- Added `history_sources` for multiple source records per history record, including source review status, screenshot status, screenshot URL, screenshot error, and sequence ordering.
+- Added a Sources section to `/admin/history/[historyId]` for adding, editing, reviewing, rejecting, and deleting linked history sources.
+- Added `aroundcities_history_research_update_v2` import support that updates existing history records, marks them as researched, and inserts or updates source rows by URL without overwriting screenshot evidence.
+- Added History list pipeline counts for Drafted, Researched, Pending Review, Published, and Archived records.
+
+### Changed
+
+- Changed History daily research tasks and filters to use `drafted` instead of the old `draft` status.
+- Changed History publish behavior so records with `history_sources` require at least one reviewed source before publishing, while legacy records with only old source fields remain publishable.
+- Kept legacy `history_records.source_url`, `source_note`, and `source_screenshot_url` fields available for compatibility while making `history_sources` the preferred source storage going forward.
+
 ## 2026-06-12
 
 ### Added

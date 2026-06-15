@@ -10,6 +10,7 @@ import {
 } from "@/components/AdminSubmitButton";
 import HistoryPhotoManager from "@/components/HistoryPhotoManager";
 import HistoryRecordForm from "@/components/HistoryRecordForm";
+import HistorySourcesManager from "@/components/HistorySourcesManager";
 import {
   deleteHistoryRecordAction,
   updateHistoryRecordAction,
@@ -68,6 +69,14 @@ export default async function EditHistoryRecordPage({
             record.history_id
           )}
         />
+
+        <section className="space-y-4 border-t border-neutral-900 pt-8">
+          <h2 className="text-xl font-semibold">Sources</h2>
+          <HistorySourcesManager
+            historyId={record.history_id}
+            sources={record.history_sources}
+          />
+        </section>
 
         <section className="space-y-4 border-t border-neutral-900 pt-8">
           <h2 className="text-xl font-semibold">Photos</h2>

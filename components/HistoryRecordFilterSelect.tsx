@@ -16,8 +16,10 @@ const options: {
 }[] = [
   { value: "daily", label: "Daily Tasks" },
   { value: "all", label: "Show All" },
+  { value: "drafted", label: "Drafted" },
+  { value: "researched", label: "Researched" },
+  { value: "pending_review", label: "Pending Review" },
   { value: "published", label: "Published" },
-  { value: "draft", label: "Drafted" },
   { value: "archived", label: "Archived" },
 ];
 

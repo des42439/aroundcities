@@ -12,9 +12,21 @@ export type FeedStatus =
   | "archived";
 
 export type HistoryStatus =
-  | "draft"
+  | "drafted"
+  | "researched"
+  | "pending_review"
   | "published"
   | "archived";
+
+export type HistorySourceStatus =
+  | "pending"
+  | "reviewed"
+  | "rejected";
+
+export type HistoryScreenshotStatus =
+  | "pending"
+  | "completed"
+  | "failed";
 
 export type HistoryConfidence =
   | "high"
@@ -135,8 +147,24 @@ export interface HistoryPhotoWithPhoto extends HistoryPhoto {
   photo: Photo;
 }
 
+export interface HistorySource {
+  history_source_id: string;
+  history_id: string;
+  source_url: string;
+  source_title: string | null;
+  source_note: string | null;
+  source_status: HistorySourceStatus;
+  source_screenshot_url: string | null;
+  screenshot_status: HistoryScreenshotStatus;
+  screenshot_error: string | null;
+  sequence: number;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface HistoryRecordWithPhotos extends HistoryRecord {
   history_photos: HistoryPhotoWithPhoto[];
+  history_sources: HistorySource[];
 }
 
 export interface FeedPlace {
@@ -306,6 +334,12 @@ export type HistoryRecordUpdate =
 
 export type NewHistoryPhoto =
   Database["public"]["Tables"]["history_photos"]["Insert"];
+
+export type NewHistorySource =
+  Database["public"]["Tables"]["history_sources"]["Insert"];
+
+export type HistorySourceUpdate =
+  Database["public"]["Tables"]["history_sources"]["Update"];
 
 export type NewSource =
   Database["public"]["Tables"]["sources"]["Insert"];
@@ -501,6 +535,45 @@ export interface Database {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      history_sources: {
+        Row: HistorySource;
+        Insert: {
+          history_source_id?: string;
+          history_id: string;
+          source_url: string;
+          source_title?: string | null;
+          source_note?: string | null;
+          source_status?: HistorySourceStatus;
+          source_screenshot_url?: string | null;
+          screenshot_status?: HistoryScreenshotStatus;
+          screenshot_error?: string | null;
+          sequence?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          history_source_id?: string;
+          history_id?: string;
+          source_url?: string;
+          source_title?: string | null;
+          source_note?: string | null;
+          source_status?: HistorySourceStatus;
+          source_screenshot_url?: string | null;
+          screenshot_status?: HistoryScreenshotStatus;
+          screenshot_error?: string | null;
+          sequence?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "history_sources_history_id_fkey";
+            columns: ["history_id"];
+            referencedRelation: "history_records";
+            referencedColumns: ["history_id"];
+          },
+        ];
       };
       history_photos: {
         Row: HistoryPhoto;

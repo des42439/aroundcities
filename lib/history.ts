@@ -5,11 +5,14 @@ import {
   FeedWithPlaceAndPhotos,
   HistoryPhotoWithPhoto,
   HistoryRecord,
+  HistorySource,
+  HistorySourceUpdate,
   HistoryStatus,
   HistoryRecordUpdate,
   HistoryRecordWithPhotos,
   NewHistoryPhoto,
   NewHistoryRecord,
+  NewHistorySource,
   Photo,
 } from "@/types/database";
 
@@ -18,9 +21,23 @@ export const DAILY_HISTORY_RESEARCH_TARGET = 10;
 export type HistoryRecordFilter =
   | "daily"
   | "all"
+  | "drafted"
+  | "researched"
+  | "pending_review"
   | "published"
-  | "draft"
   | "archived";
+
+export type HistoryStatusCount = {
+  status: HistoryStatus;
+  count: number;
+};
+
+export type HistorySourceImportInput = {
+  source_url: string;
+  source_title: string | null;
+  source_note: string | null;
+  sequence: number;
+};
 
 const DAILY_HISTORY_TASK_TAG_PREFIX = "daily-task:";
 const HISTORY_TIME_ZONE = "Asia/Kuching";
@@ -64,7 +81,7 @@ export async function ensureDailyHistoryTasks(
   const { data: draftRecords, error: draftError } = await db
     .from("history_records")
     .select("history_id,tags")
-    .eq("status", "draft")
+    .eq("status", "drafted")
     .order("created_at", { ascending: true })
     .limit(DAILY_HISTORY_RESEARCH_TARGET);
 
@@ -124,6 +141,39 @@ export async function getHistoryRecordCount(): Promise<number> {
   return count ?? 0;
 }
 
+export async function getHistoryStatusCounts(): Promise<
+  HistoryStatusCount[]
+> {
+  const statuses: HistoryStatus[] = [
+    "drafted",
+    "researched",
+    "pending_review",
+    "published",
+    "archived",
+  ];
+
+  const counts = await Promise.all(
+    statuses.map(async (status) => {
+      const { count, error } = await historyDb()
+        .from("history_records")
+        .select("history_id", {
+          count: "exact",
+          head: true,
+        })
+        .eq("status", status);
+
+      if (error) {
+        console.error(error);
+        return { status, count: 0 };
+      }
+
+      return { status, count: count ?? 0 };
+    })
+  );
+
+  return counts;
+}
+
 export async function getHistoryResearchExportRecords(input: {
   filter: HistoryRecordFilter;
   todayTag: string;
@@ -169,7 +219,7 @@ export async function getHistoryRecordById(
 ): Promise<HistoryRecordWithPhotos | null> {
   const { data, error } = await historyDb()
     .from("history_records")
-    .select("*, history_photos(*, photo:photos(*))")
+    .select("*, history_photos(*, photo:photos(*)), history_sources(*)")
     .eq("history_id", historyId)
     .maybeSingle();
 
@@ -185,6 +235,9 @@ export async function getHistoryRecordById(
   const record = data as HistoryRecordWithPhotos;
   record.history_photos = getOrderedHistoryPhotos(
     record.history_photos
+  );
+  record.history_sources = getOrderedHistorySources(
+    record.history_sources
   );
 
   return record;
@@ -238,6 +291,142 @@ export async function deleteHistoryRecord(
   if (error) {
     throw new Error(`History record delete failed: ${error.message}`);
   }
+}
+
+export async function createHistorySource(
+  input: NewHistorySource
+): Promise<HistorySource> {
+  const { data, error } = await historyDb()
+    .from("history_sources")
+    .insert(input)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`History source create failed: ${error.message}`);
+  }
+
+  return data as HistorySource;
+}
+
+export async function updateHistorySource(
+  historySourceId: string,
+  input: HistorySourceUpdate
+): Promise<HistorySource> {
+  const { data, error } = await historyDb()
+    .from("history_sources")
+    .update({
+      ...input,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("history_source_id", historySourceId)
+    .select("*")
+    .single();
+
+  if (error) {
+    throw new Error(`History source update failed: ${error.message}`);
+  }
+
+  return data as HistorySource;
+}
+
+export async function deleteHistorySource(
+  historySourceId: string
+): Promise<void> {
+  const { error } = await historyDb()
+    .from("history_sources")
+    .delete()
+    .eq("history_source_id", historySourceId);
+
+  if (error) {
+    throw new Error(`History source delete failed: ${error.message}`);
+  }
+}
+
+export async function hasHistorySources(
+  historyId: string
+): Promise<boolean> {
+  const { data, error } = await historyDb()
+    .from("history_sources")
+    .select("history_source_id")
+    .eq("history_id", historyId)
+    .limit(1);
+
+  if (error) {
+    throw new Error(`History source lookup failed: ${error.message}`);
+  }
+
+  return (data ?? []).length > 0;
+}
+
+export async function hasReviewedHistorySource(
+  historyId: string
+): Promise<boolean> {
+  const { data, error } = await historyDb()
+    .from("history_sources")
+    .select("history_source_id")
+    .eq("history_id", historyId)
+    .eq("source_status", "reviewed")
+    .limit(1);
+
+  if (error) {
+    throw new Error(
+      `Reviewed history source lookup failed: ${error.message}`
+    );
+  }
+
+  return (data ?? []).length > 0;
+}
+
+export async function upsertHistoryResearchSources(input: {
+  historyId: string;
+  sources: HistorySourceImportInput[];
+}): Promise<{
+  inserted: number;
+  updated: number;
+}> {
+  let inserted = 0;
+  let updated = 0;
+
+  for (const source of input.sources) {
+    const { data: existing, error: lookupError } = await historyDb()
+      .from("history_sources")
+      .select("history_source_id")
+      .eq("history_id", input.historyId)
+      .eq("source_url", source.source_url)
+      .maybeSingle();
+
+    if (lookupError) {
+      throw new Error(
+        `History source lookup failed: ${lookupError.message}`
+      );
+    }
+
+    if (existing?.history_source_id) {
+      await updateHistorySource(existing.history_source_id, {
+        source_title: source.source_title,
+        source_note: source.source_note,
+        sequence: source.sequence,
+      });
+      updated += 1;
+      continue;
+    }
+
+    await createHistorySource({
+      history_id: input.historyId,
+      source_url: source.source_url,
+      source_title: source.source_title,
+      source_note: source.source_note,
+      source_status: "pending",
+      source_screenshot_url: null,
+      screenshot_status: "pending",
+      screenshot_error: null,
+      sequence: source.sequence,
+    });
+    inserted += 1;
+  }
+
+  return { inserted, updated };
 }
 
 export async function addHistoryPhotos(
@@ -417,6 +606,21 @@ function getOrderedHistoryPhotos(
   });
 }
 
+function getOrderedHistorySources(
+  historySources: HistorySource[]
+): HistorySource[] {
+  return [...(historySources ?? [])].sort((left, right) => {
+    const sequenceDelta =
+      normalizeSequence(left.sequence) - normalizeSequence(right.sequence);
+
+    if (sequenceDelta !== 0) {
+      return sequenceDelta;
+    }
+
+    return left.created_at.localeCompare(right.created_at);
+  });
+}
+
 function normalizeSequence(sequence: number): number {
   return sequence > 0 ? sequence : Number.MAX_SAFE_INTEGER;
 }
@@ -428,10 +632,16 @@ function applyHistoryRecordFilter(
   todayTag: string
 ) {
   if (filter === "daily") {
-    return query.eq("status", "draft").contains("tags", [todayTag]);
+    return query.eq("status", "drafted").contains("tags", [todayTag]);
   }
 
-  if (filter === "published" || filter === "draft" || filter === "archived") {
+  if (
+    filter === "drafted" ||
+    filter === "researched" ||
+    filter === "pending_review" ||
+    filter === "published" ||
+    filter === "archived"
+  ) {
     const status: HistoryStatus = filter;
     return query.eq("status", status);
   }

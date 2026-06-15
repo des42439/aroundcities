@@ -18,10 +18,10 @@ import {
   AdminFormProgress,
   AdminSubmitButton,
 } from "./AdminSubmitButton";
-import { HistoryRecord } from "@/types/database";
+import { HistoryRecordWithPhotos } from "@/types/database";
 
 type Props = {
-  record?: HistoryRecord;
+  record?: HistoryRecordWithPhotos;
   action: (
     state: AdminActionState,
     formData: FormData
@@ -45,6 +45,11 @@ export default function HistoryRecordForm({
     string | null
   >(null);
   const trimmedSourceUrl = sourceUrl.trim();
+  const hasNewSources = (record?.history_sources ?? []).length > 0;
+  const hasReviewedSource = (record?.history_sources ?? []).some(
+    (source) => source.source_status === "reviewed"
+  );
+  const publishBlocked = hasNewSources && !hasReviewedSource;
 
   async function handleScreenshotChange(
     event: ChangeEvent<HTMLInputElement>
@@ -166,7 +171,9 @@ export default function HistoryRecordForm({
             defaultValue={record.status}
             className={selectClassName}
           >
-            <option value="draft">Draft</option>
+            <option value="drafted">Drafted</option>
+            <option value="researched">Researched</option>
+            <option value="pending_review">Pending Review</option>
             <option value="published">Published</option>
             <option value="archived">Archived</option>
           </select>
@@ -198,6 +205,11 @@ export default function HistoryRecordForm({
         />
       </Field>
 
+      <div className="rounded-md border border-neutral-900 p-4">
+        <p className="mb-4 text-sm font-medium text-neutral-300">
+          Legacy source fields
+        </p>
+        <div className="space-y-4">
       <Field label="Source URL">
         <div className="space-y-3">
           <input
@@ -287,6 +299,8 @@ export default function HistoryRecordForm({
           className={inputClassName}
         />
       </Field>
+        </div>
+      </div>
 
       <Field label="Confidence">
         <select
@@ -305,20 +319,28 @@ export default function HistoryRecordForm({
           <>
             <AdminSubmitButton
               name="status"
-              value={record.status === "published" ? "published" : "draft"}
+              value={record.status}
               variant="secondary"
               pendingLabel="Saving..."
             >
-              {record.status === "published" ? "Save" : "Save Draft"}
+              Save
             </AdminSubmitButton>
             {record.status !== "published" ? (
-              <AdminSubmitButton
-                name="status"
-                value="published"
-                pendingLabel="Publishing..."
-              >
-                Publish
-              </AdminSubmitButton>
+              <div className="space-y-2">
+                <AdminSubmitButton
+                  name="status"
+                  value="published"
+                  pendingLabel="Publishing..."
+                  disabled={publishBlocked}
+                >
+                  Publish
+                </AdminSubmitButton>
+                {publishBlocked ? (
+                  <p className="text-sm text-amber-300">
+                    Review at least one source before publishing.
+                  </p>
+                ) : null}
+              </div>
             ) : null}
             {record.status !== "archived" ? (
               <AdminSubmitButton

@@ -11,8 +11,10 @@ import {
   ensureDailyHistoryTasks,
   getDailyHistoryTaskTag,
   getHistoryRecords,
+  getHistoryStatusCounts,
   type HistoryRecordFilter,
 } from "@/lib/history";
+import type { HistoryStatus } from "@/types/database";
 
 export const dynamic = "force-dynamic";
 
@@ -27,8 +29,10 @@ function getHistoryFilterParam(value?: string | string[]): HistoryRecordFilter {
 
   if (
     view === "all" ||
+    view === "drafted" ||
+    view === "researched" ||
+    view === "pending_review" ||
     view === "published" ||
-    view === "draft" ||
     view === "archived"
   ) {
     return view;
@@ -47,7 +51,10 @@ export default async function HistoryPage({
 
   await ensureDailyHistoryTasks(todayTag);
 
-  const records = await getHistoryRecords(filter, todayTag);
+  const [records, statusCounts] = await Promise.all([
+    getHistoryRecords(filter, todayTag),
+    getHistoryStatusCounts(),
+  ]);
   const dailyTaskCount =
     filter === "daily"
       ? records.length
@@ -78,6 +85,21 @@ export default async function HistoryPage({
         </div>
 
         <div className="flex flex-col gap-3 border-b border-neutral-900 pb-5">
+          <div className="grid gap-2 sm:grid-cols-5">
+            {statusCounts.map((item) => (
+              <div
+                key={item.status}
+                className="rounded-md border border-neutral-900 px-3 py-2"
+              >
+                <div className="text-xs text-neutral-500">
+                  {historyStatusLabel(item.status)}
+                </div>
+                <div className="mt-1 text-lg font-semibold text-neutral-100">
+                  {item.count}
+                </div>
+              </div>
+            ))}
+          </div>
           <HistoryRecordFilterSelect
             filter={filter}
             basePath="/admin/history"
@@ -117,8 +139,8 @@ export default async function HistoryPage({
                   {record.event_year}-{String(record.event_month).padStart(2, "0")}-
                   {String(record.event_day).padStart(2, "0")}
                 </span>
-                <span className="rounded-full border border-neutral-800 px-2 py-1 text-neutral-300">
-                  {record.status}
+                <span className={historyStatusBadgeClassName(record.status)}>
+                  {historyStatusLabel(record.status)}
                 </span>
                 <span>Created {formatDate(record.created_at)}</span>
               </div>
@@ -128,4 +150,31 @@ export default async function HistoryPage({
       )}
     </AdminShell>
   );
+}
+
+function historyStatusLabel(status: HistoryStatus) {
+  const labels: Record<HistoryStatus, string> = {
+    drafted: "Drafted",
+    researched: "Researched",
+    pending_review: "Pending Review",
+    published: "Published",
+    archived: "Archived",
+  };
+
+  return labels[status];
+}
+
+function historyStatusBadgeClassName(status: HistoryStatus) {
+  const base = "rounded-full border px-2 py-1";
+  const colors: Record<HistoryStatus, string> = {
+    drafted: "border-neutral-800 text-neutral-300",
+    researched: "border-sky-950 bg-sky-950/30 text-sky-100",
+    pending_review:
+      "border-amber-950 bg-amber-950/30 text-amber-100",
+    published:
+      "border-emerald-950 bg-emerald-950/30 text-emerald-100",
+    archived: "border-neutral-800 bg-neutral-900 text-neutral-400",
+  };
+
+  return `${base} ${colors[status]}`;
 }

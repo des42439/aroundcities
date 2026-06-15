@@ -1,4 +1,4 @@
-﻿export type Json =
+export type Json =
   | string
   | number
   | boolean
@@ -11,6 +11,31 @@ export type Database = {
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "14.5"
+  }
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -88,6 +113,65 @@ export type Database = {
           url?: string
         }
         Relationships: []
+      }
+      feed_event_details: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          detail_id: string
+          dress_code: string | null
+          entry_type: string
+          event_notes: string | null
+          feed_id: string
+          lucky_draw: boolean | null
+          open_to_public: boolean | null
+          organizer: string | null
+          registration_type: string
+          ticket_required: boolean | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          detail_id?: string
+          dress_code?: string | null
+          entry_type?: string
+          event_notes?: string | null
+          feed_id: string
+          lucky_draw?: boolean | null
+          open_to_public?: boolean | null
+          organizer?: string | null
+          registration_type?: string
+          ticket_required?: boolean | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          detail_id?: string
+          dress_code?: string | null
+          entry_type?: string
+          event_notes?: string | null
+          feed_id?: string
+          lucky_draw?: boolean | null
+          open_to_public?: boolean | null
+          organizer?: string | null
+          registration_type?: string
+          ticket_required?: boolean | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_event_details_feed_id_fkey"
+            columns: ["feed_id"]
+            isOneToOne: true
+            referencedRelation: "feeds"
+            referencedColumns: ["feed_id"]
+          },
+        ]
       }
       feed_operating_hours: {
         Row: {
@@ -196,65 +280,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "places"
             referencedColumns: ["place_id"]
-          },
-        ]
-      }
-      feed_event_details: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          detail_id: string
-          dress_code: string | null
-          entry_type: string
-          event_notes: string | null
-          feed_id: string
-          lucky_draw: boolean | null
-          open_to_public: boolean | null
-          organizer: string | null
-          registration_type: string
-          ticket_required: boolean | null
-          updated_at: string
-          updated_by: string | null
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          detail_id?: string
-          dress_code?: string | null
-          entry_type?: string
-          event_notes?: string | null
-          feed_id: string
-          lucky_draw?: boolean | null
-          open_to_public?: boolean | null
-          organizer?: string | null
-          registration_type?: string
-          ticket_required?: boolean | null
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          detail_id?: string
-          dress_code?: string | null
-          entry_type?: string
-          event_notes?: string | null
-          feed_id?: string
-          lucky_draw?: boolean | null
-          open_to_public?: boolean | null
-          organizer?: string | null
-          registration_type?: string
-          ticket_required?: boolean | null
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "feed_event_details_feed_id_fkey"
-            columns: ["feed_id"]
-            isOneToOne: true
-            referencedRelation: "feeds"
-            referencedColumns: ["feed_id"]
           },
         ]
       }
@@ -443,6 +468,158 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "places"
             referencedColumns: ["place_id"]
+          },
+        ]
+      }
+      history_photos: {
+        Row: {
+          created_at: string
+          history_id: string
+          history_photo_id: string
+          note: string | null
+          photo_id: string
+          sequence: number
+        }
+        Insert: {
+          created_at?: string
+          history_id: string
+          history_photo_id?: string
+          note?: string | null
+          photo_id: string
+          sequence?: number
+        }
+        Update: {
+          created_at?: string
+          history_id?: string
+          history_photo_id?: string
+          note?: string | null
+          photo_id?: string
+          sequence?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "history_photos_history_id_fkey"
+            columns: ["history_id"]
+            isOneToOne: false
+            referencedRelation: "history_records"
+            referencedColumns: ["history_id"]
+          },
+          {
+            foreignKeyName: "history_photos_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "photos"
+            referencedColumns: ["photo_id"]
+          },
+        ]
+      }
+      history_records: {
+        Row: {
+          confidence: string
+          created_at: string
+          description: string | null
+          event_day: number
+          event_month: number
+          event_year: number
+          history_id: string
+          location_note: string | null
+          place_name: string | null
+          source_note: string | null
+          source_screenshot_url: string | null
+          source_url: string | null
+          status: string
+          tags: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          confidence?: string
+          created_at?: string
+          description?: string | null
+          event_day: number
+          event_month: number
+          event_year: number
+          history_id?: string
+          location_note?: string | null
+          place_name?: string | null
+          source_note?: string | null
+          source_screenshot_url?: string | null
+          source_url?: string | null
+          status?: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          confidence?: string
+          created_at?: string
+          description?: string | null
+          event_day?: number
+          event_month?: number
+          event_year?: number
+          history_id?: string
+          location_note?: string | null
+          place_name?: string | null
+          source_note?: string | null
+          source_screenshot_url?: string | null
+          source_url?: string | null
+          status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      history_sources: {
+        Row: {
+          created_at: string
+          history_id: string
+          history_source_id: string
+          screenshot_error: string | null
+          screenshot_status: string
+          sequence: number
+          source_note: string | null
+          source_screenshot_url: string | null
+          source_status: string
+          source_title: string | null
+          source_url: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          history_id: string
+          history_source_id?: string
+          screenshot_error?: string | null
+          screenshot_status?: string
+          sequence?: number
+          source_note?: string | null
+          source_screenshot_url?: string | null
+          source_status?: string
+          source_title?: string | null
+          source_url: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          history_id?: string
+          history_source_id?: string
+          screenshot_error?: string | null
+          screenshot_status?: string
+          sequence?: number
+          source_note?: string | null
+          source_screenshot_url?: string | null
+          source_status?: string
+          source_title?: string | null
+          source_url?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "history_sources_history_id_fkey"
+            columns: ["history_id"]
+            isOneToOne: false
+            referencedRelation: "history_records"
+            referencedColumns: ["history_id"]
           },
         ]
       }
@@ -781,6 +958,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

@@ -16,8 +16,10 @@ function getHistoryFilterParam(value?: string | string[]): HistoryRecordFilter {
 
   if (
     view === "all" ||
+    view === "drafted" ||
+    view === "researched" ||
+    view === "pending_review" ||
     view === "published" ||
-    view === "draft" ||
     view === "archived"
   ) {
     return view;

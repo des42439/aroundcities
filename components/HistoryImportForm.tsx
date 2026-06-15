@@ -19,6 +19,7 @@ type PreviewRecord = {
   eventDate: string;
   placeName: string;
   sourceNote: string;
+  sourceCount: number;
   confidence: string;
 };
 
@@ -54,10 +55,11 @@ function parsePreview(jsonText: string): PreviewResult {
 
   if (
     importObject.version !== "aroundcities_history_import_v1" &&
-    importObject.version !== "aroundcities_history_update_v1"
+    importObject.version !== "aroundcities_history_update_v1" &&
+    importObject.version !== "aroundcities_history_research_update_v2"
   ) {
     throw new Error(
-      "Import version must be aroundcities_history_import_v1 or aroundcities_history_update_v1."
+      "Import version must be aroundcities_history_import_v1, aroundcities_history_update_v1, or aroundcities_history_research_update_v2."
     );
   }
 
@@ -72,6 +74,9 @@ function parsePreview(jsonText: string): PreviewResult {
       const title = text(record?.title);
       const isCreateImport =
         importObject.version === "aroundcities_history_import_v1";
+      const isResearchUpdate =
+        importObject.version ===
+        "aroundcities_history_research_update_v2";
       const eventYear = Number(record?.event_year);
       const eventMonth = Number(record?.event_month);
       const eventDay = Number(record?.event_day);
@@ -110,11 +115,23 @@ function parsePreview(jsonText: string): PreviewResult {
       }
 
       if (
-        isCreateImport &&
+        (isCreateImport || isResearchUpdate) &&
         !["high", "medium", "low"].includes(confidence)
       ) {
         throw new Error(
           `Record ${index + 1} confidence must be high, medium, or low.`
+        );
+      }
+
+      if (
+        isResearchUpdate &&
+        (!Array.isArray(record?.sources) ||
+          record.sources.some(
+            (source) => !text(object(source)?.source_url)
+          ))
+      ) {
+        throw new Error(
+          `Record ${index + 1} sources must include source_url.`
         );
       }
 
@@ -133,6 +150,9 @@ function parsePreview(jsonText: string): PreviewResult {
             : "Invalid date fields",
         placeName: text(record?.place_name),
         sourceNote: text(record?.source_note),
+        sourceCount: Array.isArray(record?.sources)
+          ? record.sources.length
+          : 0,
         confidence,
       };
     }),
@@ -237,6 +257,16 @@ export default function HistoryImportForm() {
                 }. Skipped ${saveResult.skippedCount} record${
                   saveResult.skippedCount === 1 ? "" : "s"
                 }.`
+              : saveResult.mode === "research_update"
+                ? `Successfully updated ${saveResult.updatedCount} history record${
+                    saveResult.updatedCount === 1 ? "" : "s"
+                  }, inserted ${saveResult.sourcesInsertedCount} source${
+                    saveResult.sourcesInsertedCount === 1 ? "" : "s"
+                  }, and updated ${saveResult.sourcesUpdatedCount} source${
+                    saveResult.sourcesUpdatedCount === 1 ? "" : "s"
+                  }. Skipped ${saveResult.skippedCount} record${
+                    saveResult.skippedCount === 1 ? "" : "s"
+                  }.`
               : `Successfully imported ${
                   saveResult.createdCount
                 } history record${
@@ -324,6 +354,13 @@ export default function HistoryImportForm() {
                   label="Source note"
                   value={record.sourceNote}
                 />
+                {preview.version ===
+                "aroundcities_history_research_update_v2" ? (
+                  <PreviewRow
+                    label="Sources"
+                    value={String(record.sourceCount)}
+                  />
+                ) : null}
                 <PreviewRow
                   label="Confidence"
                   value={record.confidence}

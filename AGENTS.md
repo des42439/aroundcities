@@ -139,12 +139,16 @@ V2 Phase 1 Steps 1-5 are implemented:
 - The `/admin` workflow hub shows counts for Drafted Feeds, Published Feeds, and Sources.
 - The `/admin` workflow hub also links to History.
 - `/admin/history`, `/admin/history/new`, `/admin/history/[historyId]`, and `/admin/history/import` support Phase 1 standalone history record management.
-- `/admin/history` defaults to a lightweight daily research task view. On the first visit of each Kuching day, it clears old `daily-task:` tags, assigns up to 10 oldest draft records with `daily-task:YYYYMMDD`, and shows only those draft records by default.
-- `/admin/history` and `/admin/history/export` support Daily Tasks, Show All, Published, Drafted, and Archived filters.
+- History record status workflow is `drafted` -> `researched` -> `pending_review` -> `published`, with `archived` for hidden retained records.
+- `/admin/history` defaults to a lightweight daily research task view. On the first visit of each Kuching day, it clears old `daily-task:` tags, assigns up to 10 oldest drafted records with `daily-task:YYYYMMDD`, and shows only those drafted records by default.
+- `/admin/history` and `/admin/history/export` support Daily Tasks, Show All, Drafted, Researched, Pending Review, Published, and Archived filters.
 - `/admin/history/export` exports history records for research as `aroundcities_history_research_export_v1` using the selected History filter.
-- History records are stored in `history_records`, and history-photo links are stored in `history_photos`.
-- History JSON import uses `aroundcities_history_import_v1`, validates month/day/confidence, and always creates draft records.
+- History records are stored in `history_records`, multi-source research evidence is stored in `history_sources`, and history-photo links are stored in `history_photos`.
+- History JSON import uses `aroundcities_history_import_v1`, validates month/day/confidence, and always creates drafted records.
 - History update import uses `aroundcities_history_update_v1`, updates existing records by `history_id`, never creates records, preserves existing tags, and adds `research:done` after successful updates.
+- History research update import uses `aroundcities_history_research_update_v2`, updates existing records by `history_id`, marks them `researched`, inserts or updates `history_sources` by source URL, and never publishes automatically.
+- Legacy `history_records.source_url`, `source_note`, and `source_screenshot_url` fields remain for compatibility, but new research imports should use `history_sources`.
+- Publishing a history record with `history_sources` requires at least one source marked `reviewed`; legacy records without source rows remain publishable.
 - History records can link existing feed photos using a client-side feed-title picker.
 - History-only uploads use browser image compression, Supabase Storage, normal `photos` rows, and an archived feed used only as a photo container.
 - History edit source screenshots use browser image compression and signed Supabase Storage uploads to the existing `photos` bucket, then save the generated URL in `history_records.source_screenshot_url`.
