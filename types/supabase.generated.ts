@@ -623,6 +623,66 @@ export type Database = {
           },
         ]
       }
+      leads: {
+        Row: {
+          created_at: string
+          lead_content: string | null
+          lead_id: string
+          lead_type: string | null
+          place_name: string | null
+          relevant_date: string | null
+          source_name: string | null
+          source_note: string | null
+          source_page: string | null
+          source_section: string | null
+          source_type: string | null
+          source_url: string | null
+          status: string
+          tags: string[]
+          title: string
+          updated_at: string
+          why_interesting: string | null
+        }
+        Insert: {
+          created_at?: string
+          lead_content?: string | null
+          lead_id?: string
+          lead_type?: string | null
+          place_name?: string | null
+          relevant_date?: string | null
+          source_name?: string | null
+          source_note?: string | null
+          source_page?: string | null
+          source_section?: string | null
+          source_type?: string | null
+          source_url?: string | null
+          status?: string
+          tags?: string[]
+          title: string
+          updated_at?: string
+          why_interesting?: string | null
+        }
+        Update: {
+          created_at?: string
+          lead_content?: string | null
+          lead_id?: string
+          lead_type?: string | null
+          place_name?: string | null
+          relevant_date?: string | null
+          source_name?: string | null
+          source_note?: string | null
+          source_page?: string | null
+          source_section?: string | null
+          source_type?: string | null
+          source_url?: string | null
+          status?: string
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          why_interesting?: string | null
+        }
+        Relationships: []
+      }
       photo_albums: {
         Row: {
           album_id: string

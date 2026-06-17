@@ -6,6 +6,10 @@ All notable changes to AroundCities should be documented here.
 
 ### Added
 
+- Added admin-only Leads v1 as a curator inbox for future content ideas, with `/admin/leads`, `/admin/leads/new`, `/admin/leads/[leadId]`, `/admin/leads/import`, and `/admin/leads/reading`.
+- Added the `leads` table for active/archived lead records, source notes, lead type, place hint, relevant date, tags, and timestamps.
+- Added Leads JSON import support for `aroundcities_leads_import_v1`; imported leads are always saved as active.
+- Added Leads Reading Mode for stacked active lead cards with one-click archive that removes processed cards from the inbox.
 - Added `RULES.md` as the shared long-term standard for AroundCities UI behavior, workflow behavior, navigation behavior, import/export behavior, upload behavior, loading behavior, and future section consistency.
 - Added guidance that future AroundCities sections should follow `RULES.md` by default unless explicitly overridden.
 - Added a shared global loading/progress overlay for internal navigation, admin form submissions, imports, exports, previews, and client-side upload flows.

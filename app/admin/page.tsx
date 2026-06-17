@@ -2,15 +2,17 @@ import Link from "next/link";
 import AdminShell from "@/components/AdminShell";
 import { requireAdmin } from "@/lib/admin-auth";
 import { getHistoryRecordCount } from "@/lib/history";
+import { getLeadCount } from "@/lib/leads";
 import { getPhotoAlbums } from "@/lib/photo-albums";
 import { getSourceCount } from "@/lib/sources";
 
 export default async function AdminPage() {
   await requireAdmin();
-  const [albums, sourceCount, historyCount] =
+  const [albums, sourceCount, leadCount, historyCount] =
     await Promise.all([
       getPhotoAlbums(),
       getSourceCount(),
+      getLeadCount("active"),
       getHistoryRecordCount(),
     ]);
 
@@ -38,6 +40,18 @@ export default async function AdminPage() {
           </h2>
           <p className="mt-2 text-sm text-neutral-500">
             Manually check useful pages and websites.
+          </p>
+        </Link>
+
+        <Link
+          href="/admin/leads"
+          className="block rounded-lg border border-neutral-900 p-5 hover:border-neutral-700"
+        >
+          <h2 className="text-xl font-semibold">
+            Leads ({leadCount})
+          </h2>
+          <p className="mt-2 text-sm text-neutral-500">
+            Review potential future content ideas and archive processed leads.
           </p>
         </Link>
 

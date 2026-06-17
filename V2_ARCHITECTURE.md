@@ -2,7 +2,7 @@
 
 Last updated: 17 June 2026
 
-Implementation status: Steps 1-5 are implemented, plus a photo-first admin workflow through Photo Album Admin v1. Feed workflows remain in the codebase and are reachable by direct URL, but they are hidden from the main admin navigation for now. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`. The standalone History module is implemented as an admin-only archive and research pipeline, with no public discovery integration. Shared UI/workflow behavior standards now live in `RULES.md`, and the app includes a global loading/progress overlay for internal navigation, admin form submissions, imports, exports, previews, and client-side uploads.
+Implementation status: Steps 1-5 are implemented, plus a photo-first admin workflow through Photo Album Admin v1. Feed workflows remain in the codebase and are reachable by direct URL, but they are hidden from the main admin navigation for now. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`. The standalone History module is implemented as an admin-only archive and research pipeline, with no public discovery integration. Leads are implemented as an admin-only curator inbox for potential future content ideas, with import and reading-mode archive workflows but no feed/history conversion. Shared UI/workflow behavior standards now live in `RULES.md`, and the app includes a global loading/progress overlay for internal navigation, admin form submissions, imports, exports, previews, and client-side uploads.
 
 ## 1. Objective
 
@@ -47,7 +47,37 @@ Admin is moving photo-first. `photo_albums` is the current organization layer fo
 
 History is a standalone admin-only archive module. It is intentionally not a feed type and is stored in dedicated history tables. Public history discovery should wait until a substantial library exists.
 
+Leads are a standalone admin-only curator inbox for possible future content ideas. They are not feeds, history records, public content, crawler jobs, automation, or source scraping. Leads support manual CRUD, JSON import, active/archived status, and a reading mode for one-click archiving.
+
 No comments, likes, followers, messaging, ratings, reviews, public contributor accounts, or business-directory workflows.
+
+## 3B. Leads Module
+
+Purpose:
+
+- Store potential future AroundCities content ideas from articles, posts, announcements, discoveries, history ideas, community activities, and infrastructure updates.
+- Keep leads internal to the curator workflow.
+- Import leads through `aroundcities_leads_import_v1` JSON, always as active.
+- Process active leads continuously through Reading Mode, archiving cards one at a time without confirmation.
+
+Table:
+
+- `leads`
+
+Admin routes:
+
+- `/admin/leads`
+- `/admin/leads/new`
+- `/admin/leads/[leadId]`
+- `/admin/leads/import`
+- `/admin/leads/reading`
+
+Deferred:
+
+- Feed conversion
+- History conversion
+- Public pages
+- Automation, crawlers, AI processing, source scraping, notifications, and export
 
 ## 3A. History Module
 

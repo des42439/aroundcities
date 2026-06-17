@@ -71,6 +71,9 @@ Implemented mobile-first workflow:
 - `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
 - `/admin/stats` lists feed and photo click counts from highest to lowest.
+- `/admin/leads` manages admin-only potential content ideas as a curator inbox.
+- `/admin/leads/import` accepts pasted `aroundcities_leads_import_v1` JSON and saves imported leads as active records.
+- `/admin/leads/reading` shows active leads as stacked reading cards with a one-click Archive action for continuous inbox processing.
 - `/admin/history` manages standalone Kuching/Sarawak history records.
 - `/admin/history` defaults to Today's History Research Tasks, a lightweight daily batch of up to 10 drafted records tagged with `daily-task:YYYYMMDD` in `history_records.tags`.
 - `/admin/history/import` accepts pasted `aroundcities_history_import_v1` JSON and saves valid records as drafts.
@@ -185,6 +188,7 @@ The V2 Phase 1 foundation now includes:
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
 - Sources can be created from `/admin/sources/new`, edited, deleted, opened in a new tab, and manually marked checked. `/admin/sources` defaults to a Pending view showing sources never checked or not checked in the past 3 days, with a dropdown `Show all` filter for the full list.
+- Admin includes `/admin/leads`, an internal curator inbox for possible future AroundCities content ideas. Leads are stored in `leads`, are never public content, and support active/archived filtering, local search, CRUD, import, and Reading Mode archiving.
 - Shared workflow rules now live in `RULES.md`, and the active app has a shared global loading/progress overlay for internal navigation, admin form submissions, imports, exports, previews, and client-side upload flows.
 - Admin lists are being aligned with `RULES.md`: list actions should be `Edit` only, status filters should be present, and search should filter records already loaded on the page.
 - Public feed and photo detail pages include Return to Main Page controls at the top and bottom. Feed detail source links appear after the description and before photos.

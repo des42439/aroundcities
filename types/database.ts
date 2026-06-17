@@ -28,6 +28,10 @@ export type HistoryStatus =
   | "published"
   | "archived";
 
+export type LeadStatus =
+  | "active"
+  | "archived";
+
 export type HistorySourceStatus =
   | "pending"
   | "reviewed"
@@ -252,6 +256,26 @@ export interface Source {
   updated_at: string;
 }
 
+export interface Lead {
+  lead_id: string;
+  title: string;
+  lead_content: string | null;
+  why_interesting: string | null;
+  source_name: string | null;
+  source_type: string | null;
+  source_url: string | null;
+  source_page: string | null;
+  source_section: string | null;
+  source_note: string | null;
+  lead_type: string | null;
+  place_name: string | null;
+  relevant_date: string | null;
+  tags: string[];
+  status: LeadStatus;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Channel {
   channel_id: string;
   name: string;
@@ -380,6 +404,12 @@ export type NewSource =
 
 export type SourceUpdate =
   Database["public"]["Tables"]["sources"]["Update"];
+
+export type NewLead =
+  Database["public"]["Tables"]["leads"]["Insert"];
+
+export type LeadUpdate =
+  Database["public"]["Tables"]["leads"]["Update"];
 
 export type NewFeedEventDetails =
   Database["public"]["Tables"]["feed_event_details"]["Insert"];
@@ -808,6 +838,48 @@ export interface Database {
           created_by?: string | null;
           created_at?: string;
           updated_by?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      leads: {
+        Row: Lead;
+        Insert: {
+          lead_id?: string;
+          title: string;
+          lead_content?: string | null;
+          why_interesting?: string | null;
+          source_name?: string | null;
+          source_type?: string | null;
+          source_url?: string | null;
+          source_page?: string | null;
+          source_section?: string | null;
+          source_note?: string | null;
+          lead_type?: string | null;
+          place_name?: string | null;
+          relevant_date?: string | null;
+          tags?: string[];
+          status?: LeadStatus;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          lead_id?: string;
+          title?: string;
+          lead_content?: string | null;
+          why_interesting?: string | null;
+          source_name?: string | null;
+          source_type?: string | null;
+          source_url?: string | null;
+          source_page?: string | null;
+          source_section?: string | null;
+          source_note?: string | null;
+          lead_type?: string | null;
+          place_name?: string | null;
+          relevant_date?: string | null;
+          tags?: string[];
+          status?: LeadStatus;
+          created_at?: string;
           updated_at?: string;
         };
         Relationships: [];
