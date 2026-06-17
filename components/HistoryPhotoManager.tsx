@@ -14,6 +14,7 @@ import {
   AdminFormProgress,
   AdminSubmitButton,
 } from "./AdminSubmitButton";
+import { useGlobalLoading } from "./GlobalLoading";
 import {
   createHistoryPhotoUploadTargetAction,
   createUploadedHistoryPhotoAction,
@@ -307,6 +308,7 @@ function HistoryPhotoUploadModal({
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { startLoading, stopLoading } = useGlobalLoading();
   const [pending, setPending] = useState(false);
   const [status, setStatus] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -321,6 +323,7 @@ function HistoryPhotoUploadModal({
     }
 
     setPending(true);
+    startLoading();
     setError(null);
 
     try {
@@ -382,6 +385,7 @@ function HistoryPhotoUploadModal({
       setStatus("");
     } finally {
       setPending(false);
+      stopLoading();
       event.target.value = "";
     }
   }

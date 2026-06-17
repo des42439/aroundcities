@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { GlobalLoadingProvider } from "@/components/GlobalLoading";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -55,7 +57,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen bg-neutral-950 text-neutral-100">
-        {children}
+        <Suspense fallback={null}>
+          <GlobalLoadingProvider>{children}</GlobalLoadingProvider>
+        </Suspense>
       </body>
     </html>
   );

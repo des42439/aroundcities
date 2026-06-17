@@ -2,6 +2,24 @@
 
 All notable changes to AroundCities should be documented here.
 
+## 2026-06-17
+
+### Added
+
+- Added `RULES.md` as the shared long-term standard for AroundCities UI behavior, workflow behavior, navigation behavior, import/export behavior, upload behavior, loading behavior, and future section consistency.
+- Added guidance that future AroundCities sections should follow `RULES.md` by default unless explicitly overridden.
+- Added a shared global loading/progress overlay for internal navigation, admin form submissions, imports, exports, previews, and client-side upload flows.
+- Added local search and status filtering to admin list views where missing, including photo albums, sources, history records, and feed lists.
+- Added top and bottom Return to Main Page controls on public feed and photo detail pages.
+- Added a Maximum Items control to History export, where `-1` means unlimited.
+
+### Changed
+
+- Updated `AGENTS.md` and `PROJECT_SUMMARY.md` to reference `RULES.md` as the default workflow and UI behavior standard for future implementation work.
+- Changed public feed detail source links to appear after the description and before photos.
+- Changed admin list item actions toward the shared `Edit`-only listing pattern by moving source open/check/delete actions into the source edit page and removing photo archive actions from album photo cards.
+- Changed create/save/publish/import behavior to match the shared workflow rules: create returns to the section list, save remains on the edit page, publish redirects to the section main page, and successful imports return to their section list.
+
 ## 2026-06-15
 
 ### Added

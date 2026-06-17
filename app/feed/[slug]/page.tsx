@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PublicShell from "@/components/PublicShell";
+import ReturnToMainPageButton from "@/components/ReturnToMainPageButton";
 import { TrackedPhotoLink } from "@/components/TrackedLinks";
 import { getFeedSources } from "@/lib/feed-sources";
 import { getFeedBySlug } from "@/lib/feeds";
@@ -37,12 +38,9 @@ export default async function FeedDetailPage({
           <p className="mt-4 text-neutral-400">
             It may have been removed, archived, or not published yet.
           </p>
-          <Link
-            href="/kch"
-            className="mt-8 inline-flex text-sm text-neutral-300 hover:text-white"
-          >
-            Back to Latest Around Kuching
-          </Link>
+          <div className="mt-8">
+            <ReturnToMainPageButton />
+          </div>
         </div>
       </PublicShell>
     );
@@ -66,6 +64,10 @@ export default async function FeedDetailPage({
   return (
     <PublicShell>
       <article className="mx-auto max-w-3xl px-4 py-10">
+        <div className="mb-8">
+          <ReturnToMainPageButton />
+        </div>
+
         <div className="mb-8 space-y-4">
           <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-500">
             <span>{formatFeedType(feed.feed_type)}</span>
@@ -98,6 +100,32 @@ export default async function FeedDetailPage({
         {feed.content && (
           <div className="whitespace-pre-wrap text-lg leading-8 text-neutral-200">
             {feed.content}
+          </div>
+        )}
+
+        {(sourceUrl || channelUrl) && (
+          <div className="mt-8 flex gap-4 border-y border-neutral-900 py-5">
+            {sourceUrl ? (
+              <a
+                href={sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-neutral-300 hover:text-white"
+              >
+                Source
+              </a>
+            ) : null}
+
+            {channelUrl ? (
+              <a
+                href={channelUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-neutral-300 hover:text-white"
+              >
+                Channel
+              </a>
+            ) : null}
           </div>
         )}
 
@@ -144,31 +172,9 @@ export default async function FeedDetailPage({
           </div>
         )}
 
-        {(sourceUrl || channelUrl) && (
-          <div className="mt-10 flex gap-4 border-t border-neutral-900 pt-6">
-            {sourceUrl ? (
-              <a
-                href={sourceUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-neutral-300 hover:text-white"
-              >
-                Source
-              </a>
-            ) : null}
-
-            {channelUrl ? (
-              <a
-                href={channelUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-neutral-300 hover:text-white"
-              >
-                Channel
-              </a>
-            ) : null}
-          </div>
-        )}
+        <div className="mt-10 border-t border-neutral-900 pt-6">
+          <ReturnToMainPageButton />
+        </div>
       </article>
     </PublicShell>
   );

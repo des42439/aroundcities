@@ -1,5 +1,6 @@
 import Link from "next/link";
 import PublicShell from "@/components/PublicShell";
+import ReturnToMainPageButton from "@/components/ReturnToMainPageButton";
 import { formatDate } from "@/lib/format";
 import { getPublishedPhotoById } from "@/lib/photos";
 
@@ -30,12 +31,9 @@ export default async function PhotoDetailPage({
           <p className="mt-4 text-neutral-400">
             It may have been removed, archived, or not published yet.
           </p>
-          <Link
-            href="/kch"
-            className="mt-8 inline-flex text-sm text-neutral-300 hover:text-white"
-          >
-            Back to Kuching
-          </Link>
+          <div className="mt-8">
+            <ReturnToMainPageButton />
+          </div>
         </div>
       </PublicShell>
     );
@@ -46,6 +44,10 @@ export default async function PhotoDetailPage({
   return (
     <PublicShell>
       <article className="mx-auto max-w-3xl px-4 py-10">
+        <div className="mb-8">
+          <ReturnToMainPageButton />
+        </div>
+
         <div className="mb-6 space-y-3">
           <div className="flex flex-wrap items-center gap-2 text-sm text-neutral-500">
             <span>Photo feed</span>
@@ -78,6 +80,10 @@ export default async function PhotoDetailPage({
             {photo.description}
           </p>
         ) : null}
+
+        <div className="mt-10 border-t border-neutral-900 pt-6">
+          <ReturnToMainPageButton />
+        </div>
       </article>
     </PublicShell>
   );

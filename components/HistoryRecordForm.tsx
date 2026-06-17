@@ -18,6 +18,7 @@ import {
   AdminFormProgress,
   AdminSubmitButton,
 } from "./AdminSubmitButton";
+import { useGlobalLoading } from "./GlobalLoading";
 import { HistoryRecordWithPhotos } from "@/types/database";
 
 type Props = {
@@ -32,6 +33,7 @@ export default function HistoryRecordForm({
   record,
   action,
 }: Props) {
+  const { startLoading, stopLoading } = useGlobalLoading();
   const screenshotInputRef = useRef<HTMLInputElement>(null);
   const [sourceUrl, setSourceUrl] = useState(
     record?.source_url ?? ""
@@ -61,6 +63,7 @@ export default function HistoryRecordForm({
     }
 
     setScreenshotUploadPending(true);
+    startLoading();
     setScreenshotStatus("Uploading screenshot...");
     setScreenshotError(null);
 
@@ -105,6 +108,7 @@ export default function HistoryRecordForm({
       setScreenshotStatus("");
     } finally {
       setScreenshotUploadPending(false);
+      stopLoading();
       event.target.value = "";
     }
   }
@@ -112,6 +116,9 @@ export default function HistoryRecordForm({
   return (
     <AdminActionForm action={action} className="space-y-5">
       <AdminFormProgress />
+      {record ? (
+        <input type="hidden" name="status" value={record.status} />
+      ) : null}
 
       <Field label="Title">
         <input
@@ -318,8 +325,6 @@ export default function HistoryRecordForm({
         {record ? (
           <>
             <AdminSubmitButton
-              name="status"
-              value={record.status}
               variant="secondary"
               pendingLabel="Saving..."
             >
@@ -328,8 +333,8 @@ export default function HistoryRecordForm({
             {record.status !== "published" ? (
               <div className="space-y-2">
                 <AdminSubmitButton
-                  name="status"
-                  value="published"
+                  name="publish"
+                  value="1"
                   pendingLabel="Publishing..."
                   disabled={publishBlocked}
                 >

@@ -16,6 +16,7 @@ import {
   primaryButtonClassName,
   textareaClassName,
 } from "./AdminForm";
+import { useGlobalLoading } from "./GlobalLoading";
 
 type SaveState = {
   error: string | null;
@@ -25,6 +26,7 @@ type SaveState = {
 
 export default function NewPhotoAlbumForm() {
   const router = useRouter();
+  const { startLoading, stopLoading } = useGlobalLoading();
   const [state, setState] = useState<SaveState>({
     error: null,
     pending: false,
@@ -51,6 +53,7 @@ export default function NewPhotoAlbumForm() {
       pending: true,
       message: "Creating album...",
     });
+    startLoading();
 
     try {
       const album = await createPhotoAlbumAction({
@@ -133,9 +136,9 @@ export default function NewPhotoAlbumForm() {
       setState({
         error: null,
         pending: true,
-        message: "Opening album...",
+        message: "Opening photos...",
       });
-      router.push(`/admin/photos/${album.albumId}`);
+      router.push("/admin/photos");
       router.refresh();
     } catch (error) {
       setState({
@@ -146,6 +149,7 @@ export default function NewPhotoAlbumForm() {
         pending: false,
         message: "",
       });
+      stopLoading();
     }
   }
 

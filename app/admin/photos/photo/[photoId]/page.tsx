@@ -218,6 +218,15 @@ export default async function EditAlbumPhotoPage({ params }: Props) {
               >
                 Save Photo
               </AdminSubmitButton>
+              {photo.status !== "published" ? (
+                <AdminSubmitButton
+                  name="publish"
+                  value="1"
+                  pendingLabel="Publishing..."
+                >
+                  Publish
+                </AdminSubmitButton>
+              ) : null}
             </div>
           </AdminActionForm>
         </div>

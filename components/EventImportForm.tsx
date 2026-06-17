@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   primaryButtonClassName,
@@ -11,6 +12,7 @@ import {
   EventImportResult,
   importEventFeedsAction,
 } from "@/lib/admin-actions";
+import { useGlobalLoading } from "./GlobalLoading";
 
 type PreviewEvent = {
   title: string;
@@ -197,6 +199,8 @@ function serverError(result: unknown) {
 }
 
 export default function EventImportForm() {
+  const router = useRouter();
+  const { startLoading, stopLoading } = useGlobalLoading();
   const [jsonText, setJsonText] = useState("");
   const [preview, setPreview] = useState<PreviewEvent[] | null>(
     null
@@ -228,8 +232,10 @@ export default function EventImportForm() {
     }
 
     setPending(true);
+    startLoading();
     setError(null);
     setSaveResult(null);
+    let navigated = false;
 
     try {
       const result = await importEventFeedsAction({ jsonText });
@@ -247,9 +253,9 @@ export default function EventImportForm() {
         return;
       }
 
-      setJsonText("");
-      setPreview(null);
-      setSaveResult(importResult);
+      router.push("/admin/feeds/drafts");
+      router.refresh();
+      navigated = true;
     } catch (saveError) {
       setError(
         saveError instanceof Error
@@ -258,6 +264,9 @@ export default function EventImportForm() {
       );
     } finally {
       setPending(false);
+      if (!navigated) {
+        stopLoading();
+      }
     }
   }
 

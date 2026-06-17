@@ -15,7 +15,6 @@ import {
 } from "@/components/AdminSubmitButton";
 import {
   archivePhotoAlbumAction,
-  archiveAlbumPhotoAction,
   updatePhotoAlbumAction,
 } from "@/lib/admin-actions";
 import { requireAdmin } from "@/lib/admin-auth";
@@ -60,6 +59,7 @@ export default async function EditPhotoAlbumPage({ params }: Props) {
           className="space-y-5"
         >
           <AdminFormProgress />
+          <input type="hidden" name="status" value={album.status} />
 
           <Field label="Title">
             <input
@@ -92,16 +92,14 @@ export default async function EditPhotoAlbumPage({ params }: Props) {
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <AdminSubmitButton
-              name="status"
-              value="drafted"
               variant="secondary"
               pendingLabel="Saving..."
             >
-              Save Draft
+              Save
             </AdminSubmitButton>
             <AdminSubmitButton
-              name="status"
-              value="published"
+              name="publish"
+              value="1"
               pendingLabel="Publishing..."
             >
               Publish
@@ -162,21 +160,6 @@ export default async function EditPhotoAlbumPage({ params }: Props) {
                       </p>
                     </div>
                   </Link>
-                  <AdminActionForm
-                    action={archiveAlbumPhotoAction.bind(
-                      null,
-                      photo.photo_id
-                    )}
-                    className="border-t border-neutral-900 p-3"
-                  >
-                    <AdminSubmitButton
-                      variant="secondary"
-                      pendingLabel="Archiving..."
-                      confirmMessage="Archive this photo?"
-                    >
-                      Archive Photo
-                    </AdminSubmitButton>
-                  </AdminActionForm>
                 </article>
               ))}
             </div>

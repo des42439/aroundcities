@@ -1,6 +1,6 @@
 # AroundCities Project Summary
 
-Last updated: 15 June 2026
+Last updated: 17 June 2026
 
 ## Current Direction
 
@@ -110,6 +110,12 @@ That document currently contains:
 - Public UI proposal
 - Implementation roadmap
 
+Shared workflow and UI behavior standards are documented in:
+
+- `RULES.md`
+
+`RULES.md` is the default source of truth for AroundCities UI behavior, workflow behavior, navigation behavior, import/export behavior, upload behavior, loading behavior, and future section consistency.
+
 ## Implemented Foundation
 
 The V2 Phase 1 foundation now includes:
@@ -179,6 +185,10 @@ The V2 Phase 1 foundation now includes:
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
 - Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
 - Sources can be created from `/admin/sources/new`, edited, deleted, opened in a new tab, and manually marked checked. `/admin/sources` defaults to a Pending view showing sources never checked or not checked in the past 3 days, with a dropdown `Show all` filter for the full list.
+- Shared workflow rules now live in `RULES.md`, and the active app has a shared global loading/progress overlay for internal navigation, admin form submissions, imports, exports, previews, and client-side upload flows.
+- Admin lists are being aligned with `RULES.md`: list actions should be `Edit` only, status filters should be present, and search should filter records already loaded on the page.
+- Public feed and photo detail pages include Return to Main Page controls at the top and bottom. Feed detail source links appear after the description and before photos.
+- Successful admin creates and imports return to the section main page. Save actions remain on the current edit page, while Publish actions redirect to the section main page.
 - Existing feed photo uploads are still guarded at roughly 4MB total per submit until that editor flow is also moved to direct uploads.
 - Supabase CLI schema-change access was verified by creating and then removing temporary table `codex_dummy_schema_test` with dedicated migrations.
 

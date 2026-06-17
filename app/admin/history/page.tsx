@@ -4,9 +4,9 @@ import {
   primaryButtonClassName,
   secondaryButtonClassName,
 } from "@/components/AdminForm";
+import HistoryRecordList from "@/components/HistoryRecordList";
 import HistoryRecordFilterSelect from "@/components/HistoryRecordFilterSelect";
 import { requireAdmin } from "@/lib/admin-auth";
-import { formatDate } from "@/lib/format";
 import {
   ensureDailyHistoryTasks,
   getDailyHistoryTaskTag,
@@ -117,37 +117,14 @@ export default async function HistoryPage({
         </div>
       </div>
 
-      {records.length === 0 ? (
-        <p className="rounded-lg border border-neutral-900 p-4 text-sm text-neutral-500">
-          {filter === "daily"
+      <HistoryRecordList
+        records={records}
+        emptyText={
+          filter === "daily"
             ? "No daily history tasks remaining today."
-            : "No history records found for this view."}
-        </p>
-      ) : (
-        <div className="space-y-3">
-          {records.map((record) => (
-            <Link
-              key={record.history_id}
-              href={`/admin/history/${record.history_id}`}
-              className="block rounded-lg border border-neutral-900 p-4 hover:border-neutral-700"
-            >
-              <h2 className="font-semibold text-neutral-100">
-                {record.title}
-              </h2>
-              <div className="mt-2 flex flex-wrap gap-2 text-xs text-neutral-500">
-                <span>
-                  {record.event_year}-{String(record.event_month).padStart(2, "0")}-
-                  {String(record.event_day).padStart(2, "0")}
-                </span>
-                <span className={historyStatusBadgeClassName(record.status)}>
-                  {historyStatusLabel(record.status)}
-                </span>
-                <span>Created {formatDate(record.created_at)}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+            : "No history records found for this view."
+        }
+      />
     </AdminShell>
   );
 }
@@ -162,19 +139,4 @@ function historyStatusLabel(status: HistoryStatus) {
   };
 
   return labels[status];
-}
-
-function historyStatusBadgeClassName(status: HistoryStatus) {
-  const base = "rounded-full border px-2 py-1";
-  const colors: Record<HistoryStatus, string> = {
-    drafted: "border-neutral-800 text-neutral-300",
-    researched: "border-sky-950 bg-sky-950/30 text-sky-100",
-    pending_review:
-      "border-amber-950 bg-amber-950/30 text-amber-100",
-    published:
-      "border-emerald-950 bg-emerald-950/30 text-emerald-100",
-    archived: "border-neutral-800 bg-neutral-900 text-neutral-400",
-  };
-
-  return `${base} ${colors[status]}`;
 }

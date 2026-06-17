@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { selectClassName } from "./AdminForm";
 import type { HistoryRecordFilter } from "@/lib/history";
+import { useGlobalLoading } from "./GlobalLoading";
 
 type HistoryRecordFilterSelectProps = {
   filter: HistoryRecordFilter;
@@ -29,15 +30,17 @@ export default function HistoryRecordFilterSelect({
   onFilterChange,
 }: HistoryRecordFilterSelectProps) {
   const router = useRouter();
+  const { startLoading } = useGlobalLoading();
 
   return (
     <label className="block max-w-xs">
-      <span className="text-sm text-neutral-400">View</span>
+      <span className="text-sm text-neutral-400">Status</span>
       <select
         value={filter}
         onChange={(event) => {
           const nextFilter = event.target.value as HistoryRecordFilter;
           onFilterChange?.(nextFilter);
+          startLoading();
           router.push(
             nextFilter === "daily"
               ? basePath

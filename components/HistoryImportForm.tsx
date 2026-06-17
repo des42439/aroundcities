@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   primaryButtonClassName,
@@ -11,6 +12,7 @@ import {
   HistoryImportResult,
   importHistoryRecordsAction,
 } from "@/lib/admin-actions";
+import { useGlobalLoading } from "./GlobalLoading";
 
 type PreviewRecord = {
   historyId: string;
@@ -173,6 +175,8 @@ function serverError(result: unknown) {
 }
 
 export default function HistoryImportForm() {
+  const router = useRouter();
+  const { startLoading, stopLoading } = useGlobalLoading();
   const [jsonText, setJsonText] = useState("");
   const [preview, setPreview] = useState<PreviewResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -202,8 +206,10 @@ export default function HistoryImportForm() {
     }
 
     setPending(true);
+    startLoading();
     setError(null);
     setSaveResult(null);
+    let navigated = false;
 
     try {
       const result = await importHistoryRecordsAction({ jsonText });
@@ -214,9 +220,9 @@ export default function HistoryImportForm() {
         return;
       }
 
-      setJsonText("");
-      setPreview(null);
-      setSaveResult(result as HistoryImportResult);
+      router.push("/admin/history");
+      router.refresh();
+      navigated = true;
     } catch (saveError) {
       setError(
         saveError instanceof Error
@@ -225,6 +231,9 @@ export default function HistoryImportForm() {
       );
     } finally {
       setPending(false);
+      if (!navigated) {
+        stopLoading();
+      }
     }
   }
 

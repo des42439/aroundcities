@@ -18,7 +18,7 @@ export default async function DraftedFeedsPage() {
           href="/admin/feeds/new"
           className={primaryButtonClassName}
         >
-          New Feed
+          Create New Feed
         </Link>
       </div>
 

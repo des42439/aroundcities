@@ -10,6 +10,7 @@ import {
   inputClassName,
   secondaryButtonClassName,
 } from "./AdminForm";
+import { useGlobalLoading } from "./GlobalLoading";
 
 type Props = {
   feedId: string;
@@ -33,6 +34,7 @@ export default function SourceEvidenceScreenshotPicker({
   feedId,
   onPendingChange,
 }: Props) {
+  const { startLoading, stopLoading } = useGlobalLoading();
   const inputRef = useRef<HTMLInputElement>(null);
   const [screenshotUrl, setScreenshotUrl] = useState("");
   const [fileName, setFileName] = useState("");
@@ -53,6 +55,7 @@ export default function SourceEvidenceScreenshotPicker({
     }
 
     onPendingChange(true);
+    startLoading();
 
     try {
       setStatus("Compressing screenshot...");
@@ -100,6 +103,7 @@ export default function SourceEvidenceScreenshotPicker({
       setStatus("");
     } finally {
       onPendingChange(false);
+      stopLoading();
       event.target.value = "";
     }
   }

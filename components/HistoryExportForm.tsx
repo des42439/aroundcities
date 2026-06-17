@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import {
+  inputClassName,
   primaryButtonClassName,
   secondaryButtonClassName,
   textareaClassName,
@@ -13,6 +14,7 @@ import {
   HistoryResearchExportResult,
 } from "@/lib/admin-actions";
 import type { HistoryRecordFilter } from "@/lib/history";
+import { useGlobalLoading } from "./GlobalLoading";
 
 function serverError(result: unknown) {
   if (
@@ -34,7 +36,9 @@ type HistoryExportFormProps = {
 export default function HistoryExportForm({
   initialFilter,
 }: HistoryExportFormProps) {
+  const { startLoading, stopLoading } = useGlobalLoading();
   const [filter, setFilter] = useState(initialFilter);
+  const [maximumItems, setMaximumItems] = useState("-1");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
@@ -43,6 +47,7 @@ export default function HistoryExportForm({
 
   async function handleGenerate() {
     setPending(true);
+    startLoading();
     setError(null);
     setCopyMessage(null);
     setExportResult(null);
@@ -50,6 +55,7 @@ export default function HistoryExportForm({
     try {
       const result = await generateHistoryResearchExportAction({
         filter,
+        maximumItems: Number(maximumItems),
       });
       const actionError = serverError(result);
 
@@ -67,6 +73,7 @@ export default function HistoryExportForm({
       );
     } finally {
       setPending(false);
+      stopLoading();
     }
   }
 
@@ -128,6 +135,19 @@ export default function HistoryExportForm({
         basePath="/admin/history/export"
         onFilterChange={setFilter}
       />
+
+      <label className="block max-w-xs">
+        <span className="text-sm text-neutral-400">Maximum Items</span>
+        <input
+          type="number"
+          value={maximumItems}
+          onChange={(event) => setMaximumItems(event.target.value)}
+          className={`${inputClassName} mt-2`}
+        />
+        <span className="mt-2 block text-xs text-neutral-500">
+          -1 = Unlimited
+        </span>
+      </label>
 
       {error ? (
         <div className="rounded-md border border-red-950 bg-red-950/30 px-3 py-2 text-sm text-red-100">

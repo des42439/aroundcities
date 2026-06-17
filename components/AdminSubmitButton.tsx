@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import {
   dangerButtonClassName,
   primaryButtonClassName,
   secondaryButtonClassName,
 } from "./AdminForm";
+import { useGlobalLoading } from "./GlobalLoading";
 
 type Props = {
   children: React.ReactNode;
@@ -34,8 +35,15 @@ export function AdminSubmitButton({
   disabled = false,
 }: Props) {
   const { pending } = useFormStatus();
+  const { startLoading, stopLoading } = useGlobalLoading();
   const [clicked, setClicked] = useState(false);
   const showOverlay = pending && clicked;
+
+  useEffect(() => {
+    if (!pending && clicked) {
+      stopLoading();
+    }
+  }, [clicked, pending, stopLoading]);
 
   return (
     <>
@@ -69,6 +77,7 @@ export function AdminSubmitButton({
           }
 
           setClicked(true);
+          startLoading();
         }}
         className={variantClassNames[variant]}
       >

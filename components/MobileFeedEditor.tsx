@@ -172,6 +172,7 @@ export default function MobileFeedEditor({
           name="published_at"
           value={feed.published_at ?? ""}
         />
+        <input type="hidden" name="status" value={feed.status} />
 
         <Field label="Title">
           <input
@@ -270,8 +271,6 @@ export default function MobileFeedEditor({
 
         <div className="flex flex-col gap-3 sm:flex-row">
           <AdminSubmitButton
-            name="status"
-            value={feed.status === "published" ? "published" : "draft"}
             variant="secondary"
             pendingLabel="Saving..."
           >
@@ -280,8 +279,8 @@ export default function MobileFeedEditor({
 
           {feed.status !== "published" ? (
             <AdminSubmitButton
-              name="status"
-              value="published"
+              name="publish"
+              value="1"
               pendingLabel="Publishing..."
             >
               Publish

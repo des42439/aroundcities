@@ -16,6 +16,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { compressAdminImage } from "@/lib/client-image-compression";
 import { extractPhotoMetadata } from "@/lib/photo-metadata";
+import { useGlobalLoading } from "./GlobalLoading";
 
 type SaveState = {
   error: string | null;
@@ -38,6 +39,7 @@ function errorMessage(result: unknown) {
 
 export default function NewFeedDraftForm() {
   const router = useRouter();
+  const { startLoading, stopLoading } = useGlobalLoading();
   const [state, setState] = useState<SaveState>({
     error: null,
     pending: false,
@@ -66,6 +68,7 @@ export default function NewFeedDraftForm() {
       pending: true,
       message: "Creating draft...",
     });
+    startLoading();
 
     try {
       const draft = await createDraftFeedOnlyAction({
@@ -159,6 +162,7 @@ export default function NewFeedDraftForm() {
         pending: false,
         message: "",
       });
+      stopLoading();
     }
   }
 

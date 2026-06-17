@@ -1,8 +1,8 @@
 # AroundCities V2 Phase 1 Architecture
 
-Last updated: 15 June 2026
+Last updated: 17 June 2026
 
-Implementation status: Steps 1-5 are implemented, plus a photo-first admin workflow through Photo Album Admin v1. Feed workflows remain in the codebase and are reachable by direct URL, but they are hidden from the main admin navigation for now. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`. The standalone History module is implemented as an admin-only archive and research pipeline, with no public discovery integration.
+Implementation status: Steps 1-5 are implemented, plus a photo-first admin workflow through Photo Album Admin v1. Feed workflows remain in the codebase and are reachable by direct URL, but they are hidden from the main admin navigation for now. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`. The standalone History module is implemented as an admin-only archive and research pipeline, with no public discovery integration. Shared UI/workflow behavior standards now live in `RULES.md`, and the app includes a global loading/progress overlay for internal navigation, admin form submissions, imports, exports, previews, and client-side uploads.
 
 ## 1. Objective
 
@@ -578,6 +578,9 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 - Photo metadata such as captured dates or GPS should be extracted from JPEG EXIF data when available and displayed as curator reference only. It must not automatically assign places.
 - Keep photo-specific Place and Location name hidden in the admin photo editor unless explicitly reintroduced.
 - Save, publish, upload, photo update, and delete actions should show blocking pending overlays and prevent duplicate submissions.
+- Shared loading behavior should use the global loading/progress overlay defined by the active app foundation and governed by `RULES.md`.
+- Admin list pages should follow the shared CRUD pattern from `RULES.md`: Create New, optional Import/Export, status filter, local search, and list items with `Edit` as the only item action.
+- Save should remain on the current edit page. Publish should save, set published status, and return to the section main page.
 - Photo delete should remove the photo row and best-effort clean up the Supabase Storage object.
 - Admin write failures should stay on the form and show a clear error instead of redirecting as if successful.
 - Feed deletion must require confirmation, redirect back to `/admin/feeds`, and must not delete unrelated places.

@@ -1976,14 +1976,16 @@ export async function updateFeedAction(
 ) {
   await requireAdmin();
   void _state;
+  let redirectTo = `/admin/feeds/${feedId}`;
 
   try {
     const title = normalizeFeedTitleForStorage(
       requiredString(formData, "title")
     );
-    const status = parseFeedStatus(
-      formData.get("status")
-    );
+    const isPublishIntent = formData.get("publish") === "1";
+    const status = isPublishIntent
+      ? "published"
+      : parseFeedStatus(formData.get("status"));
     const slug =
       nullableString(formData.get("slug")) ??
       slugify(title);
@@ -2010,6 +2012,9 @@ export async function updateFeedAction(
       ),
       status,
     });
+    redirectTo = isPublishIntent
+      ? "/admin/feeds/published"
+      : `/admin/feeds/${feedId}`;
 
     await replaceFeedPlaces(
       feedId,
@@ -2042,7 +2047,7 @@ export async function updateFeedAction(
     });
   }
 
-  redirect(`/admin/feeds/${feedId}`);
+  redirect(redirectTo);
 }
 
 export async function archiveFeedAction(
@@ -2426,13 +2431,18 @@ export async function updatePhotoAlbumAction(
   formData: FormData
 ) {
   await requireAdmin();
+  let redirectTo = `/admin/photos/${albumId}`;
 
   try {
+    const isPublishIntent = formData.get("publish") === "1";
     await updatePhotoAlbum(albumId, {
       title: requiredString(formData, "title"),
       description: nullableString(formData.get("description")),
-      status: parseSubmittedPhotoAlbumStatus(formData),
+      status: isPublishIntent
+        ? "published"
+        : parseSubmittedPhotoAlbumStatus(formData),
     });
+    redirectTo = isPublishIntent ? "/admin/photos" : `/admin/photos/${albumId}`;
 
     revalidatePath("/admin");
     revalidatePath("/admin/photos");
@@ -2443,7 +2453,7 @@ export async function updatePhotoAlbumAction(
     });
   }
 
-  redirect(`/admin/photos/${albumId}`);
+  redirect(redirectTo);
 }
 
 export async function archivePhotoAlbumAction(
@@ -2478,8 +2488,10 @@ export async function updateAlbumPhotoAction(
   await requireAdmin();
 
   let albumId: string | null = null;
+  let redirectTo = `/admin/photos/photo/${photoId}`;
 
   try {
+    const isPublishIntent = formData.get("publish") === "1";
     const photo = await getAlbumPhotoById(photoId);
 
     if (!photo?.album_id) {
@@ -2494,7 +2506,9 @@ export async function updateAlbumPhotoAction(
       description: nullableString(formData.get("description")),
       captured_at: parseDateTime(formData.get("captured_at")),
       sequence: parsePhotoSequence(formData.get("sequence")),
-      status: parsePhotoStatus(formData.get("status")?.toString()),
+      status: isPublishIntent
+        ? "published"
+        : parsePhotoStatus(formData.get("status")?.toString()),
       tags: parseTags(formData.get("tags")),
       location_name: nullableString(formData.get("location_name")),
       location_note: nullableString(formData.get("location_note")),
@@ -2508,6 +2522,9 @@ export async function updateAlbumPhotoAction(
       photoId,
       isAlbumCover,
     });
+    redirectTo = isPublishIntent
+      ? "/admin/photos"
+      : `/admin/photos/photo/${photoId}`;
 
     revalidatePath("/admin/photos");
     revalidatePath(`/admin/photos/${albumId}`);
@@ -2519,7 +2536,7 @@ export async function updateAlbumPhotoAction(
     });
   }
 
-  redirect(`/admin/photos/${albumId}`);
+  redirect(redirectTo);
 }
 
 export async function archiveAlbumPhotoAction(
@@ -2562,8 +2579,6 @@ export async function createHistoryRecordAction(
 ) {
   await requireAdmin();
 
-  let historyId: string | null = null;
-
   try {
     const eventYear = parseRequiredInteger(formData, "event_year");
     const eventMonth = parseRequiredInteger(formData, "event_month");
@@ -2571,7 +2586,7 @@ export async function createHistoryRecordAction(
 
     validateHistoryDateParts(eventYear, eventMonth, eventDay);
 
-    const record = await createHistoryRecord({
+    await createHistoryRecord({
       title: requiredString(formData, "title"),
       description: nullableString(formData.get("description")),
       event_year: eventYear,
@@ -2591,14 +2606,13 @@ export async function createHistoryRecordAction(
       ),
     });
 
-    historyId = record.history_id;
     revalidatePath("/admin");
     revalidatePath("/admin/history");
   } catch (error) {
     return await actionError("create_history_record", error);
   }
 
-  redirect(`/admin/history/${historyId}`);
+  redirect("/admin/history");
 }
 
 export async function updateHistoryRecordAction(
@@ -2607,6 +2621,7 @@ export async function updateHistoryRecordAction(
   formData: FormData
 ) {
   await requireAdmin();
+  let redirectTo = `/admin/history/${historyId}`;
 
   try {
     const eventYear = parseRequiredInteger(formData, "event_year");
@@ -2614,7 +2629,10 @@ export async function updateHistoryRecordAction(
     const eventDay = parseRequiredInteger(formData, "event_day");
 
     validateHistoryDateParts(eventYear, eventMonth, eventDay);
-    const nextStatus = parseSubmittedHistoryStatus(formData);
+    const isPublishIntent = formData.get("publish") === "1";
+    const nextStatus = isPublishIntent
+      ? "published"
+      : parseSubmittedHistoryStatus(formData);
 
     if (
       nextStatus === "published" &&
@@ -2643,6 +2661,9 @@ export async function updateHistoryRecordAction(
         formData.get("confidence")?.toString()
       ),
     });
+    redirectTo = isPublishIntent
+      ? "/admin/history"
+      : `/admin/history/${historyId}`;
 
     revalidatePath("/admin");
     revalidatePath("/admin/history");
@@ -2653,7 +2674,7 @@ export async function updateHistoryRecordAction(
     });
   }
 
-  redirect(`/admin/history/${historyId}`);
+  redirect(redirectTo);
 }
 
 export async function deleteHistoryRecordAction(
@@ -2970,6 +2991,7 @@ async function addUploadedHistoryPhoto(input: {
 
 export async function generateHistoryResearchExportAction(input: {
   filter: HistoryRecordFilter;
+  maximumItems?: number;
 }): Promise<HistoryResearchExportResult | AdminActionState> {
   await requireAdmin();
 
@@ -2980,13 +3002,18 @@ export async function generateHistoryResearchExportAction(input: {
       filter,
       todayTag,
     });
+    const maximumItems = Number.isFinite(input.maximumItems)
+      ? Math.trunc(input.maximumItems ?? -1)
+      : -1;
+    const limitedRecords =
+      maximumItems >= 0 ? records.slice(0, maximumItems) : records;
     const exportedAt = new Date();
     const payload = {
       version: "aroundcities_history_research_export_v1",
       exported_at: exportedAt.toISOString(),
-      count: records.length,
+      count: limitedRecords.length,
       filter,
-      records: records.map((record) => ({
+      records: limitedRecords.map((record) => ({
         history_id: record.history_id,
         title: record.title,
         description: record.description ?? "",
@@ -3005,7 +3032,7 @@ export async function generateHistoryResearchExportAction(input: {
 
     return {
       jsonText: JSON.stringify(payload, null, 2),
-      count: records.length,
+      count: limitedRecords.length,
       filter,
       exportedAt: payload.exported_at,
       filename: `aroundcities-history-research-export-${formatHistoryExportTimestamp(
@@ -3223,7 +3250,7 @@ export async function updateSourceAction(
     });
   }
 
-  redirect("/admin/sources");
+  redirect(`/admin/sources/${sourceId}`);
 }
 
 export async function deleteSourceAction(
@@ -3237,15 +3264,13 @@ export async function deleteSourceAction(
     await deleteSource(sourceId);
 
     revalidatePath("/admin/sources");
-
-    return {
-      error: null,
-    };
   } catch (error) {
     return await actionError("delete_source", error, {
       sourceId,
     });
   }
+
+  redirect("/admin/sources");
 }
 
 export async function markSourceCheckedAction(

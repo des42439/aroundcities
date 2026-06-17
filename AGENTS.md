@@ -114,6 +114,14 @@ Whenever making project changes:
 
 Keep documentation practical and current.
 
+## Shared Workflow Rules
+
+`RULES.md` is the default workflow and UI behavior standard for AroundCities.
+
+Developers and agents must read and follow `RULES.md` before implementing new features, admin sections, public navigation changes, import/export flows, upload flows, or loading behavior.
+
+New sections should follow `RULES.md` by default unless the user explicitly instructs otherwise.
+
 ## Engineering Preferences
 
 - Keep architecture simple.
@@ -220,6 +228,10 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Non-expired event observation feeds scheduled for today should appear in the first one to three `/kch` feed slots, ordered by earliest schedule time, before ordinary visit/photo-style discovery posts.
 - Multi-photo feed grids should feel like one substantial content block, not tiny thumbnails. Keep the 2-photo, 3-photo, and 4+ photo layouts visually close to the single-photo block size.
 - The schema-extension tables for feed sources, source screenshots, feed schedules, event details, parent feeds, and feed-place metadata are wired into the admin editor as optional refinement sections.
+- `RULES.md` is the shared UI/workflow behavior standard for AroundCities.
+- A shared global loading/progress overlay is wired for internal navigation, admin form submissions, imports, exports, previews, and client-side upload flows.
+- Admin list pages should align with `RULES.md`: Create New, optional Import/Export, status filter, local search over loaded records, and list items with `Edit` as the only item action.
+- Public feed and photo detail pages include top and bottom Return to Main Page controls, and feed detail source links appear after the description and before photos.
 
 Supabase Auth, search, maps, tags UI, and multiple cities are not implemented yet.
 
