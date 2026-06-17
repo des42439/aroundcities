@@ -57,7 +57,7 @@ Purpose:
 
 - Store potential future AroundCities content ideas from articles, posts, announcements, discoveries, history ideas, community activities, and infrastructure updates.
 - Keep leads internal to the curator workflow.
-- Import leads through `aroundcities_leads_import_v1` JSON, always as active.
+- Import leads through `aroundcities_leads_import_v1` JSON, always as active. The canonical array key is `items`; older newspaper-task JSON using `records`, `description`, and `place_hint` is accepted as a compatibility path.
 - Process active leads continuously through Reading Mode, archiving cards one at a time without confirmation.
 
 Table:

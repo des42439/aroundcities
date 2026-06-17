@@ -154,7 +154,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - The `/admin` workflow hub also links to History.
 - `/admin/leads`, `/admin/leads/new`, `/admin/leads/[leadId]`, `/admin/leads/import`, and `/admin/leads/reading` support Leads v1 as an admin-only curator inbox for possible future content ideas.
 - Leads are stored in `leads` with `active` and `archived` statuses. They are not feeds, history records, public pages, crawler jobs, automation, or AI processing inputs.
-- Leads import uses `aroundcities_leads_import_v1`, always creates active leads, and does not support export in v1.
+- Leads import uses `aroundcities_leads_import_v1`, always creates active leads, and does not support export in v1. The canonical array key is `items`; older newspaper-task JSON using `records`, `description`, and `place_hint` is also accepted.
 - Leads Reading Mode shows active leads as stacked cards and archives them one at a time without confirmation, removing processed cards immediately.
 - `/admin/history`, `/admin/history/new`, `/admin/history/[historyId]`, and `/admin/history/import` support Phase 1 standalone history record management.
 - History record status workflow is `drafted` -> `researched` -> `pending_review` -> `published`, with `archived` for hidden retained records.

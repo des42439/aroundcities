@@ -34,6 +34,30 @@ function text(value: unknown) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function firstText(...values: unknown[]) {
+  for (const value of values) {
+    const parsed = text(value);
+
+    if (parsed) {
+      return parsed;
+    }
+  }
+
+  return "";
+}
+
+function importItems(importObject: Record<string, unknown>) {
+  if (Array.isArray(importObject.items)) {
+    return importObject.items;
+  }
+
+  if (Array.isArray(importObject.records)) {
+    return importObject.records;
+  }
+
+  throw new Error("JSON must include an items array.");
+}
+
 function parsePreview(jsonText: string): PreviewResult {
   let payload: unknown;
 
@@ -55,12 +79,10 @@ function parsePreview(jsonText: string): PreviewResult {
     );
   }
 
-  if (!Array.isArray(importObject.items)) {
-    throw new Error("JSON must include an items array.");
-  }
+  const items = importItems(importObject);
 
   return {
-    items: importObject.items.map((item, index) => {
+    items: items.map((item, index) => {
       const lead = object(item);
       const title = text(lead?.title);
 
@@ -84,7 +106,7 @@ function parsePreview(jsonText: string): PreviewResult {
         sourceName: text(lead?.source_name),
         sourceType: text(lead?.source_type),
         leadType: text(lead?.lead_type),
-        placeName: text(lead?.place_name),
+        placeName: firstText(lead?.place_name, lead?.place_hint),
         relevantDate,
         tags: Array.isArray(lead?.tags)
           ? lead.tags.filter(

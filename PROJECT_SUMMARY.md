@@ -72,7 +72,7 @@ Implemented mobile-first workflow:
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
 - `/admin/stats` lists feed and photo click counts from highest to lowest.
 - `/admin/leads` manages admin-only potential content ideas as a curator inbox.
-- `/admin/leads/import` accepts pasted `aroundcities_leads_import_v1` JSON and saves imported leads as active records.
+- `/admin/leads/import` accepts pasted `aroundcities_leads_import_v1` JSON and saves imported leads as active records. The canonical array key is `items`; older newspaper-task JSON using `records`, `description`, and `place_hint` is also accepted and mapped into lead content/place fields.
 - `/admin/leads/reading` shows active leads as stacked reading cards with a one-click Archive action for continuous inbox processing.
 - `/admin/history` manages standalone Kuching/Sarawak history records.
 - `/admin/history` defaults to Today's History Research Tasks, a lightweight daily batch of up to 10 drafted records tagged with `daily-task:YYYYMMDD` in `history_records.tags`.

@@ -107,6 +107,30 @@ function textFromUnknown(value: unknown) {
     : null;
 }
 
+function firstTextFromUnknown(...values: unknown[]) {
+  for (const value of values) {
+    const text = textFromUnknown(value);
+
+    if (text) {
+      return text;
+    }
+  }
+
+  return null;
+}
+
+function importItemsFromObject(importObject: Record<string, unknown>) {
+  if (Array.isArray(importObject.items)) {
+    return importObject.items;
+  }
+
+  if (Array.isArray(importObject.records)) {
+    return importObject.records;
+  }
+
+  throw new Error("JSON must include an items array.");
+}
+
 function parseImportDate(value: unknown, index: number) {
   const text = textFromUnknown(value);
 
@@ -156,11 +180,9 @@ function parseLeadsImportJson(jsonText: string): NewLead[] {
     );
   }
 
-  if (!Array.isArray(importObject.items)) {
-    throw new Error("JSON must include an items array.");
-  }
+  const items = importItemsFromObject(importObject);
 
-  return importObject.items.map((item, index) => {
+  return items.map((item, index) => {
     const lead = objectFromUnknown(item);
     const title = textFromUnknown(lead?.title);
 
@@ -170,7 +192,10 @@ function parseLeadsImportJson(jsonText: string): NewLead[] {
 
     return {
       title,
-      lead_content: textFromUnknown(lead?.lead_content),
+      lead_content: firstTextFromUnknown(
+        lead?.lead_content,
+        lead?.description
+      ),
       why_interesting: textFromUnknown(lead?.why_interesting),
       source_name: textFromUnknown(lead?.source_name),
       source_type: textFromUnknown(lead?.source_type),
@@ -179,7 +204,7 @@ function parseLeadsImportJson(jsonText: string): NewLead[] {
       source_section: textFromUnknown(lead?.source_section),
       source_note: textFromUnknown(lead?.source_note),
       lead_type: textFromUnknown(lead?.lead_type),
-      place_name: textFromUnknown(lead?.place_name),
+      place_name: firstTextFromUnknown(lead?.place_name, lead?.place_hint),
       relevant_date: parseImportDate(lead?.relevant_date, index),
       tags: parseImportTags(lead?.tags),
       status: "active",
