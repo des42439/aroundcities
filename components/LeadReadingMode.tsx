@@ -63,44 +63,70 @@ export default function LeadReadingMode({ leads }: Props) {
       ) : null}
 
       {visibleLeads.map((lead) => (
-        <article
+        <LeadCard
           key={lead.lead_id}
-          className="space-y-5 rounded-lg border border-neutral-900 p-5"
-        >
-          <h2 className="text-xl font-semibold">{lead.title}</h2>
-
-          <div className="grid gap-4 text-sm sm:grid-cols-2">
-            <ReadingField label="Source Name" value={lead.source_name} />
-            <ReadingField label="Source Type" value={lead.source_type} />
-            <ReadingField label="Source Page" value={lead.source_page} />
-            <ReadingField
-              label="Source Section"
-              value={lead.source_section}
-            />
-          </div>
-
-          <ReadingField label="Source Note" value={lead.source_note} />
-          <ReadingField label="Lead Content" value={lead.lead_content} />
-          <ReadingField
-            label="Why Interesting"
-            value={lead.why_interesting}
-          />
-
-          <div className="border-t border-neutral-900 pt-5">
-            <button
-              type="button"
-              onClick={() => handleArchive(lead.lead_id)}
-              disabled={pendingLeadId !== null}
-              className={secondaryButtonClassName}
-            >
-              {pendingLeadId === lead.lead_id
-                ? "Archiving..."
-                : "Archive"}
-            </button>
-          </div>
-        </article>
+          lead={lead}
+          isPending={pendingLeadId !== null}
+          onArchive={handleArchive}
+          pendingLeadId={pendingLeadId}
+        />
       ))}
     </div>
+  );
+}
+
+function LeadCard({
+  lead,
+  isPending,
+  onArchive,
+  pendingLeadId,
+}: {
+  lead: Lead;
+  isPending: boolean;
+  onArchive: (leadId: string) => void;
+  pendingLeadId: string | null;
+}) {
+  const sourceFields = [
+    { label: "Source Name", value: lead.source_name },
+    { label: "Source Type", value: lead.source_type },
+    { label: "Source Page", value: lead.source_page },
+    { label: "Source Section", value: lead.source_section },
+  ].filter((field) => hasValue(field.value));
+
+  return (
+    <article className="space-y-5 rounded-lg border border-neutral-900 p-5">
+      <h2 className="text-xl font-semibold">{lead.title}</h2>
+
+      {sourceFields.length > 0 ? (
+        <div className="grid gap-4 text-sm sm:grid-cols-2">
+          {sourceFields.map((field) => (
+            <ReadingField
+              key={field.label}
+              label={field.label}
+              value={field.value}
+            />
+          ))}
+        </div>
+      ) : null}
+
+      <ReadingField label="Source Note" value={lead.source_note} />
+      <ReadingField label="Lead Content" value={lead.lead_content} />
+      <ReadingField
+        label="Why Interesting"
+        value={lead.why_interesting}
+      />
+
+      <div className="border-t border-neutral-900 pt-5">
+        <button
+          type="button"
+          onClick={() => onArchive(lead.lead_id)}
+          disabled={isPending}
+          className={secondaryButtonClassName}
+        >
+          {pendingLeadId === lead.lead_id ? "Archiving..." : "Archive"}
+        </button>
+      </div>
+    </article>
   );
 }
 
@@ -111,12 +137,35 @@ function ReadingField({
   label: string;
   value?: string | null;
 }) {
+  const displayValue = normalizeDisplayValue(value);
+
+  if (!displayValue) {
+    return null;
+  }
+
   return (
     <div>
       <div className="text-xs text-neutral-500">{label}</div>
       <div className="mt-1 whitespace-pre-wrap text-neutral-200">
-        {value || "Not provided"}
+        {displayValue}
       </div>
     </div>
   );
+}
+
+function hasValue(value?: string | null) {
+  return normalizeDisplayValue(value) !== null;
+}
+
+function normalizeDisplayValue(value?: string | null) {
+  const trimmedValue = value?.trim();
+
+  if (
+    !trimmedValue ||
+    /^(not provided|n\/a|none|null|undefined)$/i.test(trimmedValue)
+  ) {
+    return null;
+  }
+
+  return trimmedValue;
 }

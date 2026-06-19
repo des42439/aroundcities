@@ -20,6 +20,7 @@ All notable changes to AroundCities should be documented here.
 ### Changed
 
 - Changed Leads JSON import to also accept older newspaper-task output that used `records`, `description`, and `place_hint`, mapping those values into the existing Leads fields.
+- Changed Leads Reading Mode to hide empty lead fields entirely instead of showing `Not provided` placeholders.
 - Updated `AGENTS.md` and `PROJECT_SUMMARY.md` to reference `RULES.md` as the default workflow and UI behavior standard for future implementation work.
 - Changed public feed detail source links to appear after the description and before photos.
 - Changed admin list item actions toward the shared `Edit`-only listing pattern by moving source open/check/delete actions into the source edit page and removing photo archive actions from album photo cards.
