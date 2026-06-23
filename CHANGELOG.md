@@ -8,6 +8,7 @@ All notable changes to AroundCities should be documented here.
 
 - Restored `Edit`, `Mark Checked`, and `Open Source` actions on each admin Sources checklist item.
 - Marking a source checked now removes it immediately from the Pending list while keeping it visible with an updated timestamp in Show All.
+- Restored the existing Events workflow to the admin navigation and dashboard without changing its feed-backed routes or data model.
 
 ## 2026-06-22
 

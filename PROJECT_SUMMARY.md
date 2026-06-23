@@ -18,7 +18,7 @@ The primary question it answers is:
 
 AroundCities is curator-driven. It is not an event portal, tourism website, business directory, or social network.
 
-Current admin direction is photo-first. Photos are becoming the reusable content library for future History, Learning, Greetings, Discovery, Positive Messages, and generated homepage cards. Feeds remain in the database and codebase, but feed workflow links are hidden from the main admin navigation for now.
+Current admin direction is photo-first. Photos are becoming the reusable content library for future History, Learning, Greetings, Discovery, Positive Messages, and generated homepage cards. The existing feed-backed Events workflow is visible in the main admin navigation through `/admin/feeds`.
 
 ## Phase 1 Foundation
 
@@ -67,7 +67,7 @@ Implemented mobile-first workflow:
 - `/admin/photos/photo/[photoId]` edits individual photo metadata, album cover flag, tags, captured date, coordinates, and location notes.
 - `/admin/feeds/new` is the fast capture screen. It asks only for photos, title, and description, then creates a draft.
 - `/admin/feeds/import-events` accepts pasted `aroundcities_event_import_v2` JSON, keeps v1 JSON compatible, previews event feed drafts, and saves valid imports as draft feeds without requiring photos.
-- `/admin` shows Photos first and hides feed workflow cards from the main hub.
+- `/admin` shows Photos first and includes an Events card linking to the existing feed-backed event workflow.
 - `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
 - `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
 - `/admin/stats` lists feed and photo click counts from highest to lowest.
