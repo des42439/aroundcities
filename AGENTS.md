@@ -287,4 +287,5 @@ Feed creation should be photo-first and draft-first:
 - The table named `sources` always means content evidence. The manual review checklist is `source_checklist`; do not confuse the two.
 - Keep Sources manual-only: opening a source must not mark it checked, and marking checked should happen only when the curator clicks `Mark Checked`.
 - Keep `/admin/sources` defaulted to the Pending filter so daily review focuses on sources that are stale or never checked.
+- Source checklist items are an explicit list-action exception: show `Edit`, `Mark Checked`, and `Open Source` together, and remove successfully checked items immediately from the Pending view.
 - Do not add source crawling, scraping, bot browsing, scheduled checking, Facebook login, priority, or frequency fields unless the user explicitly expands scope.

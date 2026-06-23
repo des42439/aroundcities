@@ -6,20 +6,30 @@ import {
   inputClassName,
   secondaryButtonClassName,
 } from "./AdminForm";
+import { useGlobalLoading } from "./GlobalLoading";
+import { markSourceCheckedAction } from "@/lib/admin-actions";
 import type { SourceChecklist } from "@/types/database";
 
 export default function SourceList({
   sources,
   emptyText,
+  view,
 }: {
   sources: SourceChecklist[];
   emptyText: string;
+  view: "pending" | "all";
 }) {
+  const [visibleSourceItems, setVisibleSourceItems] = useState(sources);
   const [search, setSearch] = useState("");
+  const [pendingSourceId, setPendingSourceId] = useState<string | null>(
+    null
+  );
+  const [error, setError] = useState<string | null>(null);
+  const { startLoading, stopLoading } = useGlobalLoading();
   const normalizedSearch = search.trim().toLowerCase();
   const visibleSources = useMemo(
     () =>
-      sources.filter((source) => {
+      visibleSourceItems.filter((source) => {
         if (!normalizedSearch) {
           return true;
         }
@@ -32,8 +42,49 @@ export default function SourceList({
             .includes(normalizedSearch)
         );
       }),
-    [normalizedSearch, sources]
+    [normalizedSearch, visibleSourceItems]
   );
+
+  async function handleMarkChecked(sourceId: string) {
+    setPendingSourceId(sourceId);
+    setError(null);
+    startLoading();
+
+    try {
+      const result = await markSourceCheckedAction(sourceId, {
+        error: null,
+      });
+
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
+
+      if (view === "pending") {
+        setVisibleSourceItems((current) =>
+          current.filter((source) => source.source_id !== sourceId)
+        );
+      } else {
+        const checkedAt = new Date().toISOString();
+        setVisibleSourceItems((current) =>
+          current.map((source) =>
+            source.source_id === sourceId
+              ? { ...source, last_checked_at: checkedAt }
+              : source
+          )
+        );
+      }
+    } catch (markError) {
+      setError(
+        markError instanceof Error
+          ? markError.message
+          : "Source could not be marked checked."
+      );
+    } finally {
+      setPendingSourceId(null);
+      stopLoading();
+    }
+  }
 
   return (
     <div className="space-y-5">
@@ -47,6 +98,12 @@ export default function SourceList({
           className={`${inputClassName} mt-2`}
         />
       </label>
+
+      {error ? (
+        <div className="rounded-md border border-red-950 bg-red-950/30 px-3 py-2 text-sm text-red-100">
+          {error}
+        </div>
+      ) : null}
 
       {visibleSources.length === 0 ? (
         <p className="text-neutral-500">{emptyText}</p>
@@ -75,12 +132,34 @@ export default function SourceList({
                   </p>
                 </div>
 
-                <Link
-                  href={`/admin/sources/${source.source_id}`}
-                  className={`${secondaryButtonClassName} shrink-0 justify-center`}
-                >
-                  Edit
-                </Link>
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  <Link
+                    href={`/admin/sources/${source.source_id}`}
+                    className={`${secondaryButtonClassName} justify-center`}
+                  >
+                    Edit
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleMarkChecked(source.source_id)
+                    }
+                    disabled={pendingSourceId !== null}
+                    className={secondaryButtonClassName}
+                  >
+                    {pendingSourceId === source.source_id
+                      ? "Marking..."
+                      : "Mark Checked"}
+                  </button>
+                  <a
+                    href={source.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`${secondaryButtonClassName} justify-center`}
+                  >
+                    Open Source
+                  </a>
+                </div>
               </div>
             </article>
           ))}

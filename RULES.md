@@ -141,6 +141,10 @@ only.
 
 Delete belongs inside the edit page.
 
+Exception:
+
+- The Sources checklist shows `Edit`, `Mark Checked`, and `Open Source` on each list item because checking sources is the primary daily workflow.
+
 ### Edit Page
 
 Edit page should contain:

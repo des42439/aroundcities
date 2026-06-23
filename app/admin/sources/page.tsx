@@ -46,6 +46,7 @@ export default async function AdminSourcesPage({
 
         <SourceList
           sources={sources}
+          view={view}
           emptyText={
             view === "pending"
               ? "No pending sources. Everything has been checked in the past 3 days."
