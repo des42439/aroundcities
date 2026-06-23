@@ -7,6 +7,7 @@ import { requireAdmin } from "./admin-auth";
 import {
   createFeed,
   deleteFeed,
+  getFeedById,
   updateFeed,
 } from "./feeds";
 import { replaceFeedPlaces } from "./feed-places";
@@ -1918,6 +1919,8 @@ export async function updateFeedAction(
     const title = normalizeFeedTitleForStorage(
       requiredString(formData, "title")
     );
+    const feedType = parseFeedType(formData.get("feed_type"));
+    const isEvent = feedType === "event_observation";
     const isPublishIntent = formData.get("publish") === "1";
     const status = isPublishIntent
       ? "published"
@@ -1927,7 +1930,7 @@ export async function updateFeedAction(
       slugify(title);
 
     await updateFeed(feedId, {
-      feed_type: parseFeedType(formData.get("feed_type")),
+      feed_type: feedType,
       slug,
       title,
       content: nullableString(formData.get("content")),
@@ -1949,7 +1952,9 @@ export async function updateFeedAction(
       status,
     });
     redirectTo = isPublishIntent
-      ? "/admin/feeds/published"
+      ? isEvent
+        ? "/admin/events?status=published"
+        : "/admin/feeds/published"
       : `/admin/feeds/${feedId}`;
 
     await replaceFeedPlaces(
@@ -1975,6 +1980,7 @@ export async function updateFeedAction(
     revalidatePath("/admin/feeds");
     revalidatePath("/admin/feeds/drafts");
     revalidatePath("/admin/feeds/published");
+    revalidatePath("/admin/events");
     revalidatePath(`/admin/feeds/${feedId}`);
     revalidatePath("/kch");
   } catch (error) {
@@ -1992,8 +1998,12 @@ export async function archiveFeedAction(
 ) {
   await requireAdmin();
   void _state;
+  let redirectTo = "/admin/feeds/published";
 
   try {
+    const feed = await getFeedById(feedId);
+    const isEvent = feed?.feed_type === "event_observation";
+
     await updateFeed(feedId, {
       status: "archived",
       published_at: null,
@@ -2001,15 +2011,19 @@ export async function archiveFeedAction(
 
     revalidatePath("/admin/feeds");
     revalidatePath("/admin/feeds/published");
+    revalidatePath("/admin/events");
     revalidatePath(`/admin/feeds/${feedId}`);
     revalidatePath("/kch");
+    redirectTo = isEvent
+      ? "/admin/events?status=archived"
+      : "/admin/feeds/published";
   } catch (error) {
     return await actionError("archive_feed", error, {
       feedId,
     });
   }
 
-  redirect("/admin/feeds/published");
+  redirect(redirectTo);
 }
 
 export async function deleteFeedAction(
@@ -2018,21 +2032,27 @@ export async function deleteFeedAction(
 ) {
   await requireAdmin();
   void _state;
+  let redirectTo = "/admin/feeds";
 
   try {
+    const feed = await getFeedById(feedId);
+    const isEvent = feed?.feed_type === "event_observation";
+
     await deleteFeed(feedId);
 
     revalidatePath("/admin/feeds");
     revalidatePath("/admin/feeds/drafts");
     revalidatePath("/admin/feeds/published");
+    revalidatePath("/admin/events");
     revalidatePath("/kch");
+    redirectTo = isEvent ? "/admin/events" : "/admin/feeds";
   } catch (error) {
     return await actionError("delete_feed", error, {
       feedId,
     });
   }
 
-  redirect("/admin/feeds");
+  redirect(redirectTo);
 }
 
 export async function createFeedSourceAction(

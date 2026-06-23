@@ -253,7 +253,7 @@ export default function EventImportForm() {
         return;
       }
 
-      router.push("/admin/feeds/drafts");
+      router.push("/admin/events?status=draft");
       router.refresh();
       navigated = true;
     } catch (saveError) {
@@ -273,10 +273,10 @@ export default function EventImportForm() {
   return (
     <div className="space-y-6">
       <Link
-        href="/admin/feeds/new"
+        href="/admin/events"
         className="text-sm text-neutral-400 underline underline-offset-4 hover:text-neutral-100"
       >
-        Back to New Feed
+        Back to Events
       </Link>
 
       <textarea
@@ -304,10 +304,10 @@ export default function EventImportForm() {
             {saveResult.createdCount === 1 ? "" : "s"}.
           </p>
           <Link
-            href="/admin/feeds/drafts"
+            href="/admin/events?status=draft"
             className="inline-block underline underline-offset-4"
           >
-            View Drafted Feeds
+            View Drafted Events
           </Link>
         </div>
       ) : null}

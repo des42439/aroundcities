@@ -18,7 +18,7 @@ The primary question it answers is:
 
 AroundCities is curator-driven. It is not an event portal, tourism website, business directory, or social network.
 
-Current admin direction is photo-first. Photos are becoming the reusable content library for future History, Learning, Greetings, Discovery, Positive Messages, and generated homepage cards. The existing feed-backed Events workflow is visible in the main admin navigation through `/admin/feeds`.
+Current admin direction is photo-first. Photos are becoming the reusable content library for future History, Learning, Greetings, Discovery, Positive Messages, and generated homepage cards. The existing feed-backed Events workflow is visible in the main admin navigation through `/admin/events`, while the generic Feed hub remains hidden from admin navigation.
 
 ## Phase 1 Foundation
 
@@ -66,10 +66,10 @@ Implemented mobile-first workflow:
 - `/admin/photos/[albumId]` edits album title, description, status, and shows album photos.
 - `/admin/photos/photo/[photoId]` edits individual photo metadata, album cover flag, tags, captured date, coordinates, and location notes.
 - `/admin/feeds/new` is the fast capture screen. It asks only for photos, title, and description, then creates a draft.
-- `/admin/feeds/import-events` accepts pasted `aroundcities_event_import_v2` JSON, keeps v1 JSON compatible, previews event feed drafts, and saves valid imports as draft feeds without requiring photos.
-- `/admin` shows Photos first and includes an Events card linking to the existing feed-backed event workflow.
-- `/admin/feeds/drafts` lists drafted feeds with thumbnail, title, relative updated time, and Draft label.
-- `/admin/feeds/published` lists published feeds with thumbnail, title, relative published time, and Published label.
+- `/admin/events` is the visible Events section. It filters feed-backed records to `feed_type = event_observation` and supports Drafted, Published, and Archived views with local search.
+- `/admin/feeds/import-events` accepts pasted `aroundcities_event_import_v2` JSON, keeps v1 JSON compatible, previews event feed drafts, and saves valid imports as draft events without requiring photos.
+- `/admin` shows Photos first and includes an Events card linking to the event-only admin workflow.
+- `/admin/feeds` redirects to `/admin/events`; deeper feed-backed edit/import routes remain available where the Events workflow needs them.
 - `/admin/stats` lists feed and photo click counts from highest to lowest.
 - `/admin/leads` manages admin-only potential content ideas as a curator inbox.
 - `/admin/leads/import` accepts pasted `aroundcities_leads_import_v1` JSON and saves imported leads as active records. The canonical array key is `items`; older newspaper-task JSON using `records`, `description`, and `place_hint` is also accepted and mapped into lead content/place fields.

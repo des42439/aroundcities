@@ -57,23 +57,28 @@ export default async function EditFeedPage({
           This feed does not exist.
         </p>
         <Link
-          href="/admin/feeds/drafts"
+          href="/admin/events"
           className="mt-6 inline-flex text-sm text-neutral-300 hover:text-white"
         >
-          Back to drafts
+          Back to Events
         </Link>
       </AdminShell>
     );
   }
 
   const action = updateFeedAction.bind(null, feed.feed_id);
+  const isEvent = feed.feed_type === "event_observation";
 
   return (
     <AdminShell
       title={
-        feed.status === "published"
-          ? "Edit Published Feed"
-          : "Edit Draft Feed"
+        isEvent
+          ? feed.status === "published"
+            ? "Edit Published Event"
+            : "Edit Draft Event"
+          : feed.status === "published"
+            ? "Edit Published Feed"
+            : "Edit Draft Feed"
       }
     >
       <MobileFeedEditor

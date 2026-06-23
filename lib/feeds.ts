@@ -1,6 +1,7 @@
 import { getSupabaseAdmin } from "./supabase-admin";
 import {
   Feed,
+  FeedStatus,
   FeedUpdate,
   FeedWithPlaceAndPhotos,
   NewFeed,
@@ -73,6 +74,32 @@ export async function getFeedsByStatus(
   );
 }
 
+export async function getEventFeedsByStatus(
+  status: FeedStatus
+): Promise<FeedWithPlaceAndPhotos[]> {
+  const { data, error } = await getSupabaseAdmin()
+    .from("feeds")
+    .select(
+      "*, place:places!feeds_place_id_fkey(*), photos(*)"
+    )
+    .eq("feed_type", "event_observation")
+    .eq("status", status)
+    .order(status === "published" ? "published_at" : "updated_at", {
+      ascending: false,
+      nullsFirst: false,
+    })
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error(error);
+    return [];
+  }
+
+  return await hydrateFeedsEventData(
+    (data ?? []) as FeedWithPlaceAndPhotos[]
+  );
+}
+
 export async function getFeedCountByStatus(
   status: Feed["status"]
 ): Promise<number> {
@@ -82,6 +109,26 @@ export async function getFeedCountByStatus(
       count: "exact",
       head: true,
     })
+    .eq("status", status);
+
+  if (error) {
+    console.error(error);
+    return 0;
+  }
+
+  return count ?? 0;
+}
+
+export async function getEventFeedCountByStatus(
+  status: FeedStatus
+): Promise<number> {
+  const { count, error } = await getSupabaseAdmin()
+    .from("feeds")
+    .select("feed_id", {
+      count: "exact",
+      head: true,
+    })
+    .eq("feed_type", "event_observation")
     .eq("status", status);
 
   if (error) {

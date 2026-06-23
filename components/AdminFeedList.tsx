@@ -18,6 +18,7 @@ type Props = {
   emptyText: string;
   timeField: "updated_at" | "published_at";
   statusLabel: string;
+  searchPlaceholder?: string;
 };
 
 export default function AdminFeedList({
@@ -25,6 +26,7 @@ export default function AdminFeedList({
   emptyText,
   timeField,
   statusLabel,
+  searchPlaceholder = "Search feeds",
 }: Props) {
   const [search, setSearch] = useState("");
   const normalizedSearch = search.trim().toLowerCase();
@@ -56,7 +58,7 @@ export default function AdminFeedList({
           type="search"
           value={search}
           onChange={(event) => setSearch(event.target.value)}
-          placeholder="Search feeds"
+          placeholder={searchPlaceholder}
           className={`${inputClassName} mt-2`}
         />
       </label>

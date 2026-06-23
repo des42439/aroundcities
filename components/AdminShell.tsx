@@ -31,7 +31,7 @@ export default function AdminShell({
               Photos
             </Link>
             <Link
-              href="/admin/feeds"
+              href="/admin/events"
               className="rounded-md border border-neutral-800 px-3 py-2 text-neutral-300 hover:border-neutral-600"
             >
               Events

@@ -9,6 +9,9 @@ All notable changes to AroundCities should be documented here.
 - Restored `Edit`, `Mark Checked`, and `Open Source` actions on each admin Sources checklist item.
 - Marking a source checked now removes it immediately from the Pending list while keeping it visible with an updated timestamp in Show All.
 - Restored the existing Events workflow to the admin navigation and dashboard without changing its feed-backed routes or data model.
+- Changed the admin Events menu and dashboard card to open `/admin/events`, an event-only list filtered to `event_observation` records, so the generic Feed hub stays hidden.
+- Changed `/admin/feeds` to redirect to `/admin/events` instead of rendering the old Feed section.
+- Event import, publish, archive, and delete flows now return to the Events section instead of the old Drafted/Published Feeds pages.
 
 ## 2026-06-22
 

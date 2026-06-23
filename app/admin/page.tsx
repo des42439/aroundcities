@@ -1,7 +1,7 @@
 import Link from "next/link";
 import AdminShell from "@/components/AdminShell";
 import { requireAdmin } from "@/lib/admin-auth";
-import { getFeedCountByStatus } from "@/lib/feeds";
+import { getEventFeedCountByStatus } from "@/lib/feeds";
 import { getHistoryRecordCount } from "@/lib/history";
 import { getLeadCount } from "@/lib/leads";
 import { getPhotoAlbums } from "@/lib/photo-albums";
@@ -19,8 +19,8 @@ export default async function AdminPage() {
   ] =
     await Promise.all([
       getPhotoAlbums(),
-      getFeedCountByStatus("draft"),
-      getFeedCountByStatus("published"),
+      getEventFeedCountByStatus("draft"),
+      getEventFeedCountByStatus("published"),
       getSourceCount(),
       getLeadCount("active"),
       getHistoryRecordCount(),
@@ -42,7 +42,7 @@ export default async function AdminPage() {
         </Link>
 
         <Link
-          href="/admin/feeds"
+          href="/admin/events"
           className="block rounded-lg border border-neutral-900 p-5 hover:border-neutral-700"
         >
           <h2 className="text-xl font-semibold">
