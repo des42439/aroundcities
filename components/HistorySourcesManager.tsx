@@ -17,13 +17,13 @@ import {
   updateHistorySourceAction,
 } from "@/lib/admin-actions";
 import type {
-  HistorySource,
-  HistorySourceStatus,
+  Source,
+  SourceReviewStatus,
 } from "@/types/database";
 
 type Props = {
   historyId: string;
-  sources: HistorySource[];
+  sources: Source[];
 };
 
 export default function HistorySourcesManager({
@@ -36,7 +36,7 @@ export default function HistorySourcesManager({
         <div className="space-y-4">
           {sources.map((source) => (
             <article
-              key={source.history_source_id}
+              key={source.source_id}
               className="space-y-4 rounded-md border border-neutral-900 p-4"
             >
               <div className="space-y-2">
@@ -44,19 +44,21 @@ export default function HistorySourcesManager({
                   {source.source_title || source.source_url}
                 </h3>
                 <div className="flex flex-wrap gap-2 text-xs">
-                  <StatusBadge label={source.source_status} />
+                  <StatusBadge label={source.review_status} />
                   <StatusBadge label={`screenshot: ${source.screenshot_status}`} />
                 </div>
               </div>
 
-              <a
-                href={source.source_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${secondaryButtonClassName} inline-flex w-full justify-center sm:w-auto`}
-              >
-                Open URL
-              </a>
+              {source.source_url ? (
+                <a
+                  href={source.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${secondaryButtonClassName} inline-flex w-full justify-center sm:w-auto`}
+                >
+                  Open URL
+                </a>
+              ) : null}
 
               {source.source_note ? (
                 <p className="whitespace-pre-wrap text-sm text-neutral-400">
@@ -88,19 +90,19 @@ export default function HistorySourcesManager({
               <div className="flex flex-col gap-2 sm:flex-row">
                 <SourceStatusButton
                   historyId={historyId}
-                  historySourceId={source.history_source_id}
+                  sourceId={source.source_id}
                   status="pending"
                   label="Mark Pending"
                 />
                 <SourceStatusButton
                   historyId={historyId}
-                  historySourceId={source.history_source_id}
+                  sourceId={source.source_id}
                   status="reviewed"
                   label="Mark Reviewed"
                 />
                 <SourceStatusButton
                   historyId={historyId}
-                  historySourceId={source.history_source_id}
+                  sourceId={source.source_id}
                   status="rejected"
                   label="Mark Rejected"
                 />
@@ -110,7 +112,7 @@ export default function HistorySourcesManager({
                 action={updateHistorySourceAction.bind(
                   null,
                   historyId,
-                  source.history_source_id
+                  source.source_id
                 )}
                 className="space-y-4 border-t border-neutral-900 pt-4"
               >
@@ -130,7 +132,7 @@ export default function HistorySourcesManager({
                 action={deleteHistorySourceAction.bind(
                   null,
                   historyId,
-                  source.history_source_id
+                  source.source_id
                 )}
               >
                 <AdminFormProgress />
@@ -166,7 +168,7 @@ export default function HistorySourcesManager({
   );
 }
 
-function SourceFields({ source }: { source?: HistorySource }) {
+function SourceFields({ source }: { source?: Source }) {
   return (
     <div className="space-y-4">
       <Field label="URL">
@@ -204,8 +206,8 @@ function SourceFields({ source }: { source?: HistorySource }) {
         </Field>
         <Field label="Source status">
           <select
-            name="source_status"
-            defaultValue={source?.source_status ?? "pending"}
+            name="review_status"
+            defaultValue={source?.review_status ?? "pending"}
             className={selectClassName}
           >
             <option value="pending">Pending</option>
@@ -246,13 +248,13 @@ function SourceFields({ source }: { source?: HistorySource }) {
 
 function SourceStatusButton({
   historyId,
-  historySourceId,
+  sourceId,
   status,
   label,
 }: {
   historyId: string;
-  historySourceId: string;
-  status: HistorySourceStatus;
+  sourceId: string;
+  status: SourceReviewStatus;
   label: string;
 }) {
   return (
@@ -260,7 +262,7 @@ function SourceStatusButton({
       action={setHistorySourceStatusAction.bind(
         null,
         historyId,
-        historySourceId,
+        sourceId,
         status
       )}
     >

@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -72,45 +72,6 @@ export type Database = {
           message?: string
           updated_at?: string
           updated_by?: string | null
-        }
-        Relationships: []
-      }
-      channels: {
-        Row: {
-          channel_id: string
-          created_at: string
-          created_by: string | null
-          last_checked_at: string | null
-          name: string
-          remarks: string | null
-          screenshot_url: string | null
-          updated_at: string
-          updated_by: string | null
-          url: string
-        }
-        Insert: {
-          channel_id?: string
-          created_at?: string
-          created_by?: string | null
-          last_checked_at?: string | null
-          name: string
-          remarks?: string | null
-          screenshot_url?: string | null
-          updated_at?: string
-          updated_by?: string | null
-          url: string
-        }
-        Update: {
-          channel_id?: string
-          created_at?: string
-          created_by?: string | null
-          last_checked_at?: string | null
-          name?: string
-          remarks?: string | null
-          screenshot_url?: string | null
-          updated_at?: string
-          updated_by?: string | null
-          url?: string
         }
         Relationships: []
       }
@@ -342,57 +303,6 @@ export type Database = {
           },
         ]
       }
-      feed_sources: {
-        Row: {
-          channel_id: string | null
-          created_at: string
-          created_by: string | null
-          feed_id: string
-          source_id: string
-          source_note: string | null
-          source_url: string | null
-          updated_at: string
-          updated_by: string | null
-        }
-        Insert: {
-          channel_id?: string | null
-          created_at?: string
-          created_by?: string | null
-          feed_id: string
-          source_id?: string
-          source_note?: string | null
-          source_url?: string | null
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Update: {
-          channel_id?: string | null
-          created_at?: string
-          created_by?: string | null
-          feed_id?: string
-          source_id?: string
-          source_note?: string | null
-          source_url?: string | null
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "feed_sources_channel_id_fkey"
-            columns: ["channel_id"]
-            isOneToOne: false
-            referencedRelation: "channels"
-            referencedColumns: ["channel_id"]
-          },
-          {
-            foreignKeyName: "feed_sources_feed_id_fkey"
-            columns: ["feed_id"]
-            isOneToOne: false
-            referencedRelation: "feeds"
-            referencedColumns: ["feed_id"]
-          },
-        ]
-      }
       feeds: {
         Row: {
           click_count: number
@@ -569,59 +479,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
-      }
-      history_sources: {
-        Row: {
-          created_at: string
-          history_id: string
-          history_source_id: string
-          screenshot_error: string | null
-          screenshot_status: string
-          sequence: number
-          source_note: string | null
-          source_screenshot_url: string | null
-          source_status: string
-          source_title: string | null
-          source_url: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          history_id: string
-          history_source_id?: string
-          screenshot_error?: string | null
-          screenshot_status?: string
-          sequence?: number
-          source_note?: string | null
-          source_screenshot_url?: string | null
-          source_status?: string
-          source_title?: string | null
-          source_url: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          history_id?: string
-          history_source_id?: string
-          screenshot_error?: string | null
-          screenshot_status?: string
-          sequence?: number
-          source_note?: string | null
-          source_screenshot_url?: string | null
-          source_status?: string
-          source_title?: string | null
-          source_url?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "history_sources_history_id_fkey"
-            columns: ["history_id"]
-            isOneToOne: false
-            referencedRelation: "history_records"
-            referencedColumns: ["history_id"]
-          },
-        ]
       }
       leads: {
         Row: {
@@ -846,51 +703,7 @@ export type Database = {
         }
         Relationships: []
       }
-      source_screenshots: {
-        Row: {
-          created_at: string
-          created_by: string | null
-          remarks: string | null
-          screenshot_id: string
-          screenshot_url: string
-          sequence: number
-          source_id: string
-          updated_at: string
-          updated_by: string | null
-        }
-        Insert: {
-          created_at?: string
-          created_by?: string | null
-          remarks?: string | null
-          screenshot_id?: string
-          screenshot_url: string
-          sequence?: number
-          source_id: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Update: {
-          created_at?: string
-          created_by?: string | null
-          remarks?: string | null
-          screenshot_id?: string
-          screenshot_url?: string
-          sequence?: number
-          source_id?: string
-          updated_at?: string
-          updated_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "source_screenshots_source_id_fkey"
-            columns: ["source_id"]
-            isOneToOne: false
-            referencedRelation: "feed_sources"
-            referencedColumns: ["source_id"]
-          },
-        ]
-      }
-      sources: {
+      source_checklist: {
         Row: {
           created_at: string
           created_by: string | null
@@ -923,6 +736,54 @@ export type Database = {
           updated_at?: string
           updated_by?: string | null
           url?: string
+        }
+        Relationships: []
+      }
+      sources: {
+        Row: {
+          created_at: string
+          review_status: string
+          screenshot_error: string | null
+          screenshot_status: string
+          section_id: string
+          section_type: string
+          sequence: number
+          source_id: string
+          source_note: string | null
+          source_screenshot_url: string | null
+          source_title: string | null
+          source_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          review_status?: string
+          screenshot_error?: string | null
+          screenshot_status?: string
+          section_id: string
+          section_type: string
+          sequence?: number
+          source_id?: string
+          source_note?: string | null
+          source_screenshot_url?: string | null
+          source_title?: string | null
+          source_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          review_status?: string
+          screenshot_error?: string | null
+          screenshot_status?: string
+          section_id?: string
+          section_type?: string
+          sequence?: number
+          source_id?: string
+          source_note?: string | null
+          source_screenshot_url?: string | null
+          source_title?: string | null
+          source_url?: string | null
+          updated_at?: string
         }
         Relationships: []
       }

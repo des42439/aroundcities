@@ -1,6 +1,6 @@
 # AroundCities V2 Phase 1 Architecture
 
-Last updated: 17 June 2026
+Last updated: 22 June 2026
 
 Implementation status: Steps 1-5 are implemented, plus a photo-first admin workflow through Photo Album Admin v1. Feed workflows remain in the codebase and are reachable by direct URL, but they are hidden from the main admin navigation for now. Phase 2 database migrations for the final feed use cases have been produced and applied to Supabase, and the admin editor now wires parent feeds, source evidence, uploaded screenshot URL records, feed schedules, event details, and feed-place metadata as compact optional sections. A temporary public homepage lock protects `/` and `/kch` during content preparation and can be disabled from `lib/public-lock.ts`. The standalone History module is implemented as an admin-only archive and research pipeline, with no public discovery integration. Leads are implemented as an admin-only curator inbox for potential future content ideas, with import and reading-mode archive workflows but no feed/history conversion. Shared UI/workflow behavior standards now live in `RULES.md`, and the app includes a global loading/progress overlay for internal navigation, admin form submissions, imports, exports, previews, and client-side uploads.
 
@@ -90,7 +90,7 @@ Purpose:
 - Export records through `aroundcities_history_research_export_v1` JSON for research using Daily Tasks, Show All, Drafted, Researched, Pending Review, Published, and Archived filters.
 - Update existing records through `aroundcities_history_update_v1` JSON using `history_id`; successful updates add the `research:done` tag.
 - Import researched updates through `aroundcities_history_research_update_v2`; this updates existing records, marks them `researched`, and inserts or updates multiple source rows by URL.
-- Review linked sources in admin before publishing. Records with `history_sources` require at least one reviewed source; legacy records using only old source fields remain compatible.
+- Review linked sources in admin before publishing. Records with centralized `sources` rows require at least one reviewed source; legacy records using only old source fields remain compatible.
 - Run the manual `tools/history-screenshot-assistant` CLI after source review to capture screenshots for reviewed sources and move fully evidenced researched records to `pending_review`.
 - Link records to reusable photos from the existing photo library.
 - Upload a single source screenshot from the edit page using the existing browser compression and signed Supabase Storage upload flow, then store the generated URL in `history_records.source_screenshot_url`.
@@ -98,14 +98,14 @@ Purpose:
 Tables:
 
 - `history_records`
-- `history_sources`
+- `sources` (`section_type = 'history'`)
 - `history_photos`
 
 History records are not feeds and must not be stored in `feeds`.
 
 History photos reuse `photos`. History-only uploads create ordinary photo rows attached to an archived feed used solely as a photo container, then link those photos through `history_photos`.
 
-`history_sources` is the preferred multi-source storage for new research workflow data. The legacy `history_records.source_url`, `source_note`, and `source_screenshot_url` fields remain for existing records and compatibility.
+Centralized `sources` is the preferred multi-source storage for new research workflow data. The legacy `history_records.source_url`, `source_note`, and `source_screenshot_url` fields remain for existing records and compatibility.
 
 Daily research tasks reuse `history_records.tags`. Starting a new Kuching day removes only old tags beginning with `daily-task:` so unfinished drafted records can be reassigned later without deleting ordinary tags such as source, slug, or `research:done` tags.
 
@@ -341,6 +341,22 @@ create table public.admin_error_logs (
 
 create table public.sources (
   source_id uuid primary key default gen_random_uuid(),
+  section_type text not null,
+  section_id uuid not null,
+  source_title text,
+  source_url text,
+  source_note text,
+  source_screenshot_url text,
+  screenshot_status text not null default 'pending',
+  screenshot_error text,
+  review_status text not null default 'pending',
+  sequence integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table public.source_checklist (
+  source_id uuid primary key default gen_random_uuid(),
   name text not null,
   url text not null,
   notes text,
@@ -388,8 +404,8 @@ create index places_slug_idx
 create index admin_error_logs_created_at_idx
   on public.admin_error_logs (created_at desc);
 
-create index sources_last_checked_created_idx
-  on public.sources (last_checked_at asc nulls first, created_at asc);
+create index source_checklist_last_checked_created_idx
+  on public.source_checklist (last_checked_at asc nulls first, created_at asc);
 ```
 
 Storage:
@@ -408,7 +424,8 @@ Admin error logging:
 
 Sources:
 
-- `sources` stores a simple manual checklist of useful Facebook pages, groups, and websites for content discovery.
+- `sources` stores reusable content evidence for History and Feed records. `section_type + section_id` identifies the owning content and is the extension path for future Learning, Discovery, Story, and other factual sections.
+- `source_checklist` stores the separate manual checklist of useful Facebook pages, groups, and websites for content discovery.
 - `/admin/sources` defaults to a Pending view that shows sources never checked or not checked in the past 3 days, with a dropdown `Show all` filter for the full list.
 - Sources are sorted by `last_checked_at asc nulls first`, then `created_at asc`, so never checked and oldest checked items rise to the top in whichever view is active.
 - Opening a source should not mark it checked. The curator manually clicks `Mark Checked` after review.
@@ -447,19 +464,22 @@ Sources:
 - Use simple display heuristics for now: information-first feeds should still lead with title and short copy, but any attached photos should render as a full-width social-feed image block.
 - The current `/kch` feed shows items immediately after the city header. Cards should show title, muted `Author · Relative Time`, a compact two-line description preview with inline `more` only when truncated, photos as the primary block, then a clear subtle divider with enough breathing room to mark the end of the post. Inline `more` expands the full description on the same card; only the separate `More details` link navigates to feed detail. Do not render a place row, pin icon, or footer actions below the gallery.
 - Multi-photo grids should occupy a similar visual footprint to a single-photo block: 2 photos side-by-side, 3 photos with one large image and two stacked images, and 4+ photos as 2x2 with a `+N` overlay when needed.
-- Keep the current `sources` table as a manual curator checklist. Use `channels`, `feed_sources`, and `source_screenshots` for evidence tied to a specific feed inside the optional admin Sources section. Source screenshots are selected as image files in the feed editor, compressed in the browser, uploaded to Supabase Storage under `source-screenshots/`, and saved as generated screenshot URL evidence records.
+- Use centralized `sources` for evidence tied to History and Feed records. Source screenshots are selected as image files in the feed editor, compressed in the browser, uploaded to Supabase Storage under `source-screenshots/`, and saved in `sources.source_screenshot_url`.
 - Use optional `feed_event_details` rows for structured event metadata. Do not create a separate public Event entity during Phase 1.
 - Public feed detail pages currently hide structured event details, but may show dynamic timing labels and external `Source` / `Channel` links.
-- Scheduled event observation feeds should leave the `/kch` discovery stream once their schedule has expired. A schedule with `start_time` and no `end_time` uses a 1-hour inferred duration; date-only schedules remain visible for the day but do not show `Happening Now`.
-- Non-expired event observation feeds scheduled for today should be promoted into the first one to three `/kch` feed slots, ordered by earliest schedule time, before the regular mixed discovery order resumes.
-- Keep the current app-facing `feeds.content`, `feeds.source_url`, `feed_operating_hours`, and `sources` surfaces until the application is intentionally migrated to the reviewed final schema.
+- Published event observations do not render as individual `/kch` feed cards. The homepage derives one `Today in Kuching` summary from existing feeds, schedules, places, and centralized sources without adding an event table or migration.
+- The summary groups schedules into Today, Tomorrow, and Coming Soon through the next 7 Kuching calendar days. Visibility is date-based only: same-day events remain until day end, past dates are excluded, and a multi-day range appears under Today while the current date is inside its range.
+- Summary rows are compact text lines containing day/time, title, location, and an organizer/source link. Do not include descriptions, photos, structured event detail labels, or source screenshots.
+- Source screenshots remain internal evidence. Existing event feed detail pages and stored descriptions/photos remain available, and the whole summary is omitted when no qualifying schedules exist.
+- Keep `feeds.content` and `feed_operating_hours`; new content evidence belongs in centralized `sources`, not `feeds.source_url` or section-specific source tables.
 
 ### Schema Rules
 
 - Keep Feed as the primary content entity.
 - Keep `feed_type` hidden/defaulted for now. Prefer flexible tags/categories for future content classification instead of forcing a single feed type during creation.
 - Use `slug` for public feed URLs.
-- Use `source_url` only for optional external references.
+- Use centralized `sources` for external references and evidence.
+- If public History detail/feed display is introduced, show the small muted italic note `Note: This is a researched local history story, not an official historical record.` before its source list.
 - Use `operating_hours` as flexible free text for public schedule wording.
 - Use `feed_operating_hours` for structured rows when open-now or date/time queries are needed.
 - Do not introduce a full calendar, recurrence engine, or business-directory operating-hours model in Phase 1.
@@ -598,9 +618,9 @@ Stats may appear as a main admin item for lightweight feed and photo click-count
 - Feed linked places should be edited with a searchable add/remove picker so the editor remains compact as places grow.
 - Do not ask for feed type during creation.
 - New feeds should be drafts by default.
-- Event JSON imports should create draft feeds only. They may create/reuse places, feed-place links, schedules, channels, and feed source rows, but should not create photos, upload screenshots, or introduce a separate event entity.
+- Event JSON imports should create draft feeds only. They may create/reuse places, feed-place links, schedules, and centralized `sources` rows, but should not create photos, upload screenshots, or introduce a separate event entity.
 - Event JSON import should reset to a fresh input state after a fully successful save, but preserve pasted content when preview validation or per-event save errors occur.
-- Event JSON imports may include an optional `event_details` object. Imported titles must stay timeless; strip dynamic prefixes like `Happening Today:` before storing the feed title.
+- Event JSON imports may include an optional `event_details` object. Imported titles must stay timeless; strip dynamic prefixes like `Happening Today:` before storing the feed title. Descriptions are optional and must not be required for the normal `Today in Kuching` homepage display.
 - Places remain human-assigned only. Do not add GPS-to-place automation or reverse geocoding.
 - Photo order should stay numeric and curator-controlled through `photos.sequence`; do not let the featured flag override sequence ordering for public galleries or admin thumbnails.
 - Multiple photos in one feed may be marked as Photo feed candidates. Do not enforce one featured photo per feed.

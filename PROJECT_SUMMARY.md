@@ -1,6 +1,6 @@
 # AroundCities Project Summary
 
-Last updated: 17 June 2026
+Last updated: 22 June 2026
 
 ## Current Direction
 
@@ -33,7 +33,7 @@ No comments, likes, followers, messaging, ratings, reviews, or social-network as
 Standalone admin-only module:
 
 - History records are stored outside the feed system in `history_records`.
-- History research sources are stored in `history_sources`; legacy single-source fields remain on `history_records` for compatibility.
+- History and Feed evidence share the centralized `sources` table. `section_type + section_id` identifies the owning record; legacy single-source fields remain on `history_records` for compatibility.
 - History records can link to existing photos through `history_photos`.
 - History-only uploads still create normal `photos` rows under an archived feed used as a photo container.
 - No public history homepage integration, feed generation, recommendation, search, analytics, or scheduling features exist yet.
@@ -41,7 +41,7 @@ Standalone admin-only module:
 ## Public Routes
 
 - `/` redirects to `/kch`
-- `/kch` shows a discovery-style mixed feed
+- `/kch` shows a discovery-style mixed feed with one dynamic `Today in Kuching` event summary
 - `/feed/[slug]` shows feed detail
 - `/photo/[photoId]` shows a single public photo page
 - `/place/[slug]` shows place detail
@@ -79,7 +79,7 @@ Implemented mobile-first workflow:
 - `/admin/history/import` accepts pasted `aroundcities_history_import_v1` JSON and saves valid records as drafts.
 - `/admin/history/export` exports `aroundcities_history_research_export_v1` JSON for ChatGPT/library research using the same Daily Tasks, Show All, Drafted, Researched, Pending Review, Published, and Archived filters as `/admin/history`.
 - `/admin/history/import` also accepts `aroundcities_history_update_v1` JSON to update existing records by `history_id`; successful updates preserve existing tags and add `research:done`.
-- `/admin/history/import` accepts `aroundcities_history_research_update_v2` JSON to update existing records, set status to `researched`, and insert/update multiple `history_sources` rows by URL.
+- `/admin/history/import` accepts `aroundcities_history_research_update_v2` JSON to update existing records, set status to `researched`, and insert/update multiple centralized `sources` rows by URL.
 - `/admin/history/[historyId]` includes a Sources section for source title, URL, note, review status, screenshot status, screenshot URL, screenshot error, sequence, and delete controls.
 - `/admin/history/[historyId]` lets the curator open the Source URL in a new tab and upload a compressed source screenshot into Supabase Storage, auto-filling `source_screenshot_url`.
 - `tools/history-screenshot-assistant` is a manual internal CLI that captures screenshots for reviewed researched History sources, uploads them to Supabase Storage, and moves ready History records from `researched` to `pending_review`.
@@ -152,12 +152,12 @@ The V2 Phase 1 foundation now includes:
 - New feed photo creation uploads directly from the browser to Supabase Storage using signed upload URLs, avoiding Vercel Server Action body limits for initial feed creation.
 - New feed photos are compressed in the browser before upload, targeting less than 1MB per photo with a 1600px longest-side resize.
 - New feed creation returns to `/admin/feeds/drafts` after save.
-- Event JSON import is available from New Feed through `/admin/feeds/import-events`. It validates pasted JSON, forces all imported feeds to `draft`, creates or reuses places and source channels, links feed places with location notes, creates simple feed schedule rows, and stores feed source evidence without creating photos or uploading screenshots.
+- Event JSON import is available from New Feed through `/admin/feeds/import-events`. It validates pasted JSON, forces all imported feeds to `draft`, creates or reuses places, links feed places with location notes, creates simple feed schedule rows, and stores evidence directly in centralized `sources` without creating photos or uploading screenshots.
 - After a fully successful event import save, the import textarea and preview reset so the page is ready for a new paste. Validation and per-event save errors keep the pasted content available for correction.
-- History Phase 1 foundation with `history_records`, `history_sources`, and `history_photos`, admin CRUD, drafted/researched/pending-review/publish/archive/delete actions, JSON import, existing-photo linking, and compressed history-only uploads into the shared photo library.
+- History Phase 1 foundation with `history_records`, centralized `sources`, and `history_photos`, admin CRUD, drafted/researched/pending-review/publish/archive/delete actions, JSON import, existing-photo linking, and compressed history-only uploads into the shared photo library.
 - History admin uses `history_records.tags` for a simple daily research workflow: first `/admin/history` visit of the Kuching day clears old `daily-task:` tags, assigns up to 10 oldest drafted records, and the default view shows only the remaining drafted records from today's batch.
 - History record editing includes source verification helpers: Source URL opens in a new tab, and Source Screenshot uploads use the existing browser compression plus Supabase signed upload flow before saving the generated URL on the record.
-- New History research imports use `aroundcities_history_research_update_v2`, preserve legacy source fields, write multiple source records into `history_sources`, and never publish automatically.
+- New History research imports use `aroundcities_history_research_update_v2`, preserve legacy source fields, write multiple records into centralized `sources`, and never publish automatically.
 - Publishing a history record with new source rows requires at least one `reviewed` source. Legacy records that only use old source fields remain functional.
 - History Screenshot Assistant is run manually with `npm run history:screenshot`; it is not an admin page, public route, deploy hook, crawler, or scheduled job.
 - Event JSON import accepts optional `event_details` objects and strips dynamic timing prefixes such as `Happening Today:` from stored feed titles.
@@ -166,10 +166,12 @@ The V2 Phase 1 foundation now includes:
 - Feed editing is mobile-first and keeps optional refinement sections hidden until the curator explicitly adds Sources, Places, Schedules, or Parent Feed.
 - Feed linked places are edited through a compact searchable add/remove picker so the editor stays usable as the place list grows.
 - Feed sources, source screenshot URL evidence, simple schedule rows, feed-place metadata, and parent feeds are wired into the admin editor.
-- Feed source screenshot evidence uses a picker/upload flow instead of manual URL entry: the selected image is compressed client-side, uploaded to the `photos` Supabase Storage bucket under `source-screenshots/`, and the generated public URL is saved in `source_screenshots`.
-- Public feed cards and feed detail pages show dynamic event timing labels from `feed_schedules`. Public feed cards can show subtle structured event detail labels, but feed detail pages currently keep event details hidden.
-- Scheduled event observation feeds are hidden from `/kch` after their schedule has expired. Events with a start time but no end time use a 1-hour inferred duration; date-only events stay visible for their calendar day without becoming `Happening Now`.
-- Public `/kch` promotes non-expired event observation feeds scheduled for today into the first one to three feed slots, ordered by earliest schedule time, before the ordinary mixed discovery ordering resumes.
+- Feed source screenshot evidence uses a picker/upload flow instead of manual URL entry: the selected image is compressed client-side, uploaded to the `photos` Supabase Storage bucket under `source-screenshots/`, and the generated public URL is saved in `sources.source_screenshot_url`.
+- Public `/kch` no longer renders published event observations as individual feed cards. It aggregates qualifying schedules into one compact `Today in Kuching` summary before ordinary discovery and Photo feed cards.
+- `Today in Kuching` groups event rows into Today, Tomorrow, and Coming Soon through the next 7 days using Kuching calendar dates. Same-day events remain visible until the calendar day ends regardless of end time, past dates are hidden, and active multi-day ranges appear under Today.
+- Summary rows show only day/time, title, location, and an external organizer/source link. Event descriptions, images, structured details, and source screenshots are omitted; source screenshots remain internal admin evidence.
+- The summary is hidden entirely when no qualifying schedules exist. Existing event feed detail pages, stored descriptions, photos, and evidence remain unchanged.
+- Event descriptions are optional in the curator workflow and are not required for normal homepage event display.
 - Public feed card descriptions expand inline from the `more` control; only the separate `More details` link navigates to the feed detail page.
 - Public feed detail pages show separate external `Source` and `Channel` links when feed source data is available.
 - Event imports may include `source.source_channel_url`; this is used for the Channel link while `source.source_url` remains the original post/source link.
@@ -186,7 +188,7 @@ The V2 Phase 1 foundation now includes:
 - Standalone Photo feed images open the single-photo page, while the Photo feed title opens the original feed detail.
 - Admin can review feed and photo click counts from `/admin/stats`.
 - The admin photo editor no longer shows photo-specific Place or Location name fields; existing database columns remain untouched for now.
-- Admin includes `/admin/sources`, a compact manual checklist for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
+- Admin includes `/admin/sources`, a compact manual checklist backed by `source_checklist` for useful Facebook pages, groups, and websites the curator may review for possible AroundCities content.
 - Sources can be created from `/admin/sources/new`, edited, deleted, opened in a new tab, and manually marked checked. `/admin/sources` defaults to a Pending view showing sources never checked or not checked in the past 3 days, with a dropdown `Show all` filter for the full list.
 - Admin includes `/admin/leads`, an internal curator inbox for possible future AroundCities content ideas. Leads are stored in `leads`, are never public content, and support active/archived filtering, local search, CRUD, import, and Reading Mode archiving.
 - Shared workflow rules now live in `RULES.md`, and the active app has a shared global loading/progress overlay for internal navigation, admin form submissions, imports, exports, previews, and client-side upload flows.
@@ -234,8 +236,8 @@ These scripts keep the current app-facing schema intact while adding the tables 
 Phase 2 database status:
 
 - Remote migration history is aligned with local migrations through `20260605002000`.
-- `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` now exist in Supabase.
-- Foreign keys and indexes for parent feeds, feed sources, source screenshots, schedules, photos, places, and feed-place links are in place.
+- Centralized `sources`, separate `source_checklist`, and `feed_schedules` now exist in Supabase; old `channels`, `feed_sources`, `source_screenshots`, and `history_sources` tables have been retired.
+- Indexes for centralized source ownership/order/status, parent feeds, schedules, photos, places, and feed-place links are in place.
 - RLS is enabled on V2 app tables. Anonymous reads are limited to published feed content and related public rows. Admin/server writes use the service-role client.
 - Raw generated Supabase types are stored in `types/supabase.generated.ts`.
 - Existing app-facing types in `types/database.ts` were updated for the new schema.
@@ -250,7 +252,7 @@ Phase 2 database status:
 - Seeded public feeds previously had staggered `published_at` values and a 100-feed discovery ordering volume set for testing before cleanup.
 - Public feed photo blocks keep roughly the same large footprint for single and multi-photo feeds, avoiding tiny thumbnail previews on mobile.
 
-Admin UI and data-helper wiring now exists for `channels`, `feed_sources`, `source_screenshots`, and `feed_schedules` as compact optional refinement sections. Source screenshots currently accept screenshot URLs as evidence records rather than direct private file uploads.
+Admin UI and data-helper wiring uses centralized `sources` and `feed_schedules` as compact optional refinement sections. Source screenshots upload through the admin picker and save the resulting URL/status directly on the source evidence row.
 
 ## Current Repo Note
 

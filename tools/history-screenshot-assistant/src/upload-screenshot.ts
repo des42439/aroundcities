@@ -45,7 +45,7 @@ export async function uploadScreenshot(input: {
 }
 
 function screenshotPath(source: HistorySourceJob) {
-  return `history-sources/${source.history_id}/${source.history_source_id}.jpg`;
+  return `history-sources/${source.history_id}/${source.source_id}.jpg`;
 }
 
 async function renderJpeg(

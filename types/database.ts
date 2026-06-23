@@ -32,15 +32,17 @@ export type LeadStatus =
   | "active"
   | "archived";
 
-export type HistorySourceStatus =
+export type SourceReviewStatus =
   | "pending"
   | "reviewed"
   | "rejected";
 
-export type HistoryScreenshotStatus =
+export type SourceScreenshotStatus =
   | "pending"
   | "completed"
   | "failed";
+
+export type SourceSectionType = "history" | "feed";
 
 export type HistoryConfidence =
   | "high"
@@ -179,15 +181,16 @@ export interface HistoryPhotoWithPhoto extends HistoryPhoto {
   photo: Photo;
 }
 
-export interface HistorySource {
-  history_source_id: string;
-  history_id: string;
-  source_url: string;
+export interface Source {
+  source_id: string;
+  section_type: SourceSectionType;
+  section_id: string;
+  source_url: string | null;
   source_title: string | null;
   source_note: string | null;
-  source_status: HistorySourceStatus;
+  review_status: SourceReviewStatus;
   source_screenshot_url: string | null;
-  screenshot_status: HistoryScreenshotStatus;
+  screenshot_status: SourceScreenshotStatus;
   screenshot_error: string | null;
   sequence: number;
   created_at: string;
@@ -196,7 +199,7 @@ export interface HistorySource {
 
 export interface HistoryRecordWithPhotos extends HistoryRecord {
   history_photos: HistoryPhotoWithPhoto[];
-  history_sources: HistorySource[];
+  sources: Source[];
 }
 
 export interface FeedPlace {
@@ -244,7 +247,7 @@ export interface AdminErrorLog {
   updated_at: string;
 }
 
-export interface Source {
+export interface SourceChecklist {
   source_id: string;
   name: string;
   url: string;
@@ -273,43 +276,6 @@ export interface Lead {
   tags: string[];
   status: LeadStatus;
   created_at: string;
-  updated_at: string;
-}
-
-export interface Channel {
-  channel_id: string;
-  name: string;
-  url: string;
-  screenshot_url: string | null;
-  remarks: string | null;
-  last_checked_at: string | null;
-  created_by: string | null;
-  created_at: string;
-  updated_by: string | null;
-  updated_at: string;
-}
-
-export interface FeedSource {
-  source_id: string;
-  feed_id: string;
-  source_url: string | null;
-  channel_id: string | null;
-  source_note: string | null;
-  created_by: string | null;
-  created_at: string;
-  updated_by: string | null;
-  updated_at: string;
-}
-
-export interface SourceScreenshot {
-  screenshot_id: string;
-  source_id: string;
-  screenshot_url: string;
-  sequence: number;
-  remarks: string | null;
-  created_by: string | null;
-  created_at: string;
-  updated_by: string | null;
   updated_at: string;
 }
 
@@ -356,6 +322,30 @@ export interface FeedWithPlaceAndPhotos extends Feed {
   event_details?: FeedEventDetails | null;
 }
 
+export type TodayInKuchingGroup =
+  | "today"
+  | "tomorrow"
+  | "comingSoon";
+
+export interface TodayInKuchingEvent {
+  id: string;
+  feed_id: string;
+  title: string;
+  slug: string;
+  group: TodayInKuchingGroup;
+  schedule_date: string;
+  start_time: string | null;
+  location: string | null;
+  source_title: string | null;
+  source_url: string | null;
+}
+
+export interface TodayInKuchingSummary {
+  today: TodayInKuchingEvent[];
+  tomorrow: TodayInKuchingEvent[];
+  comingSoon: TodayInKuchingEvent[];
+}
+
 export interface PlaceWithFeeds extends Place {
   feeds: FeedWithPlaceAndPhotos[];
 }
@@ -393,17 +383,17 @@ export type HistoryRecordUpdate =
 export type NewHistoryPhoto =
   Database["public"]["Tables"]["history_photos"]["Insert"];
 
-export type NewHistorySource =
-  Database["public"]["Tables"]["history_sources"]["Insert"];
-
-export type HistorySourceUpdate =
-  Database["public"]["Tables"]["history_sources"]["Update"];
-
 export type NewSource =
   Database["public"]["Tables"]["sources"]["Insert"];
 
 export type SourceUpdate =
   Database["public"]["Tables"]["sources"]["Update"];
+
+export type NewSourceChecklist =
+  Database["public"]["Tables"]["source_checklist"]["Insert"];
+
+export type SourceChecklistUpdate =
+  Database["public"]["Tables"]["source_checklist"]["Update"];
 
 export type NewLead =
   Database["public"]["Tables"]["leads"]["Insert"];
@@ -636,45 +626,6 @@ export interface Database {
         };
         Relationships: [];
       };
-      history_sources: {
-        Row: HistorySource;
-        Insert: {
-          history_source_id?: string;
-          history_id: string;
-          source_url: string;
-          source_title?: string | null;
-          source_note?: string | null;
-          source_status?: HistorySourceStatus;
-          source_screenshot_url?: string | null;
-          screenshot_status?: HistoryScreenshotStatus;
-          screenshot_error?: string | null;
-          sequence?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          history_source_id?: string;
-          history_id?: string;
-          source_url?: string;
-          source_title?: string | null;
-          source_note?: string | null;
-          source_status?: HistorySourceStatus;
-          source_screenshot_url?: string | null;
-          screenshot_status?: HistoryScreenshotStatus;
-          screenshot_error?: string | null;
-          sequence?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "history_sources_history_id_fkey";
-            columns: ["history_id"];
-            referencedRelation: "history_records";
-            referencedColumns: ["history_id"];
-          },
-        ];
-      };
       history_photos: {
         Row: HistoryPhoto;
         Insert: {
@@ -820,6 +771,40 @@ export interface Database {
         Row: Source;
         Insert: {
           source_id?: string;
+          section_type: SourceSectionType;
+          section_id: string;
+          source_title?: string | null;
+          source_url?: string | null;
+          source_note?: string | null;
+          source_screenshot_url?: string | null;
+          screenshot_status?: SourceScreenshotStatus;
+          screenshot_error?: string | null;
+          review_status?: SourceReviewStatus;
+          sequence?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          source_id?: string;
+          section_type?: SourceSectionType;
+          section_id?: string;
+          source_title?: string | null;
+          source_url?: string | null;
+          source_note?: string | null;
+          source_screenshot_url?: string | null;
+          screenshot_status?: SourceScreenshotStatus;
+          screenshot_error?: string | null;
+          review_status?: SourceReviewStatus;
+          sequence?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      source_checklist: {
+        Row: SourceChecklist;
+        Insert: {
+          source_id?: string;
           name: string;
           url: string;
           notes?: string | null;
@@ -883,106 +868,6 @@ export interface Database {
           updated_at?: string;
         };
         Relationships: [];
-      };
-      channels: {
-        Row: Channel;
-        Insert: {
-          channel_id?: string;
-          name: string;
-          url: string;
-          screenshot_url?: string | null;
-          remarks?: string | null;
-          last_checked_at?: string | null;
-          created_by?: string | null;
-          created_at?: string;
-          updated_by?: string | null;
-          updated_at?: string;
-        };
-        Update: {
-          channel_id?: string;
-          name?: string;
-          url?: string;
-          screenshot_url?: string | null;
-          remarks?: string | null;
-          last_checked_at?: string | null;
-          created_by?: string | null;
-          created_at?: string;
-          updated_by?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      feed_sources: {
-        Row: FeedSource;
-        Insert: {
-          source_id?: string;
-          feed_id: string;
-          source_url?: string | null;
-          channel_id?: string | null;
-          source_note?: string | null;
-          created_by?: string | null;
-          created_at?: string;
-          updated_by?: string | null;
-          updated_at?: string;
-        };
-        Update: {
-          source_id?: string;
-          feed_id?: string;
-          source_url?: string | null;
-          channel_id?: string | null;
-          source_note?: string | null;
-          created_by?: string | null;
-          created_at?: string;
-          updated_by?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "feed_sources_channel_id_fkey";
-            columns: ["channel_id"];
-            referencedRelation: "channels";
-            referencedColumns: ["channel_id"];
-          },
-          {
-            foreignKeyName: "feed_sources_feed_id_fkey";
-            columns: ["feed_id"];
-            referencedRelation: "feeds";
-            referencedColumns: ["feed_id"];
-          },
-        ];
-      };
-      source_screenshots: {
-        Row: SourceScreenshot;
-        Insert: {
-          screenshot_id?: string;
-          source_id: string;
-          screenshot_url: string;
-          sequence?: number;
-          remarks?: string | null;
-          created_by?: string | null;
-          created_at?: string;
-          updated_by?: string | null;
-          updated_at?: string;
-        };
-        Update: {
-          screenshot_id?: string;
-          source_id?: string;
-          screenshot_url?: string;
-          sequence?: number;
-          remarks?: string | null;
-          created_by?: string | null;
-          created_at?: string;
-          updated_by?: string | null;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "source_screenshots_source_id_fkey";
-            columns: ["source_id"];
-            referencedRelation: "feed_sources";
-            referencedColumns: ["source_id"];
-          },
-        ];
       };
       feed_schedules: {
         Row: FeedSchedule;

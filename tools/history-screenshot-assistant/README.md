@@ -6,13 +6,13 @@ This is not an admin page, public page, background job, or deploy-time automatio
 
 ## What It Does
 
-1. Queries Supabase for eligible `history_sources`.
+1. Queries centralized `sources` for eligible History evidence.
 2. Opens each `source_url` in headless Chromium through Playwright.
 3. Captures a full-page screenshot.
 4. Optimizes the screenshot to JPEG with `sharp`.
 5. Uploads it to the existing Supabase Storage `photos` bucket.
-6. Saves the public screenshot URL on `history_sources.source_screenshot_url`.
-7. Sets `history_sources.screenshot_status` to `completed`.
+6. Saves the public screenshot URL on `sources.source_screenshot_url`.
+7. Sets `sources.screenshot_status` to `completed`.
 8. Marks failed captures as `failed` with `screenshot_error`.
 9. Moves parent `history_records.status` from `researched` to `pending_review` when all reviewed sources have screenshots.
 
@@ -66,22 +66,23 @@ npm run history:screenshot -- --force
 The default query only processes sources where:
 
 - Parent `history_records.status = researched`
-- `history_sources.source_status = reviewed`
-- `history_sources.source_screenshot_url is null`
-- `history_sources.screenshot_status` is `pending` or `failed`
+- `sources.section_type = history`
+- `sources.review_status = reviewed`
+- `sources.source_screenshot_url is null`
+- `sources.screenshot_status` is `pending` or `failed`
 
 The tool does not process pending or rejected sources.
 
 ## Status Updates
 
-On success, the tool updates `history_sources`:
+On success, the tool updates centralized `sources`:
 
 - `source_screenshot_url = uploaded public URL`
 - `screenshot_status = completed`
 - `screenshot_error = null`
 - `updated_at = now`
 
-On failure, the tool updates `history_sources`:
+On failure, the tool updates centralized `sources`:
 
 - `screenshot_status = failed`
 - `screenshot_error = readable error`
@@ -89,7 +90,7 @@ On failure, the tool updates `history_sources`:
 
 It never changes:
 
-- `source_status`
+- `review_status`
 - `source_url`
 - `source_title`
 - `source_note`
@@ -101,7 +102,7 @@ It never publishes History records. It only moves `history_records.status` from 
 Screenshots are uploaded to:
 
 ```text
-history-sources/{history_id}/{history_source_id}.jpg
+history-sources/{history_id}/{source_id}.jpg
 ```
 
 inside the configured bucket, defaulting to the existing `photos` bucket.

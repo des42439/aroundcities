@@ -74,7 +74,7 @@ export default async function EditHistoryRecordPage({
           <h2 className="text-xl font-semibold">Sources</h2>
           <HistorySourcesManager
             historyId={record.history_id}
-            sources={record.history_sources}
+            sources={record.sources}
           />
         </section>
 

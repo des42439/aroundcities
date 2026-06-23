@@ -7,7 +7,6 @@ import { getFeedPlaces } from "@/lib/feed-places";
 import { getFeedSchedules } from "@/lib/feed-schedules";
 import { getFeedEventDetails } from "@/lib/feed-event-details";
 import {
-  getChannels,
   getFeedSources,
 } from "@/lib/feed-sources";
 import {
@@ -37,7 +36,6 @@ export default async function EditFeedPage({
     photos,
     feedPlaces,
     feedSources,
-    channels,
     schedules,
     eventDetails,
     parentCandidates,
@@ -47,7 +45,6 @@ export default async function EditFeedPage({
     getPhotosByFeedId(feedId),
     getFeedPlaces(feedId),
     getFeedSources(feedId),
-    getChannels(),
     getFeedSchedules(feedId),
     getFeedEventDetails(feedId),
     getParentFeedCandidates(feedId),
@@ -85,7 +82,6 @@ export default async function EditFeedPage({
         places={places}
         feedPlaces={feedPlaces}
         feedSources={feedSources}
-        channels={channels}
         schedules={schedules}
         eventDetails={eventDetails}
         parentCandidates={parentCandidates}

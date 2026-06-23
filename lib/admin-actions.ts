@@ -16,7 +16,6 @@ import {
 } from "./feed-schedules";
 import {
   createFeedSource,
-  createSourceScreenshot,
   deleteFeedSource,
 } from "./feed-sources";
 import {
@@ -77,11 +76,11 @@ import {
   FeedStatus,
   FeedType,
   HistoryConfidence,
-  HistoryScreenshotStatus,
-  HistorySourceStatus,
   HistoryStatus,
   PhotoAlbumStatus,
   PhotoStatus,
+  SourceReviewStatus,
+  SourceScreenshotStatus,
 } from "@/types/database";
 
 type AdminActionState = {
@@ -356,7 +355,7 @@ function parseHistoryRecordFilter(value: unknown): HistoryRecordFilter {
   return "daily";
 }
 
-function parseHistorySourceStatus(value: unknown): HistorySourceStatus {
+function parseHistorySourceStatus(value: unknown): SourceReviewStatus {
   if (value === "reviewed" || value === "rejected") {
     return value;
   }
@@ -366,7 +365,7 @@ function parseHistorySourceStatus(value: unknown): HistorySourceStatus {
 
 function parseHistoryScreenshotStatus(
   value: unknown
-): HistoryScreenshotStatus {
+): SourceScreenshotStatus {
   if (value === "completed" || value === "failed") {
     return value;
   }
@@ -1120,64 +1119,6 @@ async function findOrCreatePlaceByName(name: string) {
   });
 }
 
-async function findOrCreateChannelByName(
-  name: string,
-  channelUrl: string | null
-) {
-  const supabaseAdmin = getSupabaseAdmin();
-  const { data: existingByName, error: nameError } =
-    await supabaseAdmin
-      .from("channels")
-      .select("*")
-      .eq("name", name)
-      .limit(1)
-      .maybeSingle();
-
-  if (nameError) {
-    throw new Error(`Channel lookup failed: ${nameError.message}`);
-  }
-
-  if (existingByName) {
-    return existingByName;
-  }
-
-  const normalizedChannelUrl = channelUrl ?? `manual:${slugify(name)}`;
-
-  const { data: existingByUrl, error: urlError } =
-    await supabaseAdmin
-      .from("channels")
-      .select("*")
-      .eq("url", normalizedChannelUrl)
-      .limit(1)
-      .maybeSingle();
-
-  if (urlError) {
-    throw new Error(`Channel URL lookup failed: ${urlError.message}`);
-  }
-
-  if (existingByUrl) {
-    return existingByUrl;
-  }
-
-  const { data, error } = await supabaseAdmin
-    .from("channels")
-    .insert({
-      name,
-      url: normalizedChannelUrl,
-      screenshot_url: null,
-      remarks: null,
-      last_checked_at: null,
-    })
-    .select("*")
-    .single();
-
-  if (error) {
-    throw new Error(`Channel create failed: ${error.message}`);
-  }
-
-  return data;
-}
-
 function parseOperatingHourRows(
   formData: FormData
 ): FeedOperatingHourInput[] {
@@ -1564,7 +1505,7 @@ export async function importEventFeedsAction(input: {
         content: event.feed.description,
         description: event.feed.description,
         place_id: places[0]?.place.place_id ?? null,
-        source_url: event.source?.source_url ?? null,
+        source_url: null,
         operating_hours: null,
         tags: [],
         published_at: null,
@@ -1608,17 +1549,12 @@ export async function importEventFeedsAction(input: {
         event.source?.source_channel_name ||
         event.source?.source_note
       ) {
-        const channel = event.source.source_channel_name
-            ? await findOrCreateChannelByName(
-                event.source.source_channel_name,
-                event.source.source_channel_url
-              )
-            : null;
-
         await createFeedSource({
           feed_id: feed.feed_id,
-          source_url: event.source.source_url,
-          channel_id: channel?.channel_id ?? null,
+          source_title: event.source.source_channel_name,
+          source_url:
+            event.source.source_url ??
+            event.source.source_channel_url,
           source_note: event.source.source_note,
         });
       }
@@ -2108,27 +2044,15 @@ export async function createFeedSourceAction(
   void _state;
 
   try {
-    const source = await createFeedSource({
+    await createFeedSource({
       feed_id: feedId,
+      source_title: nullableString(formData.get("source_title")),
       source_url: nullableString(formData.get("source_url")),
-      channel_id: nullableString(formData.get("channel_id")),
       source_note: nullableString(formData.get("source_note")),
+      source_screenshot_url: nullableString(
+        formData.get("screenshot_url")
+      ),
     });
-
-    const screenshotUrl = nullableString(
-      formData.get("screenshot_url")
-    );
-
-    if (screenshotUrl) {
-      await createSourceScreenshot({
-        source_id: source.source_id,
-        screenshot_url: screenshotUrl,
-        remarks: nullableString(
-          formData.get("screenshot_remarks")
-        ),
-        sequence: 0,
-      });
-    }
 
     revalidatePath(`/admin/feeds/${feedId}`);
   } catch (error) {
@@ -2714,11 +2638,11 @@ export async function createHistorySourceAction(
     }
 
     await createHistorySource({
-      history_id: historyId,
+      section_id: historyId,
       source_url: sourceUrl,
       source_title: nullableString(formData.get("source_title")),
       source_note: nullableString(formData.get("source_note")),
-      source_status: "pending",
+      review_status: "pending",
       source_screenshot_url: nullableString(
         formData.get("source_screenshot_url")
       ),
@@ -2757,8 +2681,8 @@ export async function updateHistorySourceAction(
       source_url: sourceUrl,
       source_title: nullableString(formData.get("source_title")),
       source_note: nullableString(formData.get("source_note")),
-      source_status: parseHistorySourceStatus(
-        formData.get("source_status")?.toString()
+      review_status: parseHistorySourceStatus(
+        formData.get("review_status")?.toString()
       ),
       source_screenshot_url: nullableString(
         formData.get("source_screenshot_url")
@@ -2784,7 +2708,7 @@ export async function updateHistorySourceAction(
 export async function setHistorySourceStatusAction(
   historyId: string,
   historySourceId: string,
-  sourceStatus: HistorySourceStatus,
+  sourceStatus: SourceReviewStatus,
   _state: AdminActionState
 ) {
   await requireAdmin();
@@ -2792,7 +2716,7 @@ export async function setHistorySourceStatusAction(
 
   try {
     await updateHistorySource(historySourceId, {
-      source_status: parseHistorySourceStatus(sourceStatus),
+      review_status: parseHistorySourceStatus(sourceStatus),
     });
 
     revalidatePath(`/admin/history/${historyId}`);

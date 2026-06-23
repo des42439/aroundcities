@@ -5,14 +5,11 @@ import {
   FeedWithPlaceAndPhotos,
   NewFeed,
   Photo,
+  TodayInKuchingEvent,
+  TodayInKuchingSummary,
 } from "@/types/database";
 import { getOrderedPhotos } from "./format";
 import { hydrateFeedsEventData } from "./feed-event-details";
-import {
-  getEarliestScheduleMinutes,
-  hasTodaySchedule,
-  isScheduledEventExpired,
-} from "./event-display";
 
 export type DiscoveryFeedItem =
   | {
@@ -145,16 +142,32 @@ export async function getDiscoveryPublishedFeeds(): Promise<
 > {
   const feeds = await getLatestPublishedFeeds();
 
-  return buildDiscoveryFeedOrder(filterExpiredEventFeeds(feeds));
+  return buildDiscoveryFeedOrder(getNonEventFeeds(feeds));
 }
 
 export async function getDiscoveryFeedItems(): Promise<
   DiscoveryFeedItem[]
 > {
   const feeds = await getLatestPublishedFeeds();
-  const orderedFeeds = buildDiscoveryFeedOrder(filterExpiredEventFeeds(feeds));
+  const orderedFeeds = buildDiscoveryFeedOrder(getNonEventFeeds(feeds));
 
   return buildDiscoveryItems(orderedFeeds);
+}
+
+export async function getKuchingPageData(): Promise<{
+  items: DiscoveryFeedItem[];
+  todayInKuching: TodayInKuchingSummary;
+}> {
+  const feeds = await getLatestPublishedFeeds();
+  const eventFeeds = feeds.filter(
+    (feed) => feed.feed_type === "event_observation"
+  );
+  const orderedFeeds = buildDiscoveryFeedOrder(getNonEventFeeds(feeds));
+
+  return {
+    items: buildDiscoveryItems(orderedFeeds),
+    todayInKuching: await buildTodayInKuchingSummary(eventFeeds),
+  };
 }
 
 export async function getFeedBySlug(
@@ -263,15 +276,14 @@ export async function deleteFeed(
 }
 
 const DAY_MS = 24 * 60 * 60 * 1000;
-const MAX_TODAY_EVENT_LEADS = 3;
+const TODAY_IN_KUCHING_RANGE_DAYS = 7;
+const KUCHING_TIME_ZONE = "Asia/Kuching";
 
-function filterExpiredEventFeeds(
+function getNonEventFeeds(
   feeds: FeedWithPlaceAndPhotos[]
 ): FeedWithPlaceAndPhotos[] {
   return feeds.filter(
-    (feed) =>
-      feed.feed_type !== "event_observation" ||
-      !isScheduledEventExpired(feed.schedules)
+    (feed) => feed.feed_type !== "event_observation"
   );
 }
 
@@ -279,7 +291,6 @@ function buildDiscoveryFeedOrder(
   feeds: FeedWithPlaceAndPhotos[]
 ): FeedWithPlaceAndPhotos[] {
   const latestFeeds = [...feeds].sort(comparePublishedDesc);
-  const todayEventFeeds = getTodayEventFeeds(latestFeeds);
   const selectedFeedIds = new Set<string>();
   const orderedFeeds: FeedWithPlaceAndPhotos[] = [];
   let normalPostCount = 0;
@@ -312,10 +323,6 @@ function buildDiscoveryFeedOrder(
       selectedFeedIds.add(olderFeed.feed_id);
     }
   };
-
-  for (const eventFeed of todayEventFeeds.slice(0, MAX_TODAY_EVENT_LEADS)) {
-    appendFeed(eventFeed);
-  }
 
   // Slot 1: pick a recent post from the last 3 days, weighted toward newer
   // posts but still random enough that refreshes can surface different leads.
@@ -357,10 +364,6 @@ function buildDiscoveryFeedOrder(
 function buildDiscoveryItems(
   feeds: FeedWithPlaceAndPhotos[]
 ): DiscoveryFeedItem[] {
-  const protectedLeadCount = Math.min(
-    getTodayEventFeeds(feeds).length,
-    MAX_TODAY_EVENT_LEADS
-  );
   const photoItems = shuffle(
     feeds.flatMap((feed) =>
       getOrderedPhotos(feed.photos)
@@ -385,7 +388,7 @@ function buildDiscoveryItems(
 
     const shouldInsertPhoto =
       photoItems.length > 0 &&
-      feedIndex + 1 >= Math.max(protectedLeadCount, 1) &&
+      feedIndex + 1 >= 1 &&
       (feedIndex === 0 || Math.random() > 0.35);
 
     if (shouldInsertPhoto && nextPhotoIndex < photoItems.length) {
@@ -402,21 +405,245 @@ function buildDiscoveryItems(
   return items;
 }
 
-function getTodayEventFeeds(
-  feeds: FeedWithPlaceAndPhotos[]
-): FeedWithPlaceAndPhotos[] {
-  return feeds
-    .filter(
-      (feed) =>
-        feed.feed_type === "event_observation" &&
-        hasTodaySchedule(feed.schedules)
-    )
-    .sort(
-      (leftFeed, rightFeed) =>
-        getEarliestScheduleMinutes(leftFeed.schedules) -
-          getEarliestScheduleMinutes(rightFeed.schedules) ||
-        comparePublishedDesc(leftFeed, rightFeed)
+async function buildTodayInKuchingSummary(
+  eventFeeds: FeedWithPlaceAndPhotos[],
+  now = new Date()
+): Promise<TodayInKuchingSummary> {
+  const emptySummary = {
+    today: [],
+    tomorrow: [],
+    comingSoon: [],
+  } satisfies TodayInKuchingSummary;
+
+  if (!eventFeeds.length) {
+    return emptySummary;
+  }
+
+  const feedIds = eventFeeds.map((feed) => feed.feed_id);
+  const [sourcesResult, feedPlacesResult] = await Promise.all([
+    getSupabaseAdmin()
+      .from("sources")
+      .select(
+        "source_id, section_id, source_title, source_url, sequence, created_at"
+      )
+      .eq("section_type", "feed")
+      .in("section_id", feedIds)
+      .not("source_url", "is", null)
+      .order("sequence", { ascending: true })
+      .order("created_at", { ascending: true }),
+    getSupabaseAdmin()
+      .from("feed_places")
+      .select("feed_id, is_primary, location_note, place:places(*)")
+      .in("feed_id", feedIds)
+      .order("is_primary", { ascending: false })
+      .order("created_at", { ascending: true }),
+  ]);
+
+  if (sourcesResult.error) {
+    console.error(sourcesResult.error);
+  }
+
+  if (feedPlacesResult.error) {
+    console.error(feedPlacesResult.error);
+  }
+
+  const sourcesByFeedId = new Map<
+    string,
+    { source_title: string | null; source_url: string | null }
+  >();
+
+  for (const source of sourcesResult.data ?? []) {
+    if (!sourcesByFeedId.has(source.section_id)) {
+      sourcesByFeedId.set(source.section_id, {
+        source_title: source.source_title,
+        source_url: source.source_url,
+      });
+    }
+  }
+
+  const locationsByFeedId = new Map<string, string>();
+
+  for (const feedPlace of feedPlacesResult.data ?? []) {
+    if (locationsByFeedId.has(feedPlace.feed_id)) {
+      continue;
+    }
+
+    const place = Array.isArray(feedPlace.place)
+      ? feedPlace.place[0]
+      : feedPlace.place;
+    const location = [place?.name, feedPlace.location_note]
+      .filter(Boolean)
+      .join(" — ");
+
+    if (location) {
+      locationsByFeedId.set(feedPlace.feed_id, location);
+    }
+  }
+
+  const summaryEvents = eventFeeds.flatMap((feed) => {
+    const source = sourcesByFeedId.get(feed.feed_id);
+    const location =
+      locationsByFeedId.get(feed.feed_id) ?? feed.place?.name ?? null;
+
+    return getRelevantEventSchedules(feed.schedules, now).map(
+      ({ scheduleDate, startTime, group }, index) => ({
+        id: `${feed.feed_id}-${scheduleDate}-${startTime ?? "all-day"}-${index}`,
+        feed_id: feed.feed_id,
+        title: feed.title,
+        slug: feed.slug,
+        group,
+        schedule_date: scheduleDate,
+        start_time: startTime,
+        location,
+        source_title: source?.source_title ?? null,
+        source_url: source?.source_url ?? feed.source_url,
+      })
     );
+  });
+
+  const uniqueEvents = Array.from(
+    new Map(
+      summaryEvents.map((event) => [
+        `${event.feed_id}-${event.schedule_date}-${event.start_time ?? ""}`,
+        event,
+      ])
+    ).values()
+  ).sort(compareSummaryEvents);
+
+  return {
+    today: uniqueEvents.filter((event) => event.group === "today"),
+    tomorrow: uniqueEvents.filter(
+      (event) => event.group === "tomorrow"
+    ),
+    comingSoon: uniqueEvents.filter(
+      (event) => event.group === "comingSoon"
+    ),
+  };
+}
+
+function getRelevantEventSchedules(
+  schedules: FeedWithPlaceAndPhotos["schedules"],
+  now: Date
+): {
+  scheduleDate: string;
+  startTime: string | null;
+  group: TodayInKuchingEvent["group"];
+}[] {
+  const today = getKuchingDateParts(now);
+
+  return (schedules ?? []).flatMap((schedule) => {
+    const occurrenceDate = parseDateParts(schedule.schedule_date);
+    const rangeStart = parseDateParts(schedule.start_date);
+    const rangeEnd = parseDateParts(schedule.end_date);
+    let displayDate = occurrenceDate;
+
+    if (!displayDate && rangeStart && rangeEnd) {
+      const startsInDays = daysBetween(today, rangeStart);
+      const endsInDays = daysBetween(today, rangeEnd);
+
+      if (startsInDays <= 0 && endsInDays >= 0) {
+        displayDate = today;
+      } else if (startsInDays > 0) {
+        displayDate = rangeStart;
+      }
+    }
+
+    if (!displayDate) {
+      return [];
+    }
+
+    const diffDays = daysBetween(today, displayDate);
+
+    if (diffDays < 0 || diffDays > TODAY_IN_KUCHING_RANGE_DAYS) {
+      return [];
+    }
+
+    return [
+      {
+        scheduleDate: formatDateParts(displayDate),
+        startTime: schedule.start_time,
+        group:
+          diffDays === 0
+            ? "today"
+            : diffDays === 1
+              ? "tomorrow"
+              : "comingSoon",
+      },
+    ];
+  });
+}
+
+function compareSummaryEvents(
+  left: TodayInKuchingEvent,
+  right: TodayInKuchingEvent
+) {
+  return (
+    left.schedule_date.localeCompare(right.schedule_date) ||
+    timeToMinutes(left.start_time) - timeToMinutes(right.start_time) ||
+    left.title.localeCompare(right.title)
+  );
+}
+
+function getKuchingDateParts(date: Date) {
+  const parts = new Intl.DateTimeFormat("en-MY", {
+    timeZone: KUCHING_TIME_ZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  return {
+    year: Number(parts.find((part) => part.type === "year")?.value),
+    month: Number(parts.find((part) => part.type === "month")?.value),
+    day: Number(parts.find((part) => part.type === "day")?.value),
+  };
+}
+
+function parseDateParts(value?: string | null) {
+  if (!value) {
+    return null;
+  }
+
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  return match
+    ? {
+        year: Number(match[1]),
+        month: Number(match[2]),
+        day: Number(match[3]),
+      }
+    : null;
+}
+
+function formatDateParts(date: {
+  year: number;
+  month: number;
+  day: number;
+}) {
+  return `${date.year}-${String(date.month).padStart(2, "0")}-${String(
+    date.day
+  ).padStart(2, "0")}`;
+}
+
+function daysBetween(
+  first: { year: number; month: number; day: number },
+  second: { year: number; month: number; day: number }
+) {
+  return Math.round(
+    (Date.UTC(second.year, second.month - 1, second.day) -
+      Date.UTC(first.year, first.month - 1, first.day)) /
+      DAY_MS
+  );
+}
+
+function timeToMinutes(value: string | null) {
+  if (!value) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const [hour = "0", minute = "0"] = value.split(":");
+
+  return Number(hour) * 60 + Number(minute);
 }
 
 function shuffle<T>(items: T[]): T[] {

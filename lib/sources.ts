@@ -1,8 +1,8 @@
 import { getSupabaseAdmin } from "./supabase-admin";
 import {
-  NewSource,
-  Source,
-  SourceUpdate,
+  NewSourceChecklist,
+  SourceChecklist,
+  SourceChecklistUpdate,
 } from "@/types/database";
 
 export type SourceListView = "pending" | "all";
@@ -12,9 +12,9 @@ const DAY_MS = 24 * 60 * 60 * 1000;
 
 export async function getSources(
   view: SourceListView = "pending"
-): Promise<Source[]> {
+): Promise<SourceChecklist[]> {
   const query = getSupabaseAdmin()
-    .from("sources")
+    .from("source_checklist")
     .select("*")
     .order("last_checked_at", {
       ascending: true,
@@ -46,7 +46,7 @@ function getPendingSourceCutoff() {
 
 export async function getSourceCount(): Promise<number> {
   const { count, error } = await getSupabaseAdmin()
-    .from("sources")
+    .from("source_checklist")
     .select("source_id", {
       count: "exact",
       head: true,
@@ -62,9 +62,9 @@ export async function getSourceCount(): Promise<number> {
 
 export async function getSourceById(
   sourceId: string
-): Promise<Source | null> {
+): Promise<SourceChecklist | null> {
   const { data, error } = await getSupabaseAdmin()
-    .from("sources")
+    .from("source_checklist")
     .select("*")
     .eq("source_id", sourceId)
     .maybeSingle();
@@ -78,10 +78,10 @@ export async function getSourceById(
 }
 
 export async function createSource(
-  input: NewSource
-): Promise<Source> {
+  input: NewSourceChecklist
+): Promise<SourceChecklist> {
   const { data, error } = await getSupabaseAdmin()
-    .from("sources")
+    .from("source_checklist")
     .insert(input)
     .select("*")
     .single();
@@ -97,10 +97,10 @@ export async function createSource(
 
 export async function updateSource(
   sourceId: string,
-  input: SourceUpdate
-): Promise<Source> {
+  input: SourceChecklistUpdate
+): Promise<SourceChecklist> {
   const { data, error } = await getSupabaseAdmin()
-    .from("sources")
+    .from("source_checklist")
     .update({
       ...input,
       updated_at: new Date().toISOString(),
@@ -122,7 +122,7 @@ export async function deleteSource(
   sourceId: string
 ): Promise<void> {
   const { error } = await getSupabaseAdmin()
-    .from("sources")
+    .from("source_checklist")
     .delete()
     .eq("source_id", sourceId);
 
@@ -135,7 +135,7 @@ export async function deleteSource(
 
 export async function markSourceChecked(
   sourceId: string
-): Promise<Source> {
+): Promise<SourceChecklist> {
   return await updateSource(sourceId, {
     last_checked_at: new Date().toISOString(),
   });

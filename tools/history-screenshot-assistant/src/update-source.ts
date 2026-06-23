@@ -3,18 +3,19 @@ import type { Database } from "../../../types/supabase.generated";
 
 export async function markScreenshotCompleted(input: {
   supabase: SupabaseClient<Database>;
-  historySourceId: string;
+  sourceId: string;
   screenshotUrl: string;
 }) {
   const { error } = await input.supabase
-    .from("history_sources")
+    .from("sources")
     .update({
       source_screenshot_url: input.screenshotUrl,
       screenshot_status: "completed",
       screenshot_error: null,
       updated_at: new Date().toISOString(),
     })
-    .eq("history_source_id", input.historySourceId);
+    .eq("source_id", input.sourceId)
+    .eq("section_type", "history");
 
   if (error) {
     throw new Error(`Source update failed: ${error.message}`);
@@ -23,17 +24,18 @@ export async function markScreenshotCompleted(input: {
 
 export async function markScreenshotFailed(input: {
   supabase: SupabaseClient<Database>;
-  historySourceId: string;
+  sourceId: string;
   errorMessage: string;
 }) {
   const { error } = await input.supabase
-    .from("history_sources")
+    .from("sources")
     .update({
       screenshot_status: "failed",
       screenshot_error: input.errorMessage.slice(0, 1000),
       updated_at: new Date().toISOString(),
     })
-    .eq("history_source_id", input.historySourceId);
+    .eq("source_id", input.sourceId)
+    .eq("section_type", "history");
 
   if (error) {
     throw new Error(`Failure update failed: ${error.message}`);
@@ -59,10 +61,11 @@ export async function updateHistoryStatusIfReady(input: {
   }
 
   const { data: reviewedSources, error: sourceError } = await input.supabase
-    .from("history_sources")
-    .select("history_source_id,source_screenshot_url,screenshot_status")
-    .eq("history_id", input.historyId)
-    .eq("source_status", "reviewed");
+    .from("sources")
+    .select("source_id,source_screenshot_url,screenshot_status")
+    .eq("section_type", "history")
+    .eq("section_id", input.historyId)
+    .eq("review_status", "reviewed");
 
   if (sourceError) {
     throw new Error(

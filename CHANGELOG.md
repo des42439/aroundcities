@@ -2,6 +2,32 @@
 
 All notable changes to AroundCities should be documented here.
 
+## 2026-06-22
+
+### Changed
+
+- Replaced individual event cards on `/kch` with one dynamic `Today in Kuching` summary.
+- Grouped published event schedules into Today, Tomorrow, and Coming Soon through the next 7 days using Kuching calendar dates.
+- Changed homepage event visibility to remain date-based for the full day, including morning events after their end time and active multi-day ranges.
+- Reduced public event rows to day/time, title, location, and organizer/source links; descriptions, images, structured details, and source screenshots are not rendered.
+- Kept event detail pages, stored descriptions/photos, and internal screenshot evidence unchanged, and made the summary disappear when no upcoming event schedules qualify.
+- Documented event descriptions as optional for normal curator event workflow and homepage display.
+
+## 2026-06-21
+
+### Changed
+
+- Centralized History and Feed/Event content evidence in `sources`, linked polymorphically through `section_type + section_id`.
+- Migrated existing `history_sources`, `feed_sources`, and source screenshot evidence into `sources`, then removed the old section-specific evidence tables and `channels`.
+- Renamed the manual curator review list from `sources` to `source_checklist`; `/admin/sources` keeps the same checklist workflow.
+- Updated History CRUD, review/publish rules, research imports, Feed/Event imports, feed admin, public feed source links, and the History Screenshot Assistant to use centralized evidence.
+- Feed evidence now stores a channel/publication label in `source_title` and one screenshot URL/status directly on the evidence row.
+- Documented that future Learning, Discovery, Story, and other factual sections should reuse centralized `sources` rather than creating section-specific tables.
+
+### Notes
+
+- Public History routes are still intentionally deferred. When public History detail/feed display is introduced, it must show the muted italic researched-history note before its source list.
+
 ## 2026-06-17
 
 ### Added

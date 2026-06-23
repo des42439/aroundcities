@@ -161,13 +161,14 @@ V2 Phase 1 Steps 1-5 are implemented:
 - `/admin/history` defaults to a lightweight daily research task view. On the first visit of each Kuching day, it clears old `daily-task:` tags, assigns up to 10 oldest drafted records with `daily-task:YYYYMMDD`, and shows only those drafted records by default.
 - `/admin/history` and `/admin/history/export` support Daily Tasks, Show All, Drafted, Researched, Pending Review, Published, and Archived filters.
 - `/admin/history/export` exports history records for research as `aroundcities_history_research_export_v1` using the selected History filter.
-- History records are stored in `history_records`, multi-source research evidence is stored in `history_sources`, and history-photo links are stored in `history_photos`.
+- History records are stored in `history_records`, shared source evidence is stored in `sources` with `section_type = 'history'`, and history-photo links are stored in `history_photos`.
 - History JSON import uses `aroundcities_history_import_v1`, validates month/day/confidence, and always creates drafted records.
 - History update import uses `aroundcities_history_update_v1`, updates existing records by `history_id`, never creates records, preserves existing tags, and adds `research:done` after successful updates.
-- History research update import uses `aroundcities_history_research_update_v2`, updates existing records by `history_id`, marks them `researched`, inserts or updates `history_sources` by source URL, and never publishes automatically.
-- Legacy `history_records.source_url`, `source_note`, and `source_screenshot_url` fields remain for compatibility, but new research imports should use `history_sources`.
-- Publishing a history record with `history_sources` requires at least one source marked `reviewed`; legacy records without source rows remain publishable.
-- `tools/history-screenshot-assistant` is a manual internal CLI for reviewed researched History sources. It captures source screenshots with Playwright, uploads them to Supabase Storage, updates `history_sources`, and moves fully evidenced records from `researched` to `pending_review`.
+- History research update import uses `aroundcities_history_research_update_v2`, updates existing records by `history_id`, marks them `researched`, inserts or updates centralized `sources` rows by source URL, and never publishes automatically.
+- `sources.section_type + sources.section_id` links evidence to its owning History or Feed record. Do not reintroduce section-specific source tables.
+- Legacy `history_records.source_url`, `source_note`, and `source_screenshot_url` fields remain for compatibility, but new research imports should use centralized `sources`.
+- Publishing a history record with centralized source rows requires at least one source with `review_status = 'reviewed'`; legacy records without source rows remain publishable.
+- `tools/history-screenshot-assistant` is a manual internal CLI for reviewed researched History sources. It captures source screenshots with Playwright, uploads them to Supabase Storage, updates centralized `sources`, and moves fully evidenced records from `researched` to `pending_review`.
 - The History Screenshot Assistant must not run automatically on deployment and must not be turned into an admin/public page unless explicitly requested.
 - History records can link existing feed photos using a client-side feed-title picker.
 - History-only uploads use browser image compression, Supabase Storage, normal `photos` rows, and an archived feed used only as a photo container.
@@ -201,7 +202,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Feed delete support from the edit page with confirmation.
 - Blocking admin form loading states for save, publish, upload, photo update, and delete actions.
 - Inline admin action errors when feed/place/photo writes fail.
-- `/admin/sources` is available as a simple manual curator checklist. It defaults to Pending, showing sources never checked or not checked in the past 3 days; a dropdown `Show all` view reveals the full list.
+- `/admin/sources` is available as a simple manual curator checklist backed by `source_checklist`. It defaults to Pending, showing sources never checked or not checked in the past 3 days; a dropdown `Show all` view reveals the full list.
 - Source creation uses `/admin/sources/new`; keep the main Sources page focused on the checklist list.
 - Supabase Storage `photos` bucket is required for feed photo uploads.
 - Admin action failures should be logged with an Error ID for troubleshooting.
@@ -228,10 +229,12 @@ V2 Phase 1 Steps 1-5 are implemented:
 - Public `/kch` ordering should feel like discovery, not a strict latest-first timeline: randomized recent slots first, latest fallback near slot 6, then latest remaining feeds with occasional older rediscovery when available.
 - Feed cards should feel like relaxed local notes. Use simple display heuristics for visual-first versus information-first feeds; do not add a complex feed type system unless explicitly requested.
 - Current public feed cards should show title, muted `Author · Relative Time`, a maximum two-line description with inline `more` only when truncated, then the photo block and a clear subtle divider. Inline `more` expands the full description on the card; only the separate `More details` link navigates. Do not render a place row, pin icon, or footer actions below the gallery. Any attached photos should render as a full-width social-feed image block.
-- Scheduled event observation feeds should drop out of public `/kch` after their schedule expires. If a schedule has `start_time` but no `end_time`, infer a 1-hour duration; date-only schedules stay visible for that day without showing `Happening Now`.
-- Non-expired event observation feeds scheduled for today should appear in the first one to three `/kch` feed slots, ordered by earliest schedule time, before ordinary visit/photo-style discovery posts.
+- Public `/kch` must not render published event observations as individual feed cards. Aggregate them into one compact dynamic `Today in Kuching` summary placed before ordinary discovery and Photo feed cards.
+- `Today in Kuching` groups event schedule rows into Today, Tomorrow, and Coming Soon through the next 7 days using Kuching calendar dates only. Do not hide a same-day event after its end time; past dates stay hidden, and an active multi-day date range stays visible under Today.
+- `Today in Kuching` rows show only time/day, title, location, and an organizer/source link. Do not show event descriptions, event photos, structured detail labels, or source screenshots in the summary.
+- Hide the entire `Today in Kuching` summary when no qualifying event schedules exist. Existing event feed detail pages and stored descriptions remain available.
 - Multi-photo feed grids should feel like one substantial content block, not tiny thumbnails. Keep the 2-photo, 3-photo, and 4+ photo layouts visually close to the single-photo block size.
-- The schema-extension tables for feed sources, source screenshots, feed schedules, event details, parent feeds, and feed-place metadata are wired into the admin editor as optional refinement sections.
+- Centralized `sources`, feed schedules, event details, parent feeds, and feed-place metadata are wired into the admin editor as optional refinement sections.
 - `RULES.md` is the shared UI/workflow behavior standard for AroundCities.
 - A shared global loading/progress overlay is wired for internal navigation, admin form submissions, imports, exports, previews, and client-side upload flows.
 - Admin list pages should align with `RULES.md`: Create New, optional Import/Export, status filter, local search over loaded records, and list items with `Edit` as the only item action.
@@ -266,7 +269,7 @@ Feed creation should be photo-first and draft-first:
 - New feed photo uploads should use signed Supabase Storage upload URLs so large photos do not pass through Vercel Server Action request bodies.
 - Event JSON imports must force draft status, create no photos, upload no screenshots, and preserve the pasted textarea content when preview validation fails.
 - Event JSON import should reset the textarea and preview after a fully successful save, while preserving pasted content for validation or per-event save errors.
-- Event JSON imports may include optional `event_details`; save it to `feed_event_details` and keep imported descriptions as curator/editorial wording without forcing an official tone.
+- Event JSON imports may include optional `event_details`; save it to `feed_event_details`. Event descriptions are optional and retained for future/detail use, but normal homepage event display must not depend on custom promotional or editorial copy.
 - Keep the feed edit page compact by showing optional feed fields only after the curator explicitly selects them.
 - Keep feed photo editing thumbnail-first; open one photo-specific editor at a time instead of listing every photo edit form inline.
 - Keep photo deletion confirmed and visually separated from ordinary save controls.
@@ -279,7 +282,9 @@ Feed creation should be photo-first and draft-first:
 - Use the optional Event Details section only for event feeds that need structured details: entry type, registration type, public/ticket/lucky-draw flags, dress code, organizer, and event notes.
 - Archive published feeds by setting status to `archived`; archived feeds remain in the database and stay hidden from public `/kch`.
 - Source evidence is feed-specific and admin-only. Source screenshots are saved as URL records after the admin picker uploads the selected image to Supabase Storage.
-- Feed source evidence screenshots should use the admin picker/upload flow, not manual URL entry: compress the selected image client-side, upload it to Supabase Storage, and save the generated URL in `source_screenshots`.
+- Event source screenshots remain internal evidence for curator review and must never appear in `Today in Kuching` or other public event summary rows.
+- Feed source evidence screenshots should use the admin picker/upload flow, not manual URL entry: compress the selected image client-side, upload it to Supabase Storage, and save the generated URL in `sources.source_screenshot_url`.
+- The table named `sources` always means content evidence. The manual review checklist is `source_checklist`; do not confuse the two.
 - Keep Sources manual-only: opening a source must not mark it checked, and marking checked should happen only when the curator clicks `Mark Checked`.
 - Keep `/admin/sources` defaulted to the Pending filter so daily review focuses on sources that are stale or never checked.
 - Do not add source crawling, scraping, bot browsing, scheduled checking, Facebook login, priority, or frequency fields unless the user explicitly expands scope.

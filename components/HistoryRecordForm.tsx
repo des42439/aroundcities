@@ -47,9 +47,9 @@ export default function HistoryRecordForm({
     string | null
   >(null);
   const trimmedSourceUrl = sourceUrl.trim();
-  const hasNewSources = (record?.history_sources ?? []).length > 0;
-  const hasReviewedSource = (record?.history_sources ?? []).some(
-    (source) => source.source_status === "reviewed"
+  const hasNewSources = (record?.sources ?? []).length > 0;
+  const hasReviewedSource = (record?.sources ?? []).some(
+    (source) => source.review_status === "reviewed"
   );
   const publishBlocked = hasNewSources && !hasReviewedSource;
 

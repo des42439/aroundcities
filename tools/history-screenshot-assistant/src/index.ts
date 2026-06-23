@@ -76,7 +76,7 @@ async function main() {
 
         await markScreenshotCompleted({
           supabase,
-          historySourceId: source.history_source_id,
+          sourceId: source.source_id,
           screenshotUrl: publicUrl,
         });
 
@@ -101,7 +101,7 @@ async function main() {
         try {
           await markScreenshotFailed({
             supabase,
-            historySourceId: source.history_source_id,
+            sourceId: source.source_id,
             errorMessage: message,
           });
         } catch (updateError) {

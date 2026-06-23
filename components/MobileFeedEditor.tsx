@@ -25,9 +25,7 @@ import {
   deleteFeedScheduleAction,
   deleteFeedSourceAction,
 } from "@/lib/admin-actions";
-import { FeedSourceWithScreenshots } from "@/lib/feed-sources";
 import {
-  Channel,
   Feed,
   FeedEventDetails,
   FeedPlaceWithPlace,
@@ -35,6 +33,7 @@ import {
   FeedWithPlaceAndPhotos,
   Photo,
   Place,
+  Source,
 } from "@/types/database";
 
 type SectionKey =
@@ -49,8 +48,7 @@ type Props = {
   photos: Photo[];
   places: Place[];
   feedPlaces: FeedPlaceWithPlace[];
-  feedSources: FeedSourceWithScreenshots[];
-  channels: Channel[];
+  feedSources: Source[];
   schedules: FeedSchedule[];
   eventDetails: FeedEventDetails | null;
   parentCandidates: Feed[];
@@ -74,7 +72,6 @@ export default function MobileFeedEditor({
   places,
   feedPlaces,
   feedSources,
-  channels,
   schedules,
   eventDetails,
   parentCandidates,
@@ -298,7 +295,6 @@ export default function MobileFeedEditor({
         <SourcesSection
           feedId={feed.feed_id}
           sources={feedSources}
-          channels={channels}
         />
       ) : null}
 
@@ -509,11 +505,9 @@ function PlacesSection({
 function SourcesSection({
   feedId,
   sources,
-  channels,
 }: {
   feedId: string;
-  sources: FeedSourceWithScreenshots[];
-  channels: Channel[];
+  sources: Source[];
 }) {
   const action = createFeedSourceAction.bind(null, feedId);
   const [screenshotUploadPending, setScreenshotUploadPending] =
@@ -532,7 +526,7 @@ function SourcesSection({
             >
               <p className="break-words text-neutral-200">
                 {source.source_url ||
-                  source.channel?.name ||
+                  source.source_title ||
                   "Source note"}
               </p>
               {source.source_note ? (
@@ -540,10 +534,9 @@ function SourcesSection({
                   {source.source_note}
                 </p>
               ) : null}
-              {source.screenshots.length ? (
+              {source.source_screenshot_url ? (
                 <p className="mt-2 text-xs text-neutral-500">
-                  {source.screenshots.length} evidence screenshot
-                  {source.screenshots.length === 1 ? "" : "s"}
+                  Evidence screenshot attached
                 </p>
               ) : null}
               <AdminActionForm
@@ -580,18 +573,11 @@ function SourcesSection({
             className={inputClassName}
           />
         </Field>
-        <Field label="Source channel">
-          <select name="channel_id" className={selectClassName}>
-            <option value="">No channel</option>
-            {channels.map((channel) => (
-              <option
-                key={channel.channel_id}
-                value={channel.channel_id}
-              >
-                {channel.name}
-              </option>
-            ))}
-          </select>
+        <Field label="Source title / channel">
+          <input
+            name="source_title"
+            className={inputClassName}
+          />
         </Field>
         <Field label="Source note">
           <textarea
@@ -610,12 +596,6 @@ function SourcesSection({
             />
           </div>
         </div>
-        <Field label="Screenshot note">
-          <input
-            name="screenshot_remarks"
-            className={inputClassName}
-          />
-        </Field>
         <AdminSubmitButton
           variant="secondary"
           pendingLabel="Adding..."

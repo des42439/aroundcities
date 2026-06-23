@@ -51,15 +51,9 @@ export default async function FeedDetailPage({
     getFeedSources(feed.feed_id),
   ]);
   const eventTimingLabel = getEventTimingLabel(feed.schedules);
-  const sourceUrl =
-    feed.source_url ??
-    feedSources.find((source) => source.source_url)?.source_url ??
-    null;
-  const rawChannelUrl =
-    feedSources.find((source) => source.channel?.url)?.channel?.url ??
-    null;
-  const channelUrl =
-    rawChannelUrl && rawChannelUrl !== sourceUrl ? rawChannelUrl : null;
+  const publicSources = feedSources.filter(
+    (source) => source.source_url
+  );
 
   return (
     <PublicShell>
@@ -103,29 +97,19 @@ export default async function FeedDetailPage({
           </div>
         )}
 
-        {(sourceUrl || channelUrl) && (
-          <div className="mt-8 flex gap-4 border-y border-neutral-900 py-5">
-            {sourceUrl ? (
+        {publicSources.length > 0 && (
+          <div className="mt-8 flex flex-wrap gap-4 border-y border-neutral-900 py-5">
+            {publicSources.map((source, index) => (
               <a
-                href={sourceUrl}
+                key={source.source_id}
+                href={source.source_url ?? undefined}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm text-neutral-300 hover:text-white"
               >
-                Source
+                {source.source_title || `Source ${index + 1}`}
               </a>
-            ) : null}
-
-            {channelUrl ? (
-              <a
-                href={channelUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-neutral-300 hover:text-white"
-              >
-                Channel
-              </a>
-            ) : null}
+            ))}
           </div>
         )}
 

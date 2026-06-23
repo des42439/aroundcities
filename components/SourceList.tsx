@@ -6,13 +6,13 @@ import {
   inputClassName,
   secondaryButtonClassName,
 } from "./AdminForm";
-import type { Source } from "@/types/database";
+import type { SourceChecklist } from "@/types/database";
 
 export default function SourceList({
   sources,
   emptyText,
 }: {
-  sources: Source[];
+  sources: SourceChecklist[];
   emptyText: string;
 }) {
   const [search, setSearch] = useState("");

@@ -3,7 +3,7 @@ import type { Database } from "../../../types/supabase.generated";
 import type { CliOptions } from "./config";
 
 export type HistorySourceJob = {
-  history_source_id: string;
+  source_id: string;
   history_id: string;
   source_url: string;
   source_title: string | null;
@@ -16,12 +16,13 @@ export async function querySources(
   options: CliOptions
 ): Promise<HistorySourceJob[]> {
   let query = supabase
-    .from("history_sources")
+    .from("sources")
     .select(
-      "history_source_id,history_id,source_url,source_title,source_screenshot_url,screenshot_status,history_records!inner(status)"
+      "source_id,section_id,source_url,source_title,source_screenshot_url,screenshot_status"
     )
-    .eq("source_status", "reviewed")
-    .eq("history_records.status", "researched")
+    .eq("section_type", "history")
+    .eq("review_status", "reviewed")
+    .not("source_url", "is", null)
     .order("sequence", { ascending: true })
     .order("created_at", { ascending: true });
 
@@ -32,7 +33,7 @@ export async function querySources(
   }
 
   if (options.historyId) {
-    query = query.eq("history_id", options.historyId);
+    query = query.eq("section_id", options.historyId);
   }
 
   if (options.limit) {
@@ -45,10 +46,28 @@ export async function querySources(
     throw new Error(`History source query failed: ${error.message}`);
   }
 
-  return (data ?? []).map((source) => ({
-    history_source_id: source.history_source_id,
-    history_id: source.history_id,
-    source_url: source.source_url,
+  const candidates = data ?? [];
+  const historyIds = [...new Set(candidates.map((source) => source.section_id))];
+  const { data: researched, error: historyError } = historyIds.length
+    ? await supabase
+        .from("history_records")
+        .select("history_id")
+        .in("history_id", historyIds)
+        .eq("status", "researched")
+    : { data: [], error: null };
+
+  if (historyError) {
+    throw new Error(`History lookup failed: ${historyError.message}`);
+  }
+
+  const researchedIds = new Set(
+    (researched ?? []).map((record) => record.history_id)
+  );
+
+  return candidates.filter((source) => researchedIds.has(source.section_id)).map((source) => ({
+    source_id: source.source_id,
+    history_id: source.section_id,
+    source_url: source.source_url as string,
     source_title: source.source_title,
     source_screenshot_url: source.source_screenshot_url,
     screenshot_status: source.screenshot_status,

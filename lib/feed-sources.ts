@@ -1,36 +1,20 @@
 import { getSupabaseAdmin } from "./supabase-admin";
-import {
-  Channel,
-  FeedSource,
-  SourceScreenshot,
-} from "@/types/database";
+import type { Source } from "@/types/database";
 
-export interface FeedSourceWithScreenshots extends FeedSource {
-  channel: Channel | null;
-  screenshots: SourceScreenshot[];
+function sourceDb() {
+  return getSupabaseAdmin() as ReturnType<typeof getSupabaseAdmin> & {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    from: (table: string) => any;
+  };
 }
 
-export async function getChannels(): Promise<Channel[]> {
-  const { data, error } = await getSupabaseAdmin()
-    .from("channels")
+export async function getFeedSources(feedId: string): Promise<Source[]> {
+  const { data, error } = await sourceDb()
+    .from("sources")
     .select("*")
-    .order("name", { ascending: true });
-
-  if (error) {
-    console.error(error);
-    return [];
-  }
-
-  return data ?? [];
-}
-
-export async function getFeedSources(
-  feedId: string
-): Promise<FeedSourceWithScreenshots[]> {
-  const { data, error } = await getSupabaseAdmin()
-    .from("feed_sources")
-    .select("*, channel:channels(*), screenshots:source_screenshots(*)")
-    .eq("feed_id", feedId)
+    .eq("section_type", "feed")
+    .eq("section_id", feedId)
+    .order("sequence", { ascending: true })
     .order("created_at", { ascending: true });
 
   if (error) {
@@ -38,18 +22,32 @@ export async function getFeedSources(
     return [];
   }
 
-  return (data ?? []) as FeedSourceWithScreenshots[];
+  return (data ?? []) as Source[];
 }
 
 export async function createFeedSource(input: {
   feed_id: string;
+  source_title: string | null;
   source_url: string | null;
-  channel_id: string | null;
   source_note: string | null;
-}): Promise<FeedSource> {
-  const { data, error } = await getSupabaseAdmin()
-    .from("feed_sources")
-    .insert(input)
+  source_screenshot_url?: string | null;
+}): Promise<Source> {
+  const { data, error } = await sourceDb()
+    .from("sources")
+    .insert({
+      section_type: "feed",
+      section_id: input.feed_id,
+      source_title: input.source_title,
+      source_url: input.source_url,
+      source_note: input.source_note,
+      source_screenshot_url: input.source_screenshot_url ?? null,
+      screenshot_status: input.source_screenshot_url
+        ? "completed"
+        : "pending",
+      screenshot_error: null,
+      review_status: "reviewed",
+      sequence: 0,
+    })
     .select("*")
     .single();
 
@@ -57,39 +55,17 @@ export async function createFeedSource(input: {
     throw new Error(`Feed source create failed: ${error.message}`);
   }
 
-  return data;
+  return data as Source;
 }
 
-export async function deleteFeedSource(
-  sourceId: string
-): Promise<void> {
-  const { error } = await getSupabaseAdmin()
-    .from("feed_sources")
+export async function deleteFeedSource(sourceId: string): Promise<void> {
+  const { error } = await sourceDb()
+    .from("sources")
     .delete()
-    .eq("source_id", sourceId);
+    .eq("source_id", sourceId)
+    .eq("section_type", "feed");
 
   if (error) {
     throw new Error(`Feed source delete failed: ${error.message}`);
   }
-}
-
-export async function createSourceScreenshot(input: {
-  source_id: string;
-  screenshot_url: string;
-  remarks: string | null;
-  sequence: number;
-}): Promise<SourceScreenshot> {
-  const { data, error } = await getSupabaseAdmin()
-    .from("source_screenshots")
-    .insert(input)
-    .select("*")
-    .single();
-
-  if (error) {
-    throw new Error(
-      `Source screenshot create failed: ${error.message}`
-    );
-  }
-
-  return data;
 }

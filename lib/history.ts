@@ -5,15 +5,15 @@ import {
   FeedWithPlaceAndPhotos,
   HistoryPhotoWithPhoto,
   HistoryRecord,
-  HistorySource,
-  HistorySourceUpdate,
   HistoryStatus,
   HistoryRecordUpdate,
   HistoryRecordWithPhotos,
   NewHistoryPhoto,
   NewHistoryRecord,
-  NewHistorySource,
+  NewSource,
   Photo,
+  Source,
+  SourceUpdate,
 } from "@/types/database";
 
 export const DAILY_HISTORY_RESEARCH_TARGET = 10;
@@ -219,7 +219,7 @@ export async function getHistoryRecordById(
 ): Promise<HistoryRecordWithPhotos | null> {
   const { data, error } = await historyDb()
     .from("history_records")
-    .select("*, history_photos(*, photo:photos(*)), history_sources(*)")
+    .select("*, history_photos(*, photo:photos(*))")
     .eq("history_id", historyId)
     .maybeSingle();
 
@@ -232,13 +232,22 @@ export async function getHistoryRecordById(
     return null;
   }
 
+  const { data: sources, error: sourcesError } = await historyDb()
+    .from("sources")
+    .select("*")
+    .eq("section_type", "history")
+    .eq("section_id", historyId);
+
+  if (sourcesError) {
+    console.error(sourcesError);
+    return null;
+  }
+
   const record = data as HistoryRecordWithPhotos;
   record.history_photos = getOrderedHistoryPhotos(
     record.history_photos
   );
-  record.history_sources = getOrderedHistorySources(
-    record.history_sources
-  );
+  record.sources = getOrderedHistorySources((sources ?? []) as Source[]);
 
   return record;
 }
@@ -294,11 +303,11 @@ export async function deleteHistoryRecord(
 }
 
 export async function createHistorySource(
-  input: NewHistorySource
-): Promise<HistorySource> {
+  input: Omit<NewSource, "section_type">
+): Promise<Source> {
   const { data, error } = await historyDb()
-    .from("history_sources")
-    .insert(input)
+    .from("sources")
+    .insert({ ...input, section_type: "history" })
     .select("*")
     .single();
 
@@ -306,20 +315,21 @@ export async function createHistorySource(
     throw new Error(`History source create failed: ${error.message}`);
   }
 
-  return data as HistorySource;
+  return data as Source;
 }
 
 export async function updateHistorySource(
-  historySourceId: string,
-  input: HistorySourceUpdate
-): Promise<HistorySource> {
+  sourceId: string,
+  input: SourceUpdate
+): Promise<Source> {
   const { data, error } = await historyDb()
-    .from("history_sources")
+    .from("sources")
     .update({
       ...input,
       updated_at: new Date().toISOString(),
     })
-    .eq("history_source_id", historySourceId)
+    .eq("source_id", sourceId)
+    .eq("section_type", "history")
     .select("*")
     .single();
 
@@ -327,16 +337,17 @@ export async function updateHistorySource(
     throw new Error(`History source update failed: ${error.message}`);
   }
 
-  return data as HistorySource;
+  return data as Source;
 }
 
 export async function deleteHistorySource(
-  historySourceId: string
+  sourceId: string
 ): Promise<void> {
   const { error } = await historyDb()
-    .from("history_sources")
+    .from("sources")
     .delete()
-    .eq("history_source_id", historySourceId);
+    .eq("source_id", sourceId)
+    .eq("section_type", "history");
 
   if (error) {
     throw new Error(`History source delete failed: ${error.message}`);
@@ -347,9 +358,10 @@ export async function hasHistorySources(
   historyId: string
 ): Promise<boolean> {
   const { data, error } = await historyDb()
-    .from("history_sources")
-    .select("history_source_id")
-    .eq("history_id", historyId)
+    .from("sources")
+    .select("source_id")
+    .eq("section_type", "history")
+    .eq("section_id", historyId)
     .limit(1);
 
   if (error) {
@@ -363,10 +375,11 @@ export async function hasReviewedHistorySource(
   historyId: string
 ): Promise<boolean> {
   const { data, error } = await historyDb()
-    .from("history_sources")
-    .select("history_source_id")
-    .eq("history_id", historyId)
-    .eq("source_status", "reviewed")
+    .from("sources")
+    .select("source_id")
+    .eq("section_type", "history")
+    .eq("section_id", historyId)
+    .eq("review_status", "reviewed")
     .limit(1);
 
   if (error) {
@@ -390,9 +403,10 @@ export async function upsertHistoryResearchSources(input: {
 
   for (const source of input.sources) {
     const { data: existing, error: lookupError } = await historyDb()
-      .from("history_sources")
-      .select("history_source_id")
-      .eq("history_id", input.historyId)
+      .from("sources")
+      .select("source_id")
+      .eq("section_type", "history")
+      .eq("section_id", input.historyId)
       .eq("source_url", source.source_url)
       .maybeSingle();
 
@@ -402,8 +416,8 @@ export async function upsertHistoryResearchSources(input: {
       );
     }
 
-    if (existing?.history_source_id) {
-      await updateHistorySource(existing.history_source_id, {
+    if (existing?.source_id) {
+      await updateHistorySource(existing.source_id, {
         source_title: source.source_title,
         source_note: source.source_note,
         sequence: source.sequence,
@@ -413,11 +427,11 @@ export async function upsertHistoryResearchSources(input: {
     }
 
     await createHistorySource({
-      history_id: input.historyId,
+      section_id: input.historyId,
       source_url: source.source_url,
       source_title: source.source_title,
       source_note: source.source_note,
-      source_status: "pending",
+      review_status: "pending",
       source_screenshot_url: null,
       screenshot_status: "pending",
       screenshot_error: null,
@@ -607,8 +621,8 @@ function getOrderedHistoryPhotos(
 }
 
 function getOrderedHistorySources(
-  historySources: HistorySource[]
-): HistorySource[] {
+  historySources: Source[]
+): Source[] {
   return [...(historySources ?? [])].sort((left, right) => {
     const sequenceDelta =
       normalizeSequence(left.sequence) - normalizeSequence(right.sequence);

@@ -7,10 +7,10 @@ import {
   textareaClassName,
 } from "./AdminForm";
 import { AdminSubmitButton } from "./AdminSubmitButton";
-import { Source } from "@/types/database";
+import { SourceChecklist } from "@/types/database";
 
 type Props = {
-  source?: Source | null;
+  source?: SourceChecklist | null;
   action: (
     state: AdminActionState,
     formData: FormData
