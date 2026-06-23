@@ -12,6 +12,7 @@ All notable changes to AroundCities should be documented here.
 - Changed the admin Events menu and dashboard card to open `/admin/events`, an event-only list filtered to `event_observation` records, so the generic Feed hub stays hidden.
 - Changed `/admin/feeds` to redirect to `/admin/events` instead of rendering the old Feed section.
 - Event import, publish, archive, and delete flows now return to the Events section instead of the old Drafted/Published Feeds pages.
+- Sorted admin Events by earliest event schedule first and prefixed each visible event list title with compact schedule text such as `20260621 1PM`.
 
 ## 2026-06-22
 

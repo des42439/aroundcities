@@ -1,7 +1,12 @@
-import {
+import type {
   FeedEventDetails,
   FeedSchedule,
+  FeedWithPlaceAndPhotos,
 } from "@/types/database";
+
+type EventSchedule = NonNullable<
+  FeedWithPlaceAndPhotos["schedules"]
+>[number];
 
 type LocalDateParts = {
   year: number;
@@ -119,54 +124,6 @@ export function getEventDetailLabels(
   return labels;
 }
 
-function getNextSchedule(
-  schedules?: FeedSchedule[] | null,
-  now = new Date()
-): FeedSchedule | null {
-  const today = getKuchingDateParts(now);
-
-  return (
-    (schedules ?? [])
-      .filter((schedule) => schedule.schedule_date)
-      .map((schedule) => ({
-        schedule,
-        dateParts: parseDateParts(schedule.schedule_date),
-      }))
-      .filter(
-        (
-          item
-        ): item is {
-          schedule: FeedSchedule;
-          dateParts: LocalDateParts;
-        } => item.dateParts !== null
-      )
-      .filter(
-        ({ schedule, dateParts }) =>
-          daysBetween(today, dateParts) >= 0 &&
-          !isScheduleExpiredToday(schedule, dateParts, today, now)
-      )
-      .sort(
-        (left, right) =>
-          daysBetween(today, left.dateParts) -
-            daysBetween(today, right.dateParts) ||
-          timeToMinutes(left.schedule.start_time) -
-            timeToMinutes(right.schedule.start_time)
-      )[0]?.schedule ?? null
-  );
-}
-
-function isHappeningNow(schedule: FeedSchedule, now: Date) {
-  if (!schedule.start_time) {
-    return false;
-  }
-
-  const startMinutes = timeToMinutes(schedule.start_time);
-  const endMinutes = getScheduleEndMinutes(schedule, startMinutes);
-  const nowMinutes = getKuchingMinutes(now);
-
-  return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
-}
-
 export function isScheduledEventExpired(
   schedules?: FeedSchedule[] | null,
   now = new Date()
@@ -245,6 +202,174 @@ export function getEarliestScheduleMinutes(
     .filter((value): value is number => value !== null);
 
   return Math.min(...scheduleMinutes, Number.MAX_SAFE_INTEGER);
+}
+
+export function compareEventFeedsBySchedule(
+  left: FeedWithPlaceAndPhotos,
+  right: FeedWithPlaceAndPhotos
+) {
+  return (
+    getEventSortTimestamp(left) -
+      getEventSortTimestamp(right) ||
+    left.title.localeCompare(right.title)
+  );
+}
+
+export function getAdminEventDisplayTitle(
+  feed: FeedWithPlaceAndPhotos
+) {
+  const prefix = getEventDateTimePrefix(feed);
+
+  return prefix ? `${prefix} ${feed.title}` : feed.title;
+}
+
+function getEventDateTimePrefix(feed: FeedWithPlaceAndPhotos) {
+  const schedule = getEarliestSchedule(feed);
+
+  if (!schedule) {
+    return "";
+  }
+
+  const datePart = compactDate(
+    schedule.schedule_date ?? schedule.start_date
+  );
+
+  if (!datePart) {
+    return "";
+  }
+
+  const timePart = formatAdminEventTime(schedule.start_time);
+
+  return [datePart, timePart].filter(Boolean).join(" ");
+}
+
+function getEventSortTimestamp(feed: FeedWithPlaceAndPhotos) {
+  const schedule = getEarliestSchedule(feed);
+
+  if (!schedule) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const date = schedule.schedule_date ?? schedule.start_date;
+
+  if (!date) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const dateTime = new Date(`${date}T${schedule.start_time ?? "00:00:00"}`);
+  const timestamp = dateTime.getTime();
+
+  return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+}
+
+function getEarliestSchedule(feed: FeedWithPlaceAndPhotos) {
+  return [...(feed.schedules ?? [])].sort(compareSchedules)[0] ?? null;
+}
+
+function compareSchedules(
+  left: EventSchedule,
+  right: EventSchedule
+) {
+  return scheduleTimestamp(left) - scheduleTimestamp(right);
+}
+
+function scheduleTimestamp(schedule: EventSchedule) {
+  const date = schedule.schedule_date ?? schedule.start_date;
+
+  if (!date) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  const dateTime = new Date(`${date}T${schedule.start_time ?? "00:00:00"}`);
+  const timestamp = dateTime.getTime();
+
+  return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+}
+
+function compactDate(value?: string | null) {
+  const match = value?.match(/^(\d{4})-(\d{2})-(\d{2})/);
+
+  return match ? `${match[1]}${match[2]}${match[3]}` : "";
+}
+
+function formatAdminEventTime(value?: string | null) {
+  if (!value) {
+    return "";
+  }
+
+  const match = value.match(/^(\d{1,2}):(\d{2})/);
+
+  if (!match) {
+    return "";
+  }
+
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+
+  if (
+    !Number.isInteger(hour) ||
+    !Number.isInteger(minute) ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59
+  ) {
+    return "";
+  }
+
+  const period = hour >= 12 ? "PM" : "AM";
+  const displayHour = hour % 12 || 12;
+  const displayMinute = minute === 0 ? "" : `:${String(minute).padStart(2, "0")}`;
+
+  return `${displayHour}${displayMinute}${period}`;
+}
+
+function getNextSchedule(
+  schedules?: FeedSchedule[] | null,
+  now = new Date()
+): FeedSchedule | null {
+  const today = getKuchingDateParts(now);
+
+  return (
+    (schedules ?? [])
+      .filter((schedule) => schedule.schedule_date)
+      .map((schedule) => ({
+        schedule,
+        dateParts: parseDateParts(schedule.schedule_date),
+      }))
+      .filter(
+        (
+          item
+        ): item is {
+          schedule: FeedSchedule;
+          dateParts: LocalDateParts;
+        } => item.dateParts !== null
+      )
+      .filter(
+        ({ schedule, dateParts }) =>
+          daysBetween(today, dateParts) >= 0 &&
+          !isScheduleExpiredToday(schedule, dateParts, today, now)
+      )
+      .sort(
+        (left, right) =>
+          daysBetween(today, left.dateParts) -
+            daysBetween(today, right.dateParts) ||
+          timeToMinutes(left.schedule.start_time) -
+            timeToMinutes(right.schedule.start_time)
+      )[0]?.schedule ?? null
+  );
+}
+
+function isHappeningNow(schedule: FeedSchedule, now: Date) {
+  if (!schedule.start_time) {
+    return false;
+  }
+
+  const startMinutes = timeToMinutes(schedule.start_time);
+  const endMinutes = getScheduleEndMinutes(schedule, startMinutes);
+  const nowMinutes = getKuchingMinutes(now);
+
+  return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
 }
 
 function isScheduleExpiredToday(

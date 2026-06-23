@@ -145,7 +145,7 @@ V2 Phase 1 Steps 1-5 are implemented:
 - `/` and `/kch` are temporarily protected by a lightweight public password lock while content is being prepared. Public lock settings live in `lib/public-lock.ts`; disable by setting `LOCK_USER_PAGE` to `false` and redeploying.
 - Minimal admin UI protected by `ADMIN_PASSWORD`.
 - Photos are now the first/main admin workflow through `/admin/photos`.
-- The existing feed-backed Events workflow is visible in the main admin navigation and admin hub through `/admin/events`, which filters to `feed_type = event_observation`.
+- The existing feed-backed Events workflow is visible in the main admin navigation and admin hub through `/admin/events`, which filters to `feed_type = event_observation`, sorts by earliest schedule first, and prefixes visible list titles with compact event date/time text.
 - Photo albums are stored in `photo_albums`; photos link to one album through `photos.album_id`.
 - Album photos support `is_album_cover`, `status`, `tags`, and `location_note` for future reuse across History, Learning, Greetings, Discovery, Positive Messages, and generated homepage cards.
 - `/admin/photos`, `/admin/photos/new`, `/admin/photos/[albumId]`, and `/admin/photos/photo/[photoId]` support Photo Album Admin v1.

@@ -66,7 +66,7 @@ Implemented mobile-first workflow:
 - `/admin/photos/[albumId]` edits album title, description, status, and shows album photos.
 - `/admin/photos/photo/[photoId]` edits individual photo metadata, album cover flag, tags, captured date, coordinates, and location notes.
 - `/admin/feeds/new` is the fast capture screen. It asks only for photos, title, and description, then creates a draft.
-- `/admin/events` is the visible Events section. It filters feed-backed records to `feed_type = event_observation` and supports Drafted, Published, and Archived views with local search.
+- `/admin/events` is the visible Events section. It filters feed-backed records to `feed_type = event_observation`, supports Drafted, Published, and Archived views with local search, sorts events by earliest schedule first, and prefixes visible list titles with compact schedule text such as `20260621 1PM`.
 - `/admin/feeds/import-events` accepts pasted `aroundcities_event_import_v2` JSON, keeps v1 JSON compatible, previews event feed drafts, and saves valid imports as draft events without requiring photos.
 - `/admin` shows Photos first and includes an Events card linking to the event-only admin workflow.
 - `/admin/feeds` redirects to `/admin/events`; deeper feed-backed edit/import routes remain available where the Events workflow needs them.

@@ -11,7 +11,10 @@ import {
   formatRelativeTime,
   getFeaturedPhoto,
 } from "@/lib/format";
+import { getAdminEventDisplayTitle } from "@/lib/event-display";
 import { FeedWithPlaceAndPhotos } from "@/types/database";
+
+type TitleMode = "default" | "eventDatePrefix";
 
 type Props = {
   feeds: FeedWithPlaceAndPhotos[];
@@ -19,6 +22,7 @@ type Props = {
   timeField: "updated_at" | "published_at";
   statusLabel: string;
   searchPlaceholder?: string;
+  titleMode?: TitleMode;
 };
 
 export default function AdminFeedList({
@@ -27,6 +31,7 @@ export default function AdminFeedList({
   timeField,
   statusLabel,
   searchPlaceholder = "Search feeds",
+  titleMode = "default",
 }: Props) {
   const [search, setSearch] = useState("");
   const normalizedSearch = search.trim().toLowerCase();
@@ -37,8 +42,10 @@ export default function AdminFeedList({
           return true;
         }
 
+        const displayTitle = getDisplayTitle(feed, titleMode);
+
         return (
-          feed.title.toLowerCase().includes(normalizedSearch) ||
+          displayTitle.toLowerCase().includes(normalizedSearch) ||
           (feed.content ?? "")
             .toLowerCase()
             .includes(normalizedSearch) ||
@@ -47,7 +54,7 @@ export default function AdminFeedList({
             .includes(normalizedSearch)
         );
       }),
-    [feeds, normalizedSearch]
+    [feeds, normalizedSearch, titleMode]
   );
 
   return (
@@ -71,6 +78,7 @@ export default function AdminFeedList({
         <div className="space-y-3">
           {visibleFeeds.map((feed) => {
             const thumbnail = getFeaturedPhoto(feed.photos);
+            const displayTitle = getDisplayTitle(feed, titleMode);
 
             return (
               <article
@@ -95,7 +103,7 @@ export default function AdminFeedList({
 
                   <div className="min-w-0 flex-1">
                     <h2 className="line-clamp-2 font-semibold text-neutral-100">
-                      {feed.title}
+                      {displayTitle}
                     </h2>
                     <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-neutral-500">
                       <span>{formatRelativeTime(feed[timeField])}</span>
@@ -119,4 +127,13 @@ export default function AdminFeedList({
       )}
     </div>
   );
+}
+
+function getDisplayTitle(
+  feed: FeedWithPlaceAndPhotos,
+  titleMode: TitleMode
+) {
+  return titleMode === "eventDatePrefix"
+    ? getAdminEventDisplayTitle(feed)
+    : feed.title;
 }

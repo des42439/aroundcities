@@ -4,6 +4,7 @@ import AdminShell from "@/components/AdminShell";
 import EventStatusFilter from "@/components/EventStatusFilter";
 import { primaryButtonClassName } from "@/components/AdminForm";
 import { requireAdmin } from "@/lib/admin-auth";
+import { compareEventFeedsBySchedule } from "@/lib/event-display";
 import { getEventFeedsByStatus } from "@/lib/feeds";
 import type { FeedStatus } from "@/types/database";
 
@@ -49,7 +50,9 @@ export default async function AdminEventsPage({
   await requireAdmin();
   const params = await searchParams;
   const status = getStatusParam(params?.status);
-  const events = await getEventFeedsByStatus(status);
+  const events = (await getEventFeedsByStatus(status)).sort(
+    compareEventFeedsBySchedule
+  );
 
   return (
     <AdminShell title="Events">
@@ -71,6 +74,7 @@ export default async function AdminEventsPage({
           timeField={status === "published" ? "published_at" : "updated_at"}
           statusLabel={statusLabel(status)}
           searchPlaceholder="Search events"
+          titleMode="eventDatePrefix"
         />
       </div>
     </AdminShell>
